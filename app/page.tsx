@@ -6,7 +6,7 @@ import { GraduationCap, Building2, Users, Briefcase, ArrowRight, CheckCircle2 } 
 export default function LandingPage() {
   return (
     <div className="min-h-screen bg-background">
-      {/* Navigation */}
+
       <header className="border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50">
         <nav className="container mx-auto px-4 h-16 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2">
@@ -17,50 +17,49 @@ export default function LandingPage() {
           </Link>
           <div className="flex items-center gap-3">
             <Button variant="ghost" asChild>
-              <Link href="/login">Log in</Link>
+              <Link href="/login">Нэвтрэх</Link>
             </Button>
             <Button asChild>
-              <Link href="/signup">Sign up</Link>
+              <Link href="/signup">Бүртгүүлэх</Link>
             </Button>
           </div>
         </nav>
       </header>
 
       <main>
-        {/* Hero Section */}
-        <section className="py-20 md:py-32">
-          <div className="container mx-auto px-4">
-            <div className="max-w-3xl mx-auto text-center">
+
+        <section className="py-20 md:py-42">
+          <div className="container mx-auto px-8">
+            <div className="max-w-4xl mx-auto text-center">
               <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-foreground tracking-tight text-balance">
-                Start Your Career With The Right Company
+                Та өөрийн дадлага , ажил , оюутнуудаа эндээс хайгаарай.
               </h1>
               <p className="mt-6 text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto text-pretty">
-                Helping students and graduates find internships and junior roles, and helping companies discover emerging talent.
+                Оюутан, төгсөгчдөд мэргэжлээрээ дадлага хийх,  ажил олох, мөн компаниудад шинээр төгсөж буй чадварлаг оюутнуудыг  илрүүлэхэд нь туслах болно.
               </p>
               <div className="mt-10 flex flex-col sm:flex-row gap-4 justify-center">
                 <Button size="lg" asChild className="text-base">
                   <Link href="/signup">
-                    Get Started
+                    Эхлүүлэх
                     <ArrowRight className="ml-2 w-4 h-4" />
                   </Link>
                 </Button>
                 <Button size="lg" variant="outline" asChild className="text-base bg-transparent">
-                  <Link href="/login">Sign in to your account</Link>
+                  <Link href="/login">Өөрийн бүртгэл үүсгэх</Link>
                 </Button>
               </div>
             </div>
           </div>
         </section>
 
-        {/* Features Section */}
         <section className="py-20 bg-secondary/50">
           <div className="container mx-auto px-4">
             <div className="text-center mb-16">
               <h2 className="text-3xl md:text-4xl font-bold text-foreground">
-                Built for Both Sides
+                2 талын хамтын боломж
               </h2>
               <p className="mt-4 text-muted-foreground text-lg max-w-xl mx-auto">
-                Whether you're looking for your first opportunity or searching for fresh talent, we've got you covered.
+                Та өөрийн анхны боломжийг хайж байгаа эсвэл шинэ чадварлаг оюутнаа хайж байгаа эсэхээс үл хамааран бид танд туслахад бэлэн байна.
               </p>
             </div>
 
@@ -71,28 +70,28 @@ export default function LandingPage() {
                   <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mb-4">
                     <GraduationCap className="w-6 h-6 text-primary" />
                   </div>
-                  <CardTitle className="text-2xl">For Students</CardTitle>
+                  <CardTitle className="text-2xl">Оюутан таньд</CardTitle>
                   <CardDescription className="text-base">
-                    Launch your career with the right opportunity
+                    Та өөрийн гайхалтай карьераа эндээс эхлүүлээрэй.
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
                   <ul className="space-y-3">
                     <li className="flex items-start gap-3">
                       <CheckCircle2 className="w-5 h-5 text-success mt-0.5 flex-shrink-0" />
-                      <span className="text-muted-foreground">Find internships matched to your skills</span>
+                      <span className="text-muted-foreground">Өөрийн ур чадвар дээр суурилан дадлага хайх</span>
                     </li>
                     <li className="flex items-start gap-3">
                       <CheckCircle2 className="w-5 h-5 text-success mt-0.5 flex-shrink-0" />
-                      <span className="text-muted-foreground">Apply easily with your profile</span>
+                      <span className="text-muted-foreground">Профайлаараа хялбархан хүсэлт гаргах</span>
                     </li>
                     <li className="flex items-start gap-3">
                       <CheckCircle2 className="w-5 h-5 text-success mt-0.5 flex-shrink-0" />
-                      <span className="text-muted-foreground">Build your career portfolio</span>
+                      <span className="text-muted-foreground">Өөрийн карьерынхаа портфолио үүсгэх</span>
                     </li>
                   </ul>
                   <Button className="w-full mt-6 bg-transparent" variant="outline" asChild>
-                    <Link href="/signup?role=student">Join as Student</Link>
+                    <Link href="/signup?role=student">Оюутанаар нэгдэх</Link>
                   </Button>
                 </CardContent>
               </Card>
@@ -103,28 +102,28 @@ export default function LandingPage() {
                   <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mb-4">
                     <Building2 className="w-6 h-6 text-primary" />
                   </div>
-                  <CardTitle className="text-2xl">For Companies</CardTitle>
+                  <CardTitle className="text-2xl">Компань таньд</CardTitle>
                   <CardDescription className="text-base">
-                    Discover and hire emerging talent
+                    Шинээр гарч ирж буй  чадварлаг оюутнаа нээн илрүүлэх
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
                   <ul className="space-y-3">
                     <li className="flex items-start gap-3">
                       <CheckCircle2 className="w-5 h-5 text-success mt-0.5 flex-shrink-0" />
-                      <span className="text-muted-foreground">Post jobs and internships</span>
+                      <span className="text-muted-foreground">Дадлага болон ажлын зар байршуула</span>
                     </li>
                     <li className="flex items-start gap-3">
                       <CheckCircle2 className="w-5 h-5 text-success mt-0.5 flex-shrink-0" />
-                      <span className="text-muted-foreground">Review qualified applicants</span>
+                      <span className="text-muted-foreground"> Шаардлага хангасан өргөдөл гаргагчдыг хянаж үзэх</span>
                     </li>
                     <li className="flex items-start gap-3">
                       <CheckCircle2 className="w-5 h-5 text-success mt-0.5 flex-shrink-0" />
-                      <span className="text-muted-foreground">Find the perfect match for your team</span>
+                      <span className="text-muted-foreground">Багийнхаа төгс тохирох хүнийг олоорой</span>
                     </li>
                   </ul>
                   <Button className="w-full mt-6 bg-transparent" variant="outline" asChild>
-                    <Link href="/signup?role=company">Join as Company</Link>
+                    <Link href="/signup?role=company">Компаниар нэгдэх</Link>
                   </Button>
                 </CardContent>
               </Card>
@@ -132,8 +131,7 @@ export default function LandingPage() {
           </div>
         </section>
 
-        {/* Stats Section */}
-        <section className="py-20">
+        {/* <section className="py-20">
           <div className="container mx-auto px-4">
             <div className="grid grid-cols-2 md:grid-cols-4 gap-8 max-w-4xl mx-auto">
               <div className="text-center">
@@ -154,20 +152,20 @@ export default function LandingPage() {
               </div>
             </div>
           </div>
-        </section>
+        </section> */}
 
-        {/* CTA Section */}
+
         <section className="py-20 bg-primary">
           <div className="container mx-auto px-4 text-center">
             <h2 className="text-3xl md:text-4xl font-bold text-primary-foreground">
-              Ready to Get Started?
+              Эхлэхэд та бэлэн үү?
             </h2>
             <p className="mt-4 text-primary-foreground/80 text-lg max-w-xl mx-auto">
-              Join thousands of students and companies already using InternMatch to build their future.
+              Ирээдүйгээ бүтээхийн тулд InternMatch-ийг аль хэдийн ашиглаж буй мянга мянган оюутан, компаниудтай нэгдээрэй.
             </p>
             <Button size="lg" variant="secondary" className="mt-8" asChild>
               <Link href="/signup">
-                Create Free Account
+                Өөрийн бүртгэлийг та яг одоо үүсгээрэй.
                 <ArrowRight className="ml-2 w-4 h-4" />
               </Link>
             </Button>
@@ -186,13 +184,12 @@ export default function LandingPage() {
               <span className="font-semibold text-foreground">InternMatch</span>
             </div>
             <div className="flex items-center gap-6 text-sm text-muted-foreground">
-              <Link href="#" className="hover:text-foreground transition-colors">About</Link>
-              <Link href="#" className="hover:text-foreground transition-colors">Contact</Link>
-              <Link href="#" className="hover:text-foreground transition-colors">Privacy</Link>
-              <Link href="#" className="hover:text-foreground transition-colors">Terms</Link>
+              <Link href="#" className="hover:text-foreground transition-colors">Бидний тухай</Link>
+              <Link href="#" className="hover:text-foreground transition-colors">Холбогдох</Link>
+              <Link href="#" className="hover:text-foreground transition-colors">Үйлчилгээ</Link>
             </div>
             <div className="text-sm text-muted-foreground">
-              2026 InternMatch. All rights reserved.
+              2026 InternMatch. Бүх эрх хуулийн хуулсанд хүлээлэгдсэн.
             </div>
           </div>
         </div>
