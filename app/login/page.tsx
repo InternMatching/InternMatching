@@ -10,27 +10,44 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Briefcase, Loader2 } from "lucide-react"
+import { LOGIN } from "../graphql/mutations"
+import { useMutation } from "@apollo/client/react";
+import { AuthPayload, LoginInput } from "@/lib/type"
 
 export default function LoginPage() {
     const router = useRouter()
-    const [isLoading, setIsLoading] = useState(false)
     const [formData, setFormData] = useState({
         email: "",
         password: "",
     })
 
+    const [login, { loading, error: mutationError }] = useMutation<{ login: AuthPayload }, { input: LoginInput }>(LOGIN)
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
-        setIsLoading(true)
 
-        // Simulate API call - replace with actual GraphQL mutation
-        await new Promise(resolve => setTimeout(resolve, 1000))
+        try {
+            const { data } = await login({
+                variables: {
+                    input: {
+                        email: formData.email,
+                        password: formData.password,
+                    },
+                },
+            })
 
-        // For demo purposes, redirect based on email domain
-        if (formData.email.includes("company")) {
-            router.push("/company/dashboard")
-        } else {
-            router.push("/student/dashboard")
+            if (data?.login?.token) {
+                localStorage.setItem("token", data.login.token)
+
+                const userRole = data.login.user.role
+                if (userRole === "COMPANY" || userRole.toLowerCase() === "company") {
+                    router.push("/company/dashboard")
+                } else {
+                    router.push("/student/dashboard")
+                }
+            }
+        } catch (err) {
+            console.error("Login error:", err)
         }
     }
 
@@ -58,6 +75,11 @@ export default function LoginPage() {
                         </CardDescription>
                     </CardHeader>
                     <CardContent>
+                        {mutationError && (
+                            <div className="mb-4 p-3 bg-destructive/10 border border-destructive/20 text-destructive text-sm rounded-lg">
+                                {mutationError.message}
+                            </div>
+                        )}
                         <form onSubmit={handleSubmit} className="space-y-4">
                             <div className="space-y-2">
                                 <Label htmlFor="email">Email</Label>
@@ -86,8 +108,8 @@ export default function LoginPage() {
                                     required
                                 />
                             </div>
-                            <Button type="submit" className="w-full" disabled={isLoading}>
-                                {isLoading ? (
+                            <Button type="submit" className="w-full" disabled={loading}>
+                                {loading ? (
                                     <>
                                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                                         Signing in...

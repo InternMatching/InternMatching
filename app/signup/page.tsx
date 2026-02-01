@@ -10,6 +10,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Briefcase, Loader2, GraduationCap, Building2 } from "lucide-react"
+import { useMutation } from "@apollo/client/react";
+import { SIGNUP } from "../graphql/mutations"
+import { AuthPayload, SignupInput } from "@/lib/type"
+
 import { cn } from "@/lib/utils"
 
 type UserRole = "STUDENT" | "COMPANY"
@@ -17,7 +21,9 @@ type UserRole = "STUDENT" | "COMPANY"
 export default function SignupPage() {
     const router = useRouter()
     const searchParams = useSearchParams()
-    const [isLoading, setIsLoading] = useState(false)
+
+    const [signup, { loading, error: mutationError }] = useMutation<{ signup: AuthPayload }, { input: SignupInput }>(SIGNUP)
+
     const [selectedRole, setSelectedRole] = useState<UserRole>("STUDENT")
     const [formData, setFormData] = useState({
         email: "",
@@ -42,16 +48,29 @@ export default function SignupPage() {
             return
         }
 
-        setIsLoading(true)
+        try {
+            const { data } = await signup({
+                variables: {
+                    input: {
+                        email: formData.email,
+                        password: formData.password,
+                        role: selectedRole.toLowerCase(), // Backend expects lowercase roles
+                    },
+                },
+            })
 
-        // Simulate API call - replace with actual GraphQL mutation
-        await new Promise(resolve => setTimeout(resolve, 1000))
+            if (data?.signup?.token) {
+                localStorage.setItem("token", data.signup.token)
 
-        // Redirect based on selected role
-        if (selectedRole === "COMPANY") {
-            router.push("/company/dashboard")
-        } else {
-            router.push("/student/dashboard")
+                // Redirect based on selected role
+                if (selectedRole === "COMPANY") {
+                    router.push("/company/dashboard")
+                } else {
+                    router.push("/student/dashboard")
+                }
+            }
+        } catch (err) {
+            console.error("Signup error:", err)
         }
     }
 
@@ -78,6 +97,11 @@ export default function SignupPage() {
                         </CardDescription>
                     </CardHeader>
                     <CardContent>
+                        {mutationError && (
+                            <div className="mb-4 p-3 bg-destructive/10 border border-destructive/20 text-destructive text-sm rounded-lg">
+                                {mutationError.message}
+                            </div>
+                        )}
                         <form onSubmit={handleSubmit} className="space-y-4">
                             {/* Role Selection */}
                             <div className="space-y-2">
@@ -161,8 +185,8 @@ export default function SignupPage() {
                                     required
                                 />
                             </div>
-                            <Button type="submit" className="w-full" disabled={isLoading}>
-                                {isLoading ? (
+                            <Button type="submit" className="w-full" disabled={loading}>
+                                {loading ? (
                                     <>
                                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                                         Creating account...

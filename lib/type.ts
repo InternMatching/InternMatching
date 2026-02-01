@@ -11,6 +11,22 @@ export interface User {
   companyProfile?: CompanyProfile;
 }
 
+export interface AuthPayload {
+  token: string;
+  user: User;
+}
+
+export interface LoginInput {
+  email: string;
+  password?: string;
+}
+
+export interface SignupInput {
+  email: string;
+  password?: string;
+  role: string;
+}
+
 // Student Profile Types
 export type ExperienceLevel = 'NO_EXPERIENCE' | 'SOME_EXPERIENCE' | 'EXPERIENCED';
 
