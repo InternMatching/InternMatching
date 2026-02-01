@@ -1,9 +1,22 @@
+"use client"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { useEffect } from "react"
 import { GraduationCap, Building2, Users, Briefcase, ArrowRight, CheckCircle2 } from "lucide-react"
-
+import Lenis from 'lenis'
 export default function LandingPage() {
+
+  useEffect(() => {
+    const lenis = new Lenis()
+    function raf(time: any) {
+      lenis.raf(time);
+      requestAnimationFrame(raf);
+    }
+
+    requestAnimationFrame(raf);
+  }, [])
+
   return (
     <div className="min-h-screen bg-background">
 
