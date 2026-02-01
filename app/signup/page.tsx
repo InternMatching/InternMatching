@@ -54,7 +54,7 @@ export default function SignupPage() {
                     input: {
                         email: formData.email,
                         password: formData.password,
-                        role: selectedRole.toLowerCase(), // Backend expects lowercase roles
+                        role: selectedRole.toLowerCase(),
                     },
                 },
             })
@@ -62,7 +62,6 @@ export default function SignupPage() {
             if (data?.signup?.token) {
                 localStorage.setItem("token", data.signup.token)
 
-                // Redirect based on selected role
                 if (selectedRole === "COMPANY") {
                     router.push("/company")
                 } else {
@@ -91,9 +90,9 @@ export default function SignupPage() {
             <main className="flex-1 flex items-center justify-center px-4 pb-16">
                 <Card className="w-full max-w-md shadow-lg">
                     <CardHeader className="text-center">
-                        <CardTitle className="text-2xl">Create an account</CardTitle>
+                        <CardTitle className="text-2xl">Бүртгэлээ үүсгэх</CardTitle>
                         <CardDescription>
-                            Get started with InternMatch today
+                            Өнөөдрийг бидэнтэй хамт эхлээрэй.
                         </CardDescription>
                     </CardHeader>
                     <CardContent>
@@ -105,7 +104,7 @@ export default function SignupPage() {
                         <form onSubmit={handleSubmit} className="space-y-4">
                             {/* Role Selection */}
                             <div className="space-y-2">
-                                <Label>I am a</Label>
+                                <Label>Би бол</Label>
                                 <div className="grid grid-cols-2 gap-3">
                                     <button
                                         type="button"
@@ -125,7 +124,7 @@ export default function SignupPage() {
                                             "text-sm font-medium",
                                             selectedRole === "STUDENT" ? "text-primary" : "text-muted-foreground"
                                         )}>
-                                            Student
+                                            Оюутан
                                         </span>
                                     </button>
                                     <button
@@ -146,14 +145,14 @@ export default function SignupPage() {
                                             "text-sm font-medium",
                                             selectedRole === "COMPANY" ? "text-primary" : "text-muted-foreground"
                                         )}>
-                                            Company
+                                            Компань
                                         </span>
                                     </button>
                                 </div>
                             </div>
 
                             <div className="space-y-2">
-                                <Label htmlFor="email">Email</Label>
+                                <Label htmlFor="email">И-майл</Label>
                                 <Input
                                     id="email"
                                     type="email"
@@ -164,22 +163,22 @@ export default function SignupPage() {
                                 />
                             </div>
                             <div className="space-y-2">
-                                <Label htmlFor="password">Password</Label>
+                                <Label htmlFor="password">Нууц үг</Label>
                                 <Input
                                     id="password"
                                     type="password"
-                                    placeholder="Create a password"
+                                    placeholder="Нууц үгээ оруулна уу"
                                     value={formData.password}
                                     onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                                     required
                                 />
                             </div>
                             <div className="space-y-2">
-                                <Label htmlFor="confirmPassword">Confirm Password</Label>
+                                <Label htmlFor="confirmPassword">Нууц үг баталгаажуулах</Label>
                                 <Input
                                     id="confirmPassword"
                                     type="password"
-                                    placeholder="Confirm your password"
+                                    placeholder="Нууц үг баталгаажуулах"
                                     value={formData.confirmPassword}
                                     onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
                                     required
@@ -189,10 +188,10 @@ export default function SignupPage() {
                                 {loading ? (
                                     <>
                                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                        Creating account...
+                                        Бүртгэлийг үүсгэж байна...
                                     </>
                                 ) : (
-                                    "Create account"
+                                    "Бүртгүүлэх"
                                 )}
                             </Button>
                         </form>
@@ -205,9 +204,9 @@ export default function SignupPage() {
                         </p>
 
                         <div className="mt-6 text-center text-sm text-muted-foreground">
-                            Already have an account?{" "}
-                            <Link href="/login" className="text-primary hover:underline font-medium">
-                                Sign in
+                            Та аль хэдийн бүртгэлтэй юу?
+                            <Link href="/login" className="text-primary hover:underline font-medium pl-2">
+                                Нэвтрэх
                             </Link>
                         </div>
                     </CardContent>

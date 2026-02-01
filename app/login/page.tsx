@@ -71,9 +71,9 @@ export default function LoginPage() {
             <main className="flex-1 flex items-center justify-center px-4 pb-16">
                 <Card className="w-full max-w-md shadow-lg">
                     <CardHeader className="text-center">
-                        <CardTitle className="text-2xl">Welcome back</CardTitle>
+                        <CardTitle className="text-2xl">Сайнуу , юу байнадаа.</CardTitle>
                         <CardDescription>
-                            Sign in to your account to continue
+                            Бүртгэлээрээ нэвтрэн цааш үргэлжилнэ үү.
                         </CardDescription>
                     </CardHeader>
                     <CardContent>
@@ -84,7 +84,7 @@ export default function LoginPage() {
                         )}
                         <form onSubmit={handleSubmit} className="space-y-4">
                             <div className="space-y-2">
-                                <Label htmlFor="email">Email</Label>
+                                <Label htmlFor="email">И-майл</Label>
                                 <Input
                                     id="email"
                                     type="email"
@@ -96,15 +96,15 @@ export default function LoginPage() {
                             </div>
                             <div className="space-y-2">
                                 <div className="flex items-center justify-between">
-                                    <Label htmlFor="password">Password</Label>
+                                    <Label htmlFor="password">Нууц үг</Label>
                                     <Link href="#" className="text-sm text-primary hover:underline">
-                                        Forgot password?
+                                        Нууц үгээ мартсан?
                                     </Link>
                                 </div>
                                 <Input
                                     id="password"
                                     type="password"
-                                    placeholder="Enter your password"
+                                    placeholder="Нууц үгээ оруулна уу"
                                     value={formData.password}
                                     onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                                     required
@@ -114,18 +114,18 @@ export default function LoginPage() {
                                 {loading ? (
                                     <>
                                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                        Signing in...
+                                        Нэвтэрч байна...
                                     </>
                                 ) : (
-                                    "Sign in"
+                                    "Нэвтрэх"
                                 )}
                             </Button>
                         </form>
 
                         <div className="mt-6 text-center text-sm text-muted-foreground">
-                            Don't have an account?{" "}
-                            <Link href="/signup" className="text-primary hover:underline font-medium">
-                                Sign up
+                            Бүртгүүлж хараахан чадаагүй?
+                            <Link href="/signup" className="text-primary hover:underline font-medium pl-3">
+                                Бүртгүүлэх
                             </Link>
                         </div>
                     </CardContent>
