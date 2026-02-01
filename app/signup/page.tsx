@@ -64,9 +64,9 @@ export default function SignupPage() {
 
                 // Redirect based on selected role
                 if (selectedRole === "COMPANY") {
-                    router.push("/company/dashboard")
+                    router.push("/company")
                 } else {
-                    router.push("/student/dashboard")
+                    router.push("/student")
                 }
             }
         } catch (err) {

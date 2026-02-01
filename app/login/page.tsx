@@ -41,9 +41,9 @@ export default function LoginPage() {
 
                 const userRole = data.login.user.role
                 if (userRole === "COMPANY" || userRole.toLowerCase() === "company") {
-                    router.push("/company/dashboard")
+                    router.push("/company")
                 } else {
-                    router.push("/student/dashboard")
+                    router.push("/student")
                 }
             }
         } catch (err) {
