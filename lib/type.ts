@@ -108,3 +108,17 @@ export interface CompanyDashboardStats {
   totalApplicants: number;
   pendingReviews: number;
 }
+
+// Password Reset Types
+export interface RequestPasswordResetData {
+  requestPasswordReset: boolean;
+}
+
+export interface ResetPasswordData {
+  resetPassword: boolean;
+}
+
+export interface ResetPasswordInput {
+  token: string;
+  newPassword: string;
+}

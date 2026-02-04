@@ -97,7 +97,7 @@ export default function LoginPage() {
                             <div className="space-y-2">
                                 <div className="flex items-center justify-between">
                                     <Label htmlFor="password">Нууц үг</Label>
-                                    <Link href="#" className="text-sm text-primary hover:underline">
+                                    <Link href="/forgot-password" className="text-sm text-primary hover:underline">
                                         Нууц үгээ мартсан?
                                     </Link>
                                 </div>
