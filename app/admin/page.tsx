@@ -117,7 +117,7 @@ export default function AdminDashboardPage() {
     }
 
     const MetricCard = ({ title, value, icon: Icon, trend, trendValue, color }: MetricCardProps) => (
-        <Card className="overflow-hidden border-none shadow-sm transition-all duration-300 hover:shadow-lg group bg-white dark:bg-slate-900">
+        <Card className="overflow-hidden border-none shadow-sm transition-shadow duration-300 hover:shadow-lg group bg-white dark:bg-slate-900">
             <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                     <div className={`p-3 rounded-2xl ${color} bg-opacity-10 dark:bg-opacity-20 transition-transform group-hover:scale-110`}>
@@ -212,13 +212,13 @@ export default function AdminDashboardPage() {
                         <div className="flex items-center gap-1 bg-slate-50 dark:bg-slate-800 p-1 rounded-xl w-full sm:w-auto overflow-x-auto">
                             <button
                                 onClick={() => setPeriod("DAILY")}
-                                className={`flex-1 sm:flex-none px-3 py-1.5 text-[10px] sm:text-xs font-bold rounded-lg transition-all whitespace-nowrap ${period === 'DAILY' ? 'bg-white dark:bg-slate-700 shadow-sm text-primary' : 'text-slate-500 hover:text-slate-700'}`}
+                                className={`flex-1 sm:flex-none px-3 py-1.5 text-[10px] sm:text-xs font-bold rounded-lg transition-colors duration-200 whitespace-nowrap ${period === 'DAILY' ? 'bg-white dark:bg-slate-700 shadow-sm text-primary' : 'text-slate-500 hover:text-slate-700'}`}
                             >
                                 Өдрөөр
                             </button>
                             <button
                                 onClick={() => setPeriod("WEEKLY")}
-                                className={`flex-1 sm:flex-none px-3 py-1.5 text-[10px] sm:text-xs font-bold rounded-lg transition-all whitespace-nowrap ${period === 'WEEKLY' ? 'bg-white dark:bg-slate-700 shadow-sm text-primary' : 'text-slate-500 hover:text-slate-700'}`}
+                                className={`flex-1 sm:flex-none px-3 py-1.5 text-[10px] sm:text-xs font-bold rounded-lg transition-colors duration-200 whitespace-nowrap ${period === 'WEEKLY' ? 'bg-white dark:bg-slate-700 shadow-sm text-primary' : 'text-slate-500 hover:text-slate-700'}`}
                             >
                                 Долоо хоногоор
                             </button>
@@ -300,12 +300,12 @@ export default function AdminDashboardPage() {
                                 const config = getActivityConfig(activity.type);
                                 return (
                                     <div key={activity.id} className="flex gap-4 group cursor-pointer relative z-10">
-                                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 border-2 border-white dark:border-slate-900 transition-transform group-hover:scale-110 shadow-sm ${config.color}`}>
+                                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 border-2 border-white dark:border-slate-900 transition-transform duration-200 group-hover:scale-110 shadow-sm ${config.color}`}>
                                             <config.icon className="w-5 h-5" />
                                         </div>
                                         <div className="flex-1 space-y-0.5 min-w-0">
                                             <div className="flex justify-between items-start gap-2">
-                                                <p className="text-sm font-bold text-slate-900 dark:text-slate-100 group-hover:text-primary transition-colors truncate">
+                                                <p className="text-sm font-bold text-slate-900 dark:text-slate-100 group-hover:text-primary transition-colors duration-200 truncate">
                                                     {activity.user}
                                                 </p>
                                                 <span className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter shrink-0">
@@ -323,7 +323,7 @@ export default function AdminDashboardPage() {
                         </div>
                     </CardContent>
                     <div className="p-4 border-t border-slate-50 dark:border-slate-800/50 bg-slate-50/30 dark:bg-slate-800/30">
-                        <Button variant="ghost" className="w-full text-[10px] font-extrabold uppercase tracking-widest text-slate-500 hover:text-primary hover:bg-white dark:hover:bg-slate-800 rounded-xl transition-all h-10">
+                        <Button variant="ghost" className="w-full text-[10px] font-extrabold uppercase tracking-widest text-slate-500 hover:text-primary hover:bg-white dark:hover:bg-slate-800 rounded-xl transition-colors duration-200 h-10">
                             Бүгдийг харах
                             <ArrowUpRight className="w-4 h-4 ml-1" />
                         </Button>
@@ -347,7 +347,7 @@ export default function AdminDashboardPage() {
                     </div>
                     <Button
                         onClick={() => (window as any).location.href = "/admin/verify"}
-                        className="w-full md:w-auto bg-amber-600 hover:bg-amber-700 text-white font-bold h-11 sm:h-12 px-6 sm:px-8 rounded-xl sm:rounded-2xl shadow-xl shadow-amber-200 dark:shadow-none border-none group transition-all"
+                        className="w-full md:w-auto bg-amber-600 hover:bg-amber-700 text-white font-bold h-11 sm:h-12 px-6 sm:px-8 rounded-xl sm:rounded-2xl shadow-xl shadow-amber-200 dark:shadow-none border-none group transition-opacity duration-200"
                     >
                         Одоо очих
                         <ChevronLeft className="w-4 h-4 sm:w-5 sm:h-5 ml-2 rotate-180" />
