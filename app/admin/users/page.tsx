@@ -157,7 +157,7 @@ export default function UsersManagementPage() {
                                 <button
                                     key={role}
                                     onClick={() => setRoleFilter(role)}
-                                    className={`px-4 py-1.5 text-xs font-bold rounded-lg capitalize transition-all ${roleFilter === role
+                                    className={`px-4 py-1.5 text-xs font-bold rounded-lg capitalize transition-colors duration-200 ${roleFilter === role
                                         ? 'bg-white dark:bg-slate-700 text-primary shadow-sm'
                                         : 'text-slate-500 hover:text-slate-900 dark:hover:text-slate-300'
                                         }`}

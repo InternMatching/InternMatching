@@ -31,6 +31,18 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { toast } from "sonner"
+import { useQuery } from "@apollo/client/react"
+import { gql } from "@apollo/client"
+import { useTheme } from "next-themes"
+
+const GET_ME = gql`
+  query GetMe {
+    me {
+      id
+      themeColor
+    }
+  }
+`
 
 interface JWTPayload {
     userId: string;
@@ -51,12 +63,30 @@ const navItems = [
     { name: 'Үйлдлийн бүртгэл', href: '/admin/logs', icon: History },
 ]
 
+interface GetMeData {
+    me: {
+        id: string;
+        themeColor?: string;
+    }
+}
+
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
+    const pathname = usePathname()
+    const router = useRouter()
+    const { data: meData } = useQuery<GetMeData>(GET_ME)
+    const { setTheme } = useTheme()
     const [isSidebarOpen, setIsSidebarOpen] = useState(true)
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
     const [user, setUser] = useState<JWTPayload | null>(null)
-    const pathname = usePathname()
-    const router = useRouter()
+    const [hasSyncedTheme, setHasSyncedTheme] = useState(false)
+
+    useEffect(() => {
+        if (meData?.me?.themeColor && !hasSyncedTheme) {
+            const savedTheme = meData.me.themeColor === 'dark' ? 'dark' : 'light'
+            setTheme(savedTheme)
+            setHasSyncedTheme(true)
+        }
+    }, [meData, setTheme, hasSyncedTheme])
 
     useEffect(() => {
         const token = localStorage.getItem("token")
@@ -126,12 +156,12 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                         <Link
                             key={item.href}
                             href={item.href}
-                            className={`flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all group ${isActive
+                            className={`flex items-center gap-3 px-3 py-2.5 rounded-xl transition-colors duration-200 group ${isActive
                                 ? 'bg-primary text-white shadow-lg shadow-primary/25'
                                 : 'text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-slate-100'
                                 }`}
                         >
-                            <item.icon className={`w-5 h-5 shrink-0 ${isActive ? 'text-white' : 'text-slate-400 group-hover:text-primary transition-colors'}`} />
+                            <item.icon className={`w-5 h-5 shrink-0 ${isActive ? 'text-white' : 'text-slate-400 group-hover:text-primary transition-colors duration-200'}`} />
                             <span className={`text-sm font-medium transition-opacity duration-300 ${(isSidebarOpen || isMobile) ? 'opacity-100' : 'opacity-0 invisible w-0'}`}>
                                 {item.name}
                             </span>
@@ -143,7 +173,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             <div className="p-4 border-t border-slate-100 dark:border-slate-800">
                 <button
                     onClick={handleLogout}
-                    className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-500 hover:bg-red-50 hover:text-red-600 transition-all group`}
+                    className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-500 hover:bg-red-50 hover:text-red-600 transition-colors duration-200 group`}
                 >
                     <LogOut className="w-5 h-5 shrink-0 group-hover:text-red-600" />
                     <span className={`text-sm font-medium transition-opacity duration-300 ${(isSidebarOpen || isMobile) ? 'opacity-100' : 'opacity-0 invisible w-0'}`}>
@@ -155,11 +185,11 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     )
 
     return (
-        <div className="flex h-screen bg-slate-50 dark:bg-slate-950 overflow-hidden">
+        <div className="flex h-dvh bg-slate-50 dark:bg-slate-950 overflow-hidden">
             {/* Desktop Sidebar */}
             <aside
                 className={`${isSidebarOpen ? 'w-64' : 'w-20'
-                    } fixed inset-y-0 left-0 z-50 transition-all duration-300 bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 hidden lg:flex flex-col shadow-sm`}
+                    } fixed inset-y-0 left-0 z-50 transition-[width] duration-300 bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 hidden lg:flex flex-col shadow-sm`}
             >
                 <SidebarContent />
             </aside>
@@ -182,7 +212,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             </div>
 
             {/* Main Content Area */}
-            <div className={`flex-1 flex flex-col h-screen overflow-hidden transition-all duration-300 ${isSidebarOpen ? 'lg:ml-64' : 'lg:ml-20'}`}>
+            <div className={`flex-1 flex flex-col h-full min-w-0 transition-[margin] duration-300 ${isSidebarOpen ? 'lg:ml-64' : 'lg:ml-20'}`}>
                 {/* Header */}
                 <header className="h-16 flex items-center justify-between px-4 sm:px-8 border-b border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md sticky top-0 z-40">
                     <div className="flex items-center gap-4">
@@ -211,9 +241,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                                <button className="flex items-center gap-3 p-1 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 transition-all border border-transparent">
+                                <button className="flex items-center gap-3 p-1 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors duration-200 border border-transparent">
                                     <div className="w-8 h-8 rounded-lg bg-indigo-500 flex items-center justify-center text-white text-xs font-bold shadow-md shadow-indigo-200 dark:shadow-none">
-                                        {user.email[0].toUpperCase()}
+                                        {(user.email?.[0] || 'A').toUpperCase()}
                                     </div>
                                     <div className="hidden md:block text-left">
                                         <p className="text-[10px] font-bold text-slate-900 dark:text-white leading-none mb-1">{user.email}</p>
@@ -240,7 +270,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 </header>
 
                 {/* Page Content */}
-                <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 custom-scrollbar">
+                <main className="flex-1 overflow-y-auto overflow-x-hidden p-4 sm:p-6 lg:p-8 custom-scrollbar">
                     {children}
                 </main>
             </div>
