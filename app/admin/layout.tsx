@@ -53,6 +53,7 @@ const navItems = [
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
     const [isSidebarOpen, setIsSidebarOpen] = useState(true)
+    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
     const [user, setUser] = useState<JWTPayload | null>(null)
     const pathname = usePathname()
     const router = useRouter()
@@ -80,6 +81,10 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         }
     }, [router])
 
+    useEffect(() => {
+        setIsMobileMenuOpen(false)
+    }, [pathname])
+
     const handleLogout = () => {
         localStorage.removeItem("token")
         toast.success("Logged out successfully")
@@ -88,90 +93,131 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
     if (!user) return null
 
-    return (
-        <div className="flex h-screen bg-slate-50 dark:bg-slate-950">
-            {/* Sidebar */}
-            <aside
-                className={`${isSidebarOpen ? 'w-64' : 'w-20'
-                    } fixed inset-y-0 left-0 z-50 transition-all duration-300 bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 flex flex-col shadow-sm`}
-            >
-                <div className="h-16 flex items-center justify-between px-6 border-b border-slate-100 dark:border-slate-800">
-                    {isSidebarOpen ? (
-                        <span className="text-xl font-bold bg-gradient-to-r from-primary to-indigo-600 bg-clip-text text-transparent">InternMatch</span>
-                    ) : (
-                        <span className="text-xl font-bold text-primary">IM</span>
-                    )}
+    const SidebarContent = ({ isMobile = false }) => (
+        <div className="flex flex-col h-full">
+            <div className="h-16 flex items-center justify-between px-6 border-b border-slate-100 dark:border-slate-800">
+                {(isSidebarOpen || isMobile) ? (
+                    <span className="text-xl font-bold bg-gradient-to-r from-primary to-indigo-600 bg-clip-text text-transparent">InternMatch</span>
+                ) : (
+                    <span className="text-xl font-bold text-primary">IM</span>
+                )}
+                {!isMobile && (
                     <button
                         onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-                        className="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 transition-colors"
+                        className="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 transition-colors hidden lg:block"
                     >
                         <ChevronLeft className={`w-5 h-5 transition-transform duration-300 ${!isSidebarOpen ? 'rotate-180' : ''}`} />
                     </button>
-                </div>
-
-                <nav className="flex-1 overflow-y-auto py-6 px-3 space-y-1 custom-scrollbar">
-                    {navItems.map((item) => {
-                        const isActive = pathname === item.href
-                        return (
-                            <Link
-                                key={item.href}
-                                href={item.href}
-                                className={`flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all group ${isActive
-                                    ? 'bg-primary text-white shadow-lg shadow-primary/25'
-                                    : 'text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-slate-100'
-                                    }`}
-                            >
-                                <item.icon className={`w-5 h-5 shrink-0 ${isActive ? 'text-white' : 'text-slate-400 group-hover:text-primary transition-colors'}`} />
-                                <span className={`text-sm font-medium transition-opacity duration-300 ${!isSidebarOpen ? 'opacity-0 invisible w-0' : 'opacity-100'}`}>
-                                    {item.name}
-                                </span>
-                            </Link>
-                        )
-                    })}
-                </nav>
-
-                <div className="p-4 border-t border-slate-100 dark:border-slate-800">
+                )}
+                {isMobile && (
                     <button
-                        onClick={handleLogout}
-                        className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-500 hover:bg-red-50 hover:text-red-600 transition-all group`}
+                        onClick={() => setIsMobileMenuOpen(false)}
+                        className="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 transition-colors lg:hidden"
                     >
-                        <LogOut className="w-5 h-5 shrink-0 group-hover:text-red-600" />
-                        <span className={`text-sm font-medium transition-opacity duration-300 ${!isSidebarOpen ? 'opacity-0 invisible w-0' : 'opacity-100'}`}>
-                            Гарах
-                        </span>
+                        <ChevronLeft className="w-5 h-5" />
                     </button>
-                </div>
+                )}
+            </div>
+
+            <nav className="flex-1 overflow-y-auto py-6 px-3 space-y-1 custom-scrollbar">
+                {navItems.map((item) => {
+                    const isActive = pathname === item.href
+                    return (
+                        <Link
+                            key={item.href}
+                            href={item.href}
+                            className={`flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all group ${isActive
+                                ? 'bg-primary text-white shadow-lg shadow-primary/25'
+                                : 'text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-slate-100'
+                                }`}
+                        >
+                            <item.icon className={`w-5 h-5 shrink-0 ${isActive ? 'text-white' : 'text-slate-400 group-hover:text-primary transition-colors'}`} />
+                            <span className={`text-sm font-medium transition-opacity duration-300 ${(isSidebarOpen || isMobile) ? 'opacity-100' : 'opacity-0 invisible w-0'}`}>
+                                {item.name}
+                            </span>
+                        </Link>
+                    )
+                })}
+            </nav>
+
+            <div className="p-4 border-t border-slate-100 dark:border-slate-800">
+                <button
+                    onClick={handleLogout}
+                    className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-500 hover:bg-red-50 hover:text-red-600 transition-all group`}
+                >
+                    <LogOut className="w-5 h-5 shrink-0 group-hover:text-red-600" />
+                    <span className={`text-sm font-medium transition-opacity duration-300 ${(isSidebarOpen || isMobile) ? 'opacity-100' : 'opacity-0 invisible w-0'}`}>
+                        Гарах
+                    </span>
+                </button>
+            </div>
+        </div>
+    )
+
+    return (
+        <div className="flex h-screen bg-slate-50 dark:bg-slate-950 overflow-hidden">
+            {/* Desktop Sidebar */}
+            <aside
+                className={`${isSidebarOpen ? 'w-64' : 'w-20'
+                    } fixed inset-y-0 left-0 z-50 transition-all duration-300 bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 hidden lg:flex flex-col shadow-sm`}
+            >
+                <SidebarContent />
             </aside>
 
-            {/* Main Content */}
-            <main className={`flex-1 transition-all duration-300 ${isSidebarOpen ? 'ml-64' : 'ml-20'} flex flex-col min-h-screen`}>
-                {/* Topbar */}
-                <header className="h-16 fixed top-0 right-0 z-40 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 flex items-center justify-between px-8" style={{ width: `calc(100% - ${isSidebarOpen ? '16rem' : '5rem'})` }}>
-                    <div className="flex-1 max-w-xl">
-                        <div className="relative group">
-                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 group-focus-within:text-primary transition-colors" />
-                            <Input
-                                placeholder="Бүх хэсгээс хайх..."
-                                className="pl-10 h-10 bg-slate-100/50 dark:bg-slate-800/50 border-none rounded-xl focus-visible:ring-1 focus-visible:ring-primary focus-visible:bg-white dark:focus-visible:bg-slate-900 transition-all font-medium"
-                            />
+            {/* Mobile Sidebar (Drawer) */}
+            <div
+                className={`fixed inset-0 z-[60] lg:hidden transition-opacity duration-300 ${isMobileMenuOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'
+                    }`}
+            >
+                <div
+                    className="absolute inset-0 bg-slate-900/50 backdrop-blur-sm"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                />
+                <aside
+                    className={`absolute inset-y-0 left-0 w-64 bg-white dark:bg-slate-900 shadow-2xl transition-transform duration-300 ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'
+                        }`}
+                >
+                    <SidebarContent isMobile />
+                </aside>
+            </div>
+
+            {/* Main Content Area */}
+            <div className={`flex-1 flex flex-col h-screen overflow-hidden transition-all duration-300 ${isSidebarOpen ? 'lg:ml-64' : 'lg:ml-20'}`}>
+                {/* Header */}
+                <header className="h-16 flex items-center justify-between px-4 sm:px-8 border-b border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md sticky top-0 z-40">
+                    <div className="flex items-center gap-4">
+                        <button
+                            onClick={() => setIsMobileMenuOpen(true)}
+                            className="p-2 -ml-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 lg:hidden text-slate-500"
+                        >
+                            <Menu className="w-6 h-6" />
+                        </button>
+                        <div className="hidden sm:block flex-1 max-w-xl">
+                            <div className="relative group">
+                                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 group-focus-within:text-primary transition-colors" />
+                                <Input
+                                    placeholder="Бүх хэсгээс хайх..."
+                                    className="pl-10 h-10 w-64 md:w-80 bg-slate-100/50 dark:bg-slate-800/50 border-none rounded-xl focus-visible:ring-1 focus-visible:ring-primary focus-visible:bg-white dark:focus-visible:bg-slate-900 transition-all font-medium"
+                                />
+                            </div>
                         </div>
                     </div>
 
-                    <div className="flex items-center gap-4">
-                        <Button variant="ghost" size="icon" className="relative h-10 w-10 text-slate-500 hover:bg-slate-100 rounded-xl">
+                    <div className="flex items-center gap-2 sm:gap-4">
+                        <Button variant="ghost" size="icon" className="h-10 w-10 text-slate-500 hover:bg-slate-100 rounded-xl relative">
                             <Bell className="w-5 h-5" />
-                            <span className="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full border-2 border-white"></span>
+                            <span className="absolute top-2 right-2 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white dark:border-slate-900"></span>
                         </Button>
 
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                                <button className="flex items-center gap-3 p-1.5 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 transition-all border border-transparent hover:border-slate-200 dark:hover:border-slate-700">
+                                <button className="flex items-center gap-3 p-1 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 transition-all border border-transparent">
                                     <div className="w-8 h-8 rounded-lg bg-indigo-500 flex items-center justify-center text-white text-xs font-bold shadow-md shadow-indigo-200 dark:shadow-none">
                                         {user.email[0].toUpperCase()}
                                     </div>
-                                    <div className="hidden lg:block text-left">
-                                        <p className="text-xs font-bold text-slate-900 dark:text-white">{user.email}</p>
-                                        <p className="text-[10px] font-medium text-slate-400 uppercase tracking-widest">Админ</p>
+                                    <div className="hidden md:block text-left">
+                                        <p className="text-[10px] font-bold text-slate-900 dark:text-white leading-none mb-1">{user.email}</p>
+                                        <p className="text-[10px] font-medium text-slate-400 uppercase tracking-widest leading-none">Админ</p>
                                     </div>
                                 </button>
                             </DropdownMenuTrigger>
@@ -193,11 +239,11 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                     </div>
                 </header>
 
-                {/* Content Area */}
-                <div className="mt-16 p-8 flex-1 overflow-y-auto">
+                {/* Page Content */}
+                <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 custom-scrollbar">
                     {children}
-                </div>
-            </main>
+                </main>
+            </div>
         </div>
     )
 }
