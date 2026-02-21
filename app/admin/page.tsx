@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from "react"
 import { useQuery } from "@apollo/client/react"
-import { gql } from "@apollo/client"
+import { ADMIN_STATS } from "../graphql/mutations"
 import {
     Users,
     UserRound,
@@ -33,21 +33,6 @@ import {
     Bar,
     Cell
 } from "recharts"
-
-const ADMIN_STATS = gql`
-  query AdminStats {
-    adminStats {
-      totalUsers
-      totalStudents
-      totalCompanies
-      activeJobs
-      totalApplications
-      pendingVerifications
-      newUsersToday
-    }
-  }
-`
-
 interface AdminStats {
     totalUsers: number;
     totalStudents: number;
@@ -56,25 +41,65 @@ interface AdminStats {
     totalApplications: number;
     pendingVerifications: number;
     newUsersToday: number;
+    growthData: {
+        name: string;
+        users: number;
+        apps: number;
+    }[];
+    recentActivities: {
+        id: string;
+        user: string;
+        action: string;
+        timestamp: string;
+        type: string;
+    }[];
 }
 
 interface AdminStatsData {
     adminStats: AdminStats;
 }
 
-const mockGrowthData = [
-    { name: 'Дав', users: 120, apps: 80 },
-    { name: 'Мяг', users: 180, apps: 110 },
-    { name: 'Лха', users: 150, apps: 140 },
-    { name: 'Пүр', users: 220, apps: 190 },
-    { name: 'Баа', users: 300, apps: 250 },
-    { name: 'Бям', users: 250, apps: 200 },
-    { name: 'Ням', users: 320, apps: 280 },
-]
-
 export default function AdminDashboardPage() {
-    const { data, loading, error } = useQuery<AdminStatsData>(ADMIN_STATS)
+    const [period, setPeriod] = useState<"DAILY" | "WEEKLY">("DAILY")
+    const { data, loading, error } = useQuery<AdminStatsData>(ADMIN_STATS, {
+        variables: { period },
+        pollInterval: 10000, // Poll every 10 seconds
+    })
     const [stats, setStats] = useState<AdminStats | null>(null)
+
+    const formatRelativeTime = (isoString: string) => {
+        const now = new Date();
+        const past = new Date(isoString);
+        const diffInMs = now.getTime() - past.getTime();
+        const diffInMins = Math.floor(diffInMs / (1000 * 60));
+        const diffInHours = Math.floor(diffInMs / (1000 * 60 * 60));
+        const diffInDays = Math.floor(diffInMs / (1000 * 60 * 60 * 24));
+
+        if (diffInMins < 1) return "Дөнгөж сая";
+        if (diffInMins < 60) return `${diffInMins} мин өмнө`;
+        if (diffInHours < 24) return `${diffInHours} цаг өмнө`;
+        if (diffInDays === 1) return "Өчигдөр";
+        return `${diffInDays} өдрийн өмнө`;
+    };
+
+    const getActivityConfig = (type: string) => {
+        switch (type) {
+            case 'STUDENT_SIGNUP':
+                return { icon: UserRound, color: "text-emerald-500 bg-emerald-50" };
+            case 'STUDENT_PROFILE_CREATED':
+                return { icon: UserRound, color: "text-emerald-600 bg-emerald-100" };
+            case 'COMPANY_SIGNUP':
+                return { icon: ShieldCheck, color: "text-amber-500 bg-amber-50" };
+            case 'COMPANY_PROFILE_CREATED':
+                return { icon: Building2, color: "text-blue-500 bg-blue-50" };
+            case 'JOB_POSTED':
+                return { icon: Briefcase, color: "text-indigo-500 bg-indigo-50" };
+            case 'APPLICATION_SUBMITTED':
+                return { icon: ClipboardList, color: "text-purple-500 bg-purple-50" };
+            default:
+                return { icon: Activity, color: "text-slate-500 bg-slate-100" };
+        }
+    };
 
     useEffect(() => {
         if (data) {
@@ -118,27 +143,27 @@ export default function AdminDashboardPage() {
     )
 
     return (
-        <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
+        <div className="space-y-6 sm:space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 pb-2">
                 <div>
-                    <h1 className="text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">Системийн тойм</h1>
-                    <p className="text-slate-500 dark:text-slate-400 font-medium">Платформын ерөнхий мэдээлэл болон бодит цагийн үзүүлэлтүүд.</p>
+                    <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">Системийн тойм</h1>
+                    <p className="text-sm sm:text-base text-slate-500 dark:text-slate-400 font-medium">Платформын ерөнхий мэдээлэл болон үзүүлэлтүүд.</p>
                 </div>
-                <div className="flex items-center gap-3">
-                    <Button variant="outline" className="rounded-xl border-slate-200 dark:border-slate-800 bg-white font-bold h-11 px-6 shadow-sm">
+                <div className="flex flex-wrap items-center gap-3">
+                    <Button variant="outline" className="flex-1 sm:flex-none rounded-xl border-slate-200 dark:border-slate-800 bg-white font-bold h-10 px-4 shadow-sm text-xs">
                         <Clock className="w-4 h-4 mr-2" />
-                        Шууд дамжуулалт
+                        Шууд
                     </Button>
-                    <Button className="rounded-xl shadow-xl shadow-primary/20 h-11 px-6 font-bold">
+                    <Button className="flex-1 sm:flex-none rounded-xl shadow-xl shadow-primary/20 h-10 px-4 font-bold text-xs">
                         <TrendingUp className="w-4 h-4 mr-2" />
-                        Гүйцэтгэлийн тайлан
+                        Тайлан
                     </Button>
                 </div>
             </div>
 
-            {/* Metrics */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 sm:gap-6">
                 <MetricCard
                     title="Нийт хэрэглэгчид"
                     value={stats?.totalUsers}
@@ -156,7 +181,7 @@ export default function AdminDashboardPage() {
                     color="bg-emerald-600"
                 />
                 <MetricCard
-                    title="Баталгаажсан компаниуд"
+                    title="Компаниуд"
                     value={stats?.totalCompanies}
                     icon={Building2}
                     trend="up"
@@ -173,26 +198,36 @@ export default function AdminDashboardPage() {
                 />
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-8">
                 {/* Growth Chart */}
                 <Card className="lg:col-span-2 border-none shadow-sm bg-white dark:bg-slate-900 overflow-hidden">
-                    <CardHeader className="flex flex-row items-center justify-between pb-8 border-b border-slate-50 dark:border-slate-800/50">
-                        <div>
-                            <CardTitle className="text-xl font-bold flex items-center gap-2">
+                    <CardHeader className="flex flex-col sm:flex-row items-center justify-between gap-4 pb-6 border-b border-slate-50 dark:border-slate-800/50">
+                        <div className="text-center sm:text-left">
+                            <CardTitle className="text-lg sm:text-xl font-bold flex items-center justify-center sm:justify-start gap-2">
                                 <Activity className="w-5 h-5 text-primary" />
                                 Өсөлтийн хурд
                             </CardTitle>
-                            <CardDescription className="text-sm font-medium">Бүртгэл болон өргөдлийн тооны өөрчлөлтийг харьцуулах</CardDescription>
+                            <CardDescription className="text-xs sm:text-sm font-medium">Регистр болон өргөдлийн тоон өөрчлөлт</CardDescription>
                         </div>
-                        <div className="flex items-center gap-2 bg-slate-50 dark:bg-slate-800 p-1 rounded-xl">
-                            <button className="px-3 py-1 text-xs font-bold rounded-lg bg-white dark:bg-slate-700 shadow-sm text-primary">Өдрөөр</button>
-                            <button className="px-3 py-1 text-xs font-medium rounded-lg text-slate-500 hover:text-slate-700">Долоо хоногоор</button>
+                        <div className="flex items-center gap-1 bg-slate-50 dark:bg-slate-800 p-1 rounded-xl w-full sm:w-auto overflow-x-auto">
+                            <button
+                                onClick={() => setPeriod("DAILY")}
+                                className={`flex-1 sm:flex-none px-3 py-1.5 text-[10px] sm:text-xs font-bold rounded-lg transition-all whitespace-nowrap ${period === 'DAILY' ? 'bg-white dark:bg-slate-700 shadow-sm text-primary' : 'text-slate-500 hover:text-slate-700'}`}
+                            >
+                                Өдрөөр
+                            </button>
+                            <button
+                                onClick={() => setPeriod("WEEKLY")}
+                                className={`flex-1 sm:flex-none px-3 py-1.5 text-[10px] sm:text-xs font-bold rounded-lg transition-all whitespace-nowrap ${period === 'WEEKLY' ? 'bg-white dark:bg-slate-700 shadow-sm text-primary' : 'text-slate-500 hover:text-slate-700'}`}
+                            >
+                                Долоо хоногоор
+                            </button>
                         </div>
                     </CardHeader>
-                    <CardContent className="p-8 pt-10">
-                        <div className="h-[350px] w-full">
+                    <CardContent className="p-4 sm:p-8 pt-8 sm:pt-10">
+                        <div className="h-[250px] sm:h-[350px] w-full">
                             <ResponsiveContainer width="100%" height="100%">
-                                <AreaChart data={mockGrowthData}>
+                                <AreaChart data={stats?.growthData || []} margin={{ top: 0, right: 10, left: -20, bottom: 0 }}>
                                     <defs>
                                         <linearGradient id="colorUsers" x1="0" y1="0" x2="0" y2="1">
                                             <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.2} />
@@ -208,20 +243,21 @@ export default function AdminDashboardPage() {
                                         dataKey="name"
                                         axisLine={false}
                                         tickLine={false}
-                                        tick={{ fill: '#94a3b8', fontSize: 12, fontWeight: 600 }}
+                                        tick={{ fill: '#94a3b8', fontSize: 10, fontWeight: 600 }}
                                         dy={10}
                                     />
                                     <YAxis
                                         axisLine={false}
                                         tickLine={false}
-                                        tick={{ fill: '#94a3b8', fontSize: 12, fontWeight: 600 }}
+                                        tick={{ fill: '#94a3b8', fontSize: 10, fontWeight: 600 }}
                                     />
                                     <Tooltip
                                         contentStyle={{
                                             borderRadius: '16px',
                                             border: 'none',
                                             boxShadow: '0 20px 25px -5px rgb(0 0 0 / 0.1)',
-                                            padding: '12px 16px',
+                                            padding: '8px 12px',
+                                            fontSize: '12px',
                                             fontWeight: 'bold'
                                         }}
                                     />
@@ -250,45 +286,46 @@ export default function AdminDashboardPage() {
                 </Card>
 
                 {/* Activity Feed */}
-                <Card className="border-none shadow-sm bg-white dark:bg-slate-900 overflow-hidden flex flex-col">
+                <Card className="border-none shadow-sm bg-white dark:bg-slate-900 overflow-hidden flex flex-col min-h-[500px]">
                     <CardHeader className="border-b border-slate-50 dark:border-slate-800/50">
-                        <CardTitle className="text-xl font-bold flex items-center gap-2">
+                        <CardTitle className="text-lg sm:text-xl font-bold flex items-center gap-2">
                             <Clock className="w-5 h-5 text-indigo-500" />
                             Шууд үйлдлүүд
                         </CardTitle>
-                        <CardDescription className="text-xs font-medium uppercase tracking-wider text-slate-400">Түүхчилсэн бүртгэл</CardDescription>
+                        <CardDescription className="text-[10px] sm:text-xs font-medium uppercase tracking-wider text-slate-400">Түүхчилсэн бүртгэл</CardDescription>
                     </CardHeader>
-                    <CardContent className="p-6 flex-1 overflow-y-auto custom-scrollbar">
-                        <div className="space-y-8 relative before:absolute before:left-[19px] before:top-2 before:bottom-2 before:w-0.5 before:bg-slate-100 dark:before:bg-slate-800">
-                            {[
-                                { user: "Дорж Баяр", action: "Оюутнаар бүртгүүллээ", time: "2 мин өмнө", icon: UserRound, color: "text-emerald-500 bg-emerald-50" },
-                                { user: "Tech LLC", action: "Баталгаажуулах хүсэлт илгээлээ", time: "5 мин өмнө", icon: ShieldCheck, color: "text-amber-500 bg-amber-50" },
-                                { user: "React Dev", action: "Шинэ ажлын байр зарлагдлаа", time: "10 мин өмнө", icon: Briefcase, color: "text-indigo-500 bg-indigo-50" },
-                                { user: "Startup MN", action: "Компани баталгаажлаа", time: "1 цаг өмнө", icon: Building2, color: "text-blue-500 bg-blue-50" },
-                                { user: "Сарнай Очир", action: "Tech LLC-д өргөдөл илгээлээ", time: "3 цаг өмнө", icon: ClipboardList, color: "text-purple-500 bg-purple-50" },
-                                { user: "Систем", action: "Системийн нөөцлөлт амжилттай", time: "5 цаг өмнө", icon: Activity, color: "text-slate-500 bg-slate-100" },
-                            ].map((activity, idx) => (
-                                <div key={idx} className="flex gap-4 group cursor-pointer relative z-10">
-                                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 border-2 border-white dark:border-slate-900 transition-transform group-hover:scale-110 shadow-sm ${activity.color}`}>
-                                        <activity.icon className="w-5 h-5" />
-                                    </div>
-                                    <div className="flex-1 space-y-0.5">
-                                        <div className="flex justify-between items-start">
-                                            <p className="text-sm font-bold text-slate-900 dark:text-slate-100 group-hover:text-primary transition-colors">
-                                                {activity.user}
-                                            </p>
-                                            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">{activity.time}</span>
+                    <CardContent className="p-4 sm:p-6 flex-1 overflow-y-auto custom-scrollbar">
+                        <div className="space-y-6 sm:space-y-8 relative before:absolute before:left-[19px] before:top-2 before:bottom-2 before:w-0.5 before:bg-slate-100 dark:before:bg-slate-800">
+                            {(stats?.recentActivities || []).map((activity) => {
+                                const config = getActivityConfig(activity.type);
+                                return (
+                                    <div key={activity.id} className="flex gap-4 group cursor-pointer relative z-10">
+                                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 border-2 border-white dark:border-slate-900 transition-transform group-hover:scale-110 shadow-sm ${config.color}`}>
+                                            <config.icon className="w-5 h-5" />
                                         </div>
-                                        <p className="text-[13px] text-slate-500 dark:text-slate-400 font-medium">{activity.action}</p>
+                                        <div className="flex-1 space-y-0.5 min-w-0">
+                                            <div className="flex justify-between items-start gap-2">
+                                                <p className="text-sm font-bold text-slate-900 dark:text-slate-100 group-hover:text-primary transition-colors truncate">
+                                                    {activity.user}
+                                                </p>
+                                                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter shrink-0">
+                                                    {formatRelativeTime(activity.timestamp)}
+                                                </span>
+                                            </div>
+                                            <p className="text-xs sm:text-[13px] text-slate-500 dark:text-slate-400 font-medium line-clamp-2">{activity.action}</p>
+                                        </div>
                                     </div>
-                                </div>
-                            ))}
+                                );
+                            })}
+                            {(stats?.recentActivities || []).length === 0 && (
+                                <p className="text-center text-slate-500 py-10">Одоогоор үйлдэл бүртгэгдээгүй байна.</p>
+                            )}
                         </div>
                     </CardContent>
                     <div className="p-4 border-t border-slate-50 dark:border-slate-800/50 bg-slate-50/30 dark:bg-slate-800/30">
-                        <Button variant="ghost" className="w-full text-xs font-extrabold uppercase tracking-widest text-slate-500 hover:text-primary hover:bg-white dark:hover:bg-slate-800 rounded-xl transition-all">
-                            Үйлдлийн бүртгэлийг бүхлээр нь харах
-                            <ArrowUpRight className="w-4 h-4 ml-2" />
+                        <Button variant="ghost" className="w-full text-[10px] font-extrabold uppercase tracking-widest text-slate-500 hover:text-primary hover:bg-white dark:hover:bg-slate-800 rounded-xl transition-all h-10">
+                            Бүгдийг харах
+                            <ArrowUpRight className="w-4 h-4 ml-1" />
                         </Button>
                     </div>
                 </Card>
@@ -296,22 +333,24 @@ export default function AdminDashboardPage() {
 
             {/* Verification Alert Footer */}
             {(stats?.pendingVerifications ?? 0) > 0 && (
-                <div className="p-6 bg-gradient-to-r from-amber-500/10 to-transparent border border-amber-200 dark:border-amber-900/30 rounded-3xl flex flex-col md:flex-row items-center justify-between gap-6 shadow-sm">
-                    <div className="flex items-center gap-5">
-                        <div className="w-14 h-14 rounded-2xl bg-amber-500 flex items-center justify-center text-white shadow-lg shadow-amber-200 dark:shadow-none animate-pulse">
-                            <ShieldCheck className="w-8 h-8" />
+                <div className="p-4 sm:p-6 bg-gradient-to-r from-amber-500/10 to-transparent border border-amber-200 dark:border-amber-900/30 rounded-2xl sm:rounded-3xl flex flex-col md:flex-row items-center justify-between gap-4 sm:gap-6 shadow-sm">
+                    <div className="flex items-center gap-4 sm:gap-5 w-full md:w-auto">
+                        <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-amber-500 flex items-center justify-center text-white shadow-lg shadow-amber-200 dark:shadow-none animate-pulse shrink-0">
+                            <ShieldCheck className="w-6 h-6 sm:w-8 sm:h-8" />
                         </div>
-                        <div>
-                            <h4 className="text-xl font-bold text-slate-900 dark:text-white">Анхаарал хандуулах үйлдлүүд</h4>
-                            <p className="text-slate-600 dark:text-slate-400 font-medium">Хяналт хүлээгдэж буй <span className="text-amber-600 font-bold">{stats?.pendingVerifications} компани</span> байна.</p>
+                        <div className="min-w-0">
+                            <h4 className="text-lg sm:text-xl font-bold text-slate-900 dark:text-white truncate">Анхаарал хандуулах</h4>
+                            <p className="text-xs sm:text-base text-slate-600 dark:text-slate-400 font-medium line-clamp-1">
+                                <span className="text-amber-600 font-bold">{stats?.pendingVerifications} компани</span> хүлээгдэж байна.
+                            </p>
                         </div>
                     </div>
                     <Button
                         onClick={() => (window as any).location.href = "/admin/verify"}
-                        className="bg-amber-600 hover:bg-amber-700 text-white font-bold h-12 px-8 rounded-2xl shadow-xl shadow-amber-200 dark:shadow-none border-none group transition-all hover:translate-x-1"
+                        className="w-full md:w-auto bg-amber-600 hover:bg-amber-700 text-white font-bold h-11 sm:h-12 px-6 sm:px-8 rounded-xl sm:rounded-2xl shadow-xl shadow-amber-200 dark:shadow-none border-none group transition-all"
                     >
-                        Баталгаажуулах хэсэг рүү очих
-                        <ChevronLeft className="w-5 h-5 ml-2 rotate-180" />
+                        Одоо очих
+                        <ChevronLeft className="w-4 h-4 sm:w-5 sm:h-5 ml-2 rotate-180" />
                     </Button>
                 </div>
             )}
