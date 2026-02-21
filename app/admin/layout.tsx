@@ -71,6 +71,12 @@ interface GetMeData {
 }
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
+<<<<<<< HEAD
+=======
+    const [isSidebarOpen, setIsSidebarOpen] = useState(true)
+    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+    const [user, setUser] = useState<JWTPayload | null>(null)
+>>>>>>> 45fcd0d1879a0211dea6c8be8426c06bf96adb8b
     const pathname = usePathname()
     const router = useRouter()
     const { data: meData } = useQuery<GetMeData>(GET_ME)
@@ -241,9 +247,15 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
+<<<<<<< HEAD
                                 <button className="flex items-center gap-3 p-1 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors duration-200 border border-transparent">
                                     <div className="w-8 h-8 rounded-lg bg-indigo-500 flex items-center justify-center text-white text-xs font-bold shadow-md shadow-indigo-200 dark:shadow-none">
                                         {(user.email?.[0] || 'A').toUpperCase()}
+=======
+                                <button className="flex items-center gap-3 p-1 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 transition-all border border-transparent">
+                                    <div className="w-8 h-8 rounded-lg bg-indigo-500 flex items-center justify-center text-white text-xs font-bold shadow-md shadow-indigo-200 dark:shadow-none">
+                                        {user.email[0].toUpperCase()}
+>>>>>>> 45fcd0d1879a0211dea6c8be8426c06bf96adb8b
                                     </div>
                                     <div className="hidden md:block text-left">
                                         <p className="text-[10px] font-bold text-slate-900 dark:text-white leading-none mb-1">{user.email}</p>
