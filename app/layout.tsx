@@ -13,6 +13,10 @@ const _geistMono = Geist_Mono({ subsets: ["latin"] });
 
 
 import { ThemeProvider } from "@/components/theme-provider"
+<<<<<<< HEAD
+=======
+import { Toaster } from "sonner"
+>>>>>>> 89aa8c56af75944ac236664e77278c3f0a92c99b
 
 export default function RootLayout({
   children,
@@ -31,6 +35,10 @@ export default function RootLayout({
           >
             {children}
             <Analytics />
+<<<<<<< HEAD
+=======
+            <Toaster />
+>>>>>>> 89aa8c56af75944ac236664e77278c3f0a92c99b
           </ThemeProvider>
         </ApolloProvider>
       </body>

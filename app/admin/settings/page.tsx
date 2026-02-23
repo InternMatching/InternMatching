@@ -1,9 +1,14 @@
 "use client"
 
+<<<<<<< HEAD
+=======
+import React, { useState, useEffect } from "react"
+>>>>>>> 89aa8c56af75944ac236664e77278c3f0a92c99b
 import { useQuery, useMutation } from "@apollo/client/react"
 import { gql } from "@apollo/client"
 import {
     Settings,
+<<<<<<< HEAD
     Bell,
     Lock,
     User as UserIcon,
@@ -15,11 +20,22 @@ import {
     Key,
     Mail,
     Smartphone
+=======
+    User as UserIcon,
+    Mail,
+    Smartphone,
+    Save,
+    Key,
+    Loader2
+>>>>>>> 89aa8c56af75944ac236664e77278c3f0a92c99b
 } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+<<<<<<< HEAD
 import React, { useState, useEffect } from "react"
+=======
+>>>>>>> 89aa8c56af75944ac236664e77278c3f0a92c99b
 import { toast } from "sonner"
 import { useTheme } from "next-themes"
 
@@ -47,6 +63,7 @@ const UPDATE_SETTINGS = gql`
   }
 `
 
+<<<<<<< HEAD
 const REQUEST_PASSWORD_RESET = gql`
   mutation RequestPasswordReset($email: String!) {
     requestPasswordReset(email: $email)
@@ -70,6 +87,12 @@ export default function SettingsPage() {
     const { setTheme } = useTheme()
     const [hasSyncedTheme, setHasSyncedTheme] = useState(false)
 
+=======
+export default function SettingsPage() {
+    const { data, loading } = useQuery<{ me: any }>(GET_ME)
+    const [updateSettings] = useMutation(UPDATE_SETTINGS)
+    const { setTheme } = useTheme()
+>>>>>>> 89aa8c56af75944ac236664e77278c3f0a92c99b
     const [adminData, setAdminData] = useState({
         email: "",
         phoneNumber: "",
@@ -79,6 +102,7 @@ export default function SettingsPage() {
 
     useEffect(() => {
         if (data?.me) {
+<<<<<<< HEAD
             const savedTheme = data.me.themeColor === 'dark' ? 'dark' : 'light'
             setAdminData({
                 email: data.me.email || "",
@@ -93,6 +117,16 @@ export default function SettingsPage() {
             }
         }
     }, [data, setTheme, hasSyncedTheme])
+=======
+            setAdminData({
+                email: data.me.email || "",
+                phoneNumber: data.me.phoneNumber || "",
+                themeColor: data.me.themeColor || "light",
+                emailNotifications: data.me.emailNotifications !== false
+            })
+        }
+    }, [data])
+>>>>>>> 89aa8c56af75944ac236664e77278c3f0a92c99b
 
     const handleSave = async () => {
         try {
@@ -106,6 +140,7 @@ export default function SettingsPage() {
                     }
                 }
             })
+<<<<<<< HEAD
             setTheme(adminData.themeColor) // Use local state to apply
             toast.success("Тохиргоо амжилттай хадгалагдлаа")
         } catch (err: any) {
@@ -123,10 +158,16 @@ export default function SettingsPage() {
             await requestPasswordReset({ variables: { email: adminData.email } })
             toast.success("Нууц үг сэргээх линк имейл рүү илгээгдлээ")
         } catch (err: any) {
+=======
+            setTheme(adminData.themeColor)
+            toast.success("Тохиргоо амжилттай хадгалагдлаа")
+        } catch (err: any) {
+>>>>>>> 89aa8c56af75944ac236664e77278c3f0a92c99b
             toast.error(err.message || "Алдаа гарлаа")
         }
     }
 
+<<<<<<< HEAD
     if (loading) return <div className="p-8">Уншиж байна...</div>
 
     return (
@@ -174,11 +215,58 @@ export default function SettingsPage() {
                                             className="pl-10 rounded-xl"
                                         />
                                     </div>
+=======
+    if (loading) return <div className="flex justify-center p-12"><Loader2 className="animate-spin" /></div>
+
+    return (
+        <div className="space-y-6 max-w-4xl">
+            <div>
+                <h1 className="text-2xl font-bold">Системийн тохиргоо</h1>
+                <p className="text-muted-foreground">Админ самбарын болон системийн ерөнхий тохиргоо.</p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <aside className="space-y-1">
+                    <Button variant="ghost" className="w-full justify-start bg-primary/10 text-primary">
+                        <UserIcon className="w-4 h-4 mr-2" />
+                        Профайл
+                    </Button>
+                </aside>
+
+                <div className="md:col-span-2 space-y-6">
+                    <Card>
+                        <CardHeader>
+                            <CardTitle className="text-lg">Админ мэдээлэл</CardTitle>
+                            <CardDescription>Таны хувийн мэдээлэл болон холбоо барих.</CardDescription>
+                        </CardHeader>
+                        <CardContent className="space-y-4">
+                            <div className="space-y-2">
+                                <label className="text-xs font-bold uppercase text-muted-foreground">Имейл</label>
+                                <div className="relative">
+                                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                                    <Input
+                                        value={adminData.email}
+                                        onChange={(e) => setAdminData({ ...adminData, email: e.target.value })}
+                                        className="pl-10"
+                                    />
+                                </div>
+                            </div>
+                            <div className="space-y-2">
+                                <label className="text-xs font-bold uppercase text-muted-foreground">Утас</label>
+                                <div className="relative">
+                                    <Smartphone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                                    <Input
+                                        value={adminData.phoneNumber}
+                                        onChange={(e) => setAdminData({ ...adminData, phoneNumber: e.target.value })}
+                                        className="pl-10"
+                                    />
+>>>>>>> 89aa8c56af75944ac236664e77278c3f0a92c99b
                                 </div>
                             </div>
                         </CardContent>
                     </Card>
 
+<<<<<<< HEAD
                     <Card className="border-none shadow-sm bg-white dark:bg-slate-900 rounded-3xl overflow-hidden">
                         <CardHeader className="border-b border-slate-50 dark:border-slate-800 p-6">
                             <CardTitle className="text-lg font-bold">Харагдац болон мэдэгдэл</CardTitle>
@@ -194,17 +282,36 @@ export default function SettingsPage() {
                                     <button
                                         onClick={() => changeTheme('light')}
                                         className={`px-4 py-1.5 text-xs font-bold rounded-lg transition-all ${adminData.themeColor === 'light' ? 'bg-white dark:bg-slate-700 text-primary shadow-sm' : 'text-slate-500'}`}
+=======
+                    <Card>
+                        <CardHeader>
+                            <CardTitle className="text-lg">Харагдац</CardTitle>
+                        </CardHeader>
+                        <CardContent className="space-y-4">
+                            <div className="flex items-center justify-between">
+                                <span className="text-sm font-medium">Системийн өнгө</span>
+                                <div className="flex bg-secondary p-1 rounded-md">
+                                    <button
+                                        onClick={() => setAdminData({ ...adminData, themeColor: 'light' })}
+                                        className={`px-3 py-1 text-xs font-medium rounded-md transition-all ${adminData.themeColor === 'light' ? 'bg-background shadow-sm' : 'text-muted-foreground'}`}
+>>>>>>> 89aa8c56af75944ac236664e77278c3f0a92c99b
                                     >
                                         Цагаан
                                     </button>
                                     <button
+<<<<<<< HEAD
                                         onClick={() => changeTheme('dark')}
                                         className={`px-4 py-1.5 text-xs font-bold rounded-lg transition-all ${adminData.themeColor === 'dark' ? 'bg-white dark:bg-slate-700 text-primary shadow-sm' : 'text-slate-500'}`}
+=======
+                                        onClick={() => setAdminData({ ...adminData, themeColor: 'dark' })}
+                                        className={`px-3 py-1 text-xs font-medium rounded-md transition-all ${adminData.themeColor === 'dark' ? 'bg-background shadow-sm' : 'text-muted-foreground'}`}
+>>>>>>> 89aa8c56af75944ac236664e77278c3f0a92c99b
                                     >
                                         Харанхуй
                                     </button>
                                 </div>
                             </div>
+<<<<<<< HEAD
 
                             <div className="flex items-center justify-between">
                                 <div className="space-y-0.5">
@@ -238,6 +345,15 @@ export default function SettingsPage() {
                         <Button onClick={handleSave} className="rounded-2xl h-12 px-8 font-black uppercase tracking-widest shadow-xl shadow-primary/20">
                             <Save className="w-4 h-4 mr-2" />
                             Тохиргоог хадгалах
+=======
+                        </CardContent>
+                    </Card>
+
+                    <div className="flex justify-end">
+                        <Button onClick={handleSave} className="h-10 px-8">
+                            <Save className="w-4 h-4 mr-2" />
+                            Хадгалах
+>>>>>>> 89aa8c56af75944ac236664e77278c3f0a92c99b
                         </Button>
                     </div>
                 </div>

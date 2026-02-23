@@ -1,11 +1,29 @@
 "use client"
+
+import React, { useEffect } from "react"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
+import { useQuery } from "@apollo/client/react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { useEffect } from "react"
 import { GraduationCap, Building2, Users, Briefcase, ArrowRight, CheckCircle2 } from "lucide-react"
 import Lenis from 'lenis'
+import { ME } from "./graphql/mutations"
+import { User } from "@/lib/type"
+import { ThemeToggle } from "@/components/theme-toggle"
+
 export default function LandingPage() {
+  const router = useRouter()
+  const { data: userData } = useQuery<{ me: User }>(ME)
+
+  useEffect(() => {
+    if (userData?.me) {
+      const role = userData.me.role.toLowerCase()
+      if (role === "admin") router.push("/admin")
+      else if (role === "company") router.push("/company")
+      else router.push("/student")
+    }
+  }, [userData, router])
 
   useEffect(() => {
     const lenis = new Lenis()
@@ -20,7 +38,7 @@ export default function LandingPage() {
   return (
     <div className="min-h-screen bg-background">
 
-      <header className="border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50">
+      <header className="border-b border-border bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/60 sticky top-0 z-50">
         <nav className="container mx-auto px-4 h-16 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2">
             <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
@@ -35,6 +53,7 @@ export default function LandingPage() {
             <Button asChild>
               <Link href="/signup">Бүртгүүлэх</Link>
             </Button>
+            <ThemeToggle />
           </div>
         </nav>
       </header>
@@ -91,15 +110,15 @@ export default function LandingPage() {
                 <CardContent>
                   <ul className="space-y-3">
                     <li className="flex items-start gap-3">
-                      <CheckCircle2 className="w-5 h-5 text-success mt-0.5 flex-shrink-0" />
+                      <CheckCircle2 className="w-5 h-5 text-success mt-0.5 shrink-0" />
                       <span className="text-muted-foreground">Өөрийн ур чадвар дээр суурилан дадлага хайх</span>
                     </li>
                     <li className="flex items-start gap-3">
-                      <CheckCircle2 className="w-5 h-5 text-success mt-0.5 flex-shrink-0" />
+                      <CheckCircle2 className="w-5 h-5 text-success mt-0.5 shrink-0" />
                       <span className="text-muted-foreground">Профайлаараа хялбархан хүсэлт гаргах</span>
                     </li>
                     <li className="flex items-start gap-3">
-                      <CheckCircle2 className="w-5 h-5 text-success mt-0.5 flex-shrink-0" />
+                      <CheckCircle2 className="w-5 h-5 text-success mt-0.5 shrink-0" />
                       <span className="text-muted-foreground">Өөрийн карьерынхаа портфолио үүсгэх</span>
                     </li>
                   </ul>
@@ -123,15 +142,15 @@ export default function LandingPage() {
                 <CardContent>
                   <ul className="space-y-3">
                     <li className="flex items-start gap-3">
-                      <CheckCircle2 className="w-5 h-5 text-success mt-0.5 flex-shrink-0" />
+                      <CheckCircle2 className="w-5 h-5 text-success mt-0.5 shrink-0" />
                       <span className="text-muted-foreground">Дадлага болон ажлын зар байршуула</span>
                     </li>
                     <li className="flex items-start gap-3">
-                      <CheckCircle2 className="w-5 h-5 text-success mt-0.5 flex-shrink-0" />
+                      <CheckCircle2 className="w-5 h-5 text-success mt-0.5 shrink-0" />
                       <span className="text-muted-foreground"> Шаардлага хангасан өргөдөл гаргагчдыг хянаж үзэх</span>
                     </li>
                     <li className="flex items-start gap-3">
-                      <CheckCircle2 className="w-5 h-5 text-success mt-0.5 flex-shrink-0" />
+                      <CheckCircle2 className="w-5 h-5 text-success mt-0.5 shrink-0" />
                       <span className="text-muted-foreground">Багийнхаа төгс тохирох хүнийг олоорой</span>
                     </li>
                   </ul>
@@ -143,30 +162,6 @@ export default function LandingPage() {
             </div>
           </div>
         </section>
-
-        {/* <section className="py-20">
-          <div className="container mx-auto px-4">
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-8 max-w-4xl mx-auto">
-              <div className="text-center">
-                <div className="text-3xl md:text-4xl font-bold text-primary">500+</div>
-                <div className="mt-2 text-muted-foreground">Companies</div>
-              </div>
-              <div className="text-center">
-                <div className="text-3xl md:text-4xl font-bold text-primary">10k+</div>
-                <div className="mt-2 text-muted-foreground">Students</div>
-              </div>
-              <div className="text-center">
-                <div className="text-3xl md:text-4xl font-bold text-primary">2k+</div>
-                <div className="mt-2 text-muted-foreground">Jobs Posted</div>
-              </div>
-              <div className="text-center">
-                <div className="text-3xl md:text-4xl font-bold text-primary">85%</div>
-                <div className="mt-2 text-muted-foreground">Match Rate</div>
-              </div>
-            </div>
-          </div>
-        </section> */}
-
 
         <section className="py-20 bg-primary">
           <div className="container mx-auto px-4 text-center">

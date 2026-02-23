@@ -6,18 +6,29 @@ import { gql } from "@apollo/client"
 import {
     History,
     Search,
+<<<<<<< HEAD
     Filter,
     Clock,
+=======
+    Loader2,
+    Activity,
+>>>>>>> 89aa8c56af75944ac236664e77278c3f0a92c99b
     UserRound,
     Building2,
     Briefcase,
     ClipboardList,
+<<<<<<< HEAD
     ShieldCheck,
     Activity,
     Download
 } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
+=======
+    ShieldCheck
+} from "lucide-react"
+import { Card } from "@/components/ui/card"
+>>>>>>> 89aa8c56af75944ac236664e77278c3f0a92c99b
 import { Input } from "@/components/ui/input"
 
 const GET_LOGS = gql`
@@ -34,6 +45,7 @@ const GET_LOGS = gql`
   }
 `
 
+<<<<<<< HEAD
 interface GetLogsData {
     adminStats: {
         recentActivities: Array<{
@@ -48,6 +60,10 @@ interface GetLogsData {
 
 export default function LogsPage() {
     const { data, loading } = useQuery<GetLogsData>(GET_LOGS, {
+=======
+export default function LogsPage() {
+    const { data, loading } = useQuery<{ adminStats: { recentActivities: any[] } }>(GET_LOGS, {
+>>>>>>> 89aa8c56af75944ac236664e77278c3f0a92c99b
         pollInterval: 10000
     })
 
@@ -55,6 +71,7 @@ export default function LogsPage() {
         switch (type) {
             case 'STUDENT_SIGNUP':
             case 'STUDENT_PROFILE_CREATED':
+<<<<<<< HEAD
                 return { icon: UserRound, color: "text-emerald-500 bg-emerald-50 dark:bg-emerald-900/20" };
             case 'COMPANY_SIGNUP':
                 return { icon: ShieldCheck, color: "text-amber-500 bg-amber-50 dark:bg-amber-900/20" };
@@ -66,11 +83,25 @@ export default function LogsPage() {
                 return { icon: ClipboardList, color: "text-purple-500 bg-purple-50 dark:bg-purple-900/20" };
             default:
                 return { icon: Activity, color: "text-slate-500 bg-slate-50 dark:bg-slate-800/50" };
+=======
+                return UserRound;
+            case 'COMPANY_SIGNUP':
+                return ShieldCheck;
+            case 'COMPANY_PROFILE_CREATED':
+                return Building2;
+            case 'JOB_POSTED':
+                return Briefcase;
+            case 'APPLICATION_SUBMITTED':
+                return ClipboardList;
+            default:
+                return Activity;
+>>>>>>> 89aa8c56af75944ac236664e77278c3f0a92c99b
         }
     };
 
     const activities = data?.adminStats?.recentActivities || []
 
+<<<<<<< HEAD
     return (
         <div className="space-y-6 animate-in fade-in duration-500">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -164,6 +195,69 @@ export default function LogsPage() {
                         </table>
                     </div>
                 </CardContent>
+=======
+    if (loading) return <div className="flex justify-center p-12"><Loader2 className="animate-spin" /></div>
+
+    return (
+        <div className="space-y-6">
+            <div>
+                <h1 className="text-2xl font-bold">Үйлдлийн бүртгэл</h1>
+                <p className="text-muted-foreground">Систем дээр хийгдсэн сүүлийн үйлдлүүд.</p>
+            </div>
+
+            <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                <Input placeholder="Хэрэглэгч эсвэл үйлдлээр хайх..." className="pl-10" />
+            </div>
+
+            <Card>
+                <div className="overflow-x-auto">
+                    <table className="w-full text-left border-collapse">
+                        <thead>
+                            <tr className="border-b bg-secondary/20">
+                                <th className="px-6 py-4 text-xs font-bold text-muted-foreground uppercase tracking-wider">Төрөл</th>
+                                <th className="px-6 py-4 text-xs font-bold text-muted-foreground uppercase tracking-wider">Хэрэглэгч</th>
+                                <th className="px-6 py-4 text-xs font-bold text-muted-foreground uppercase tracking-wider">Үйлдэл</th>
+                                <th className="px-6 py-4 text-xs font-bold text-muted-foreground uppercase tracking-wider text-right">Огноо</th>
+                            </tr>
+                        </thead>
+                        <tbody className="divide-y">
+                            {activities.length === 0 ? (
+                                <tr>
+                                    <td colSpan={4} className="px-6 py-20 text-center text-muted-foreground">
+                                        Бүртгэл байхгүй байна.
+                                    </td>
+                                </tr>
+                            ) : (
+                                activities.map((log) => {
+                                    const Icon = getActivityIcon(log.type)
+                                    return (
+                                        <tr key={log.id} className="hover:bg-secondary/10 transition-colors">
+                                            <td className="px-6 py-4">
+                                                <div className="w-8 h-8 rounded-lg bg-secondary flex items-center justify-center text-primary">
+                                                    <Icon className="w-4 h-4" />
+                                                </div>
+                                            </td>
+                                            <td className="px-6 py-4">
+                                                <span className="text-sm font-medium">{log.user}</span>
+                                            </td>
+                                            <td className="px-6 py-4">
+                                                <span className="text-sm text-muted-foreground">{log.action}</span>
+                                            </td>
+                                            <td className="px-6 py-4 text-right">
+                                                <div className="flex flex-col items-end text-xs">
+                                                    <span className="font-bold">{new Date(log.timestamp).toLocaleDateString()}</span>
+                                                    <span className="text-muted-foreground">{new Date(log.timestamp).toLocaleTimeString()}</span>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    )
+                                })
+                            )}
+                        </tbody>
+                    </table>
+                </div>
+>>>>>>> 89aa8c56af75944ac236664e77278c3f0a92c99b
             </Card>
         </div>
     )
