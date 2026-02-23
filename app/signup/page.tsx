@@ -13,6 +13,7 @@ import { Briefcase, Loader2, GraduationCap, Building2 } from "lucide-react"
 import { useMutation } from "@apollo/client/react";
 import { SIGNUP } from "../graphql/mutations"
 import { AuthPayload, SignupInput } from "@/lib/type"
+import { ThemeToggle } from "@/components/theme-toggle"
 
 import { cn } from "@/lib/utils"
 
@@ -54,7 +55,7 @@ export default function SignupPage() {
                     input: {
                         email: formData.email,
                         password: formData.password,
-                        role: selectedRole.toLowerCase(),
+                        role: selectedRole.toLowerCase() as any,
                     },
                 },
             })
@@ -83,6 +84,9 @@ export default function SignupPage() {
                         </div>
                         <span className="font-semibold text-xl text-foreground">InternMatch</span>
                     </Link>
+                    <div className="absolute right-4 top-1/2 -translate-y-1/2">
+                        <ThemeToggle />
+                    </div>
                 </div>
             </header>
 

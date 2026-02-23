@@ -13,6 +13,7 @@ import { Briefcase, Loader2 } from "lucide-react"
 import { LOGIN } from "../graphql/mutations"
 import { useMutation } from "@apollo/client/react";
 import { AuthPayload, LoginInput } from "@/lib/type"
+import { ThemeToggle } from "@/components/theme-toggle"
 
 export default function LoginPage() {
     const router = useRouter()
@@ -64,6 +65,9 @@ export default function LoginPage() {
                         </div>
                         <span className="font-semibold text-xl text-foreground">InternMatch</span>
                     </Link>
+                    <div className="absolute right-4 top-1/2 -translate-y-1/2">
+                        <ThemeToggle />
+                    </div>
                 </div>
             </header>
 
