@@ -14,12 +14,20 @@ const _geistMono = Geist_Mono({ subsets: ["latin"] });
 
 import { ThemeProvider } from "@/components/theme-provider"
 import { Toaster } from "sonner"
+import { Navbar } from "@/components/layout/Navbar"
+import { usePathname } from "next/navigation"
 
 export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode
 }>) {
+  const pathname = usePathname()
+
+
+  const hideNavbarRoutes = ["/admin", "/company", "/student"]
+  const shouldHideNavbar = hideNavbarRoutes.some(route => pathname.startsWith(route))
+
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={`font-sans antialiased`} suppressHydrationWarning>
@@ -30,6 +38,7 @@ export default function RootLayout({
             enableSystem
             disableTransitionOnChange
           >
+            {!shouldHideNavbar && <Navbar />}
             {children}
             <Analytics />
             <Toaster />
