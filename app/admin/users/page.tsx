@@ -170,7 +170,11 @@ export default function UsersManagementPage() {
                                         </td>
                                         <td className="px-6 py-4">
                                             <span className="text-sm text-muted-foreground">
-                                                {new Date(parseInt(user.createdAt) || user.createdAt).toLocaleDateString()}
+                                                {(() => {
+                                                    const timestamp = isNaN(Number(user.createdAt)) ? user.createdAt : Number(user.createdAt);
+                                                    const date = new Date(timestamp);
+                                                    return isNaN(date.getTime()) ? "Тодорхойгүй" : date.toLocaleDateString();
+                                                })()}
                                             </span>
                                         </td>
                                         <td className="px-6 py-4 text-right">

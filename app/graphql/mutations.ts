@@ -144,6 +144,19 @@ export const CREATE_COMPANY_PROFILE = gql`
   }
 `;
 
+export const GET_ALL_STUDENT_PROFILES = gql`
+  query GetAllStudentProfiles {
+    getAllStudentProfiles {
+      id
+      firstName
+      lastName
+      skills
+      bio
+      experienceLevel
+    }
+  }
+`;
+
 export const GET_ALL_JOBS = gql`
   query GetAllJobs($companyProfileId: ID, $status: JobStatus) {
     getAllJobs(companyProfileId: $companyProfileId, status: $status) {
