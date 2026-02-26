@@ -58,9 +58,9 @@ export function Navbar() {
 
     const AuthButtons = ({ className, mobile = false }: { className?: string, mobile?: boolean }) => (
         <div className={cn("flex items-center gap-3", className)}>
-            <Button variant="ghost" size={mobile ? "lg" : "sm"} className="rounded-xl font-medium" asChild onClick={() => setIsOpen(false)}>
+            <Button variant="ghost" size={mobile ? "lg" : "sm"} className="rounded-xl font-medium hover:bg-primary" asChild onClick={() => setIsOpen(false)}>
                 <Link href="/login">
-                    <LogIn className="w-4 h-4 mr-2 md:hidden" />
+                    <LogIn className="w-4 h-4 mr-2 md:hidden " />
                     Нэвтрэх
                 </Link>
             </Button>
@@ -162,21 +162,21 @@ export function Navbar() {
                     {/* Jobs Dropdown */}
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" className="h-10 px-4 rounded-xl font-semibold text-muted-foreground hover:text-primary transition-all duration-300 ease-in-out data-[state=open]:text-primary group">
+                            <Button variant="ghost" className="h-10 px-4 rounded-xl font-semibold text-muted-foreground hover:text-white hover:bg-primary transition-all duration-300 ease-in-out data-[state=open]:text-primary group">
                                 Ажлын байр
                                 <ChevronDown className="ml-1.5 w-3.5 h-3.5 transition-transform duration-200 group-data-[state=open]:rotate-180 opacity-60" />
                             </Button>
                         </DropdownMenuTrigger>
-                        <DropdownMenuContent align="start" sideOffset={8} className="w-48 p-2 rounded-2xl shadow-lg border-border/40 animate-in fade-in slide-in-from-top-2 duration-200">
-                            <DropdownMenuItem asChild className="rounded-xl p-2.5 transition-all duration-300 ease-in-out cursor-pointer group/item">
-                                <Link href="/jobs?type=all" className="flex items-center gap-3">
-                                    <Briefcase className="w-4 h-4 text-muted-foreground group-hover/item:text-primary transition-all duration-300 ease-in-out" />
-                                    <span className="text-sm font-medium">Бүх ажил</span>
+                        <DropdownMenuContent align="start" sideOffset={8} className="w-48 p-2 rounded-2xl shadow-lg border-border/40 animate-in fade-in slide-in-from-top-2 duration-200 ">
+                            <DropdownMenuItem asChild className="rounded-xl p-2.5 transition-all duration-300 ease-in-out  data-[highlighted]:bg-primary cursor-pointer group/item ">
+                                <Link href="/jobs" className="flex items-center gap-3  ">
+                                    <Briefcase className="w-4 h-4 text-muted-foreground group-hover/item:text-white  transition-all duration-300 ease-in-out " />
+                                    <span className="text-sm font-medium  ">Бүх ажил</span>
                                 </Link>
                             </DropdownMenuItem>
-                            <DropdownMenuItem asChild className="rounded-xl p-2.5 transition-all duration-300 ease-in-out cursor-pointer group/item">
-                                <Link href="/jobs?type=intern" className="flex items-center gap-3">
-                                    <Zap className="w-4 h-4 text-muted-foreground group-hover/item:text-primary transition-all duration-300 ease-in-out" />
+                            <DropdownMenuItem asChild className="rounded-xl p-2.5 transition-all duration-300 ease-in-out  data-[highlighted]:bg-primary cursor-pointer group/item">
+                                <Link href="/jobs?levels=intern" className="flex items-center gap-3">
+                                    <Zap className="w-4 h-4 text-muted-foreground group-hover/item:text-white transition-all duration-300 ease-in-out" />
                                     <span className="text-sm font-medium">Бүх дадлага</span>
                                 </Link>
                             </DropdownMenuItem>
@@ -186,18 +186,36 @@ export function Navbar() {
                     {/* Students Dropdown */}
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" className="h-10 px-4 rounded-xl font-semibold text-muted-foreground hover:text-primary transition-all duration-300 ease-in-out data-[state=open]:text-primary group">
+                            <Button variant="ghost" className="h-10 px-4 rounded-xl font-semibold text-muted-foreground hover:text-white hover:bg-primary transition-all duration-300 ease-in-out data-[state=open]:text-primary group">
                                 Оюутнууд
                                 <ChevronDown className="ml-1.5 w-3.5 h-3.5 transition-transform duration-200 group-data-[state=open]:rotate-180 opacity-60" />
                             </Button>
                         </DropdownMenuTrigger>
-                        <DropdownMenuContent align="start" sideOffset={8} className="w-56 p-2 rounded-2xl shadow-lg border-border/40 animate-in fade-in slide-in-from-top-2 duration-200">
-                            <DropdownMenuItem asChild className="rounded-xl p-2.5 transition-all duration-300 ease-in-out cursor-pointer group/item">
-                                <Link href="/students" className="flex items-center gap-3">
-                                    <Users className="w-4 h-4 text-muted-foreground group-hover/item:text-primary transition-all duration-300 ease-in-out" />
+                        <DropdownMenuContent
+                            align="start"
+                            sideOffset={8}
+                            className="w-56 p-2 rounded-2xl shadow-lg border-border/40 animate-in fade-in slide-in-from-top-2 duration-200"
+                        >
+                            <DropdownMenuItem
+                                asChild
+                                className="group rounded-xl p-0 cursor-pointer 
+                                        data-[highlighted]:bg-primary 
+                                        data-[highlighted]:text-white"
+                            >
+                                <Link
+                                    href="/students"
+                                    className="flex items-center gap-3 px-3 py-2 rounded-xl"
+                                >
+                                    <Users className="w-4 h-4 text-muted-foreground group-data-[highlighted]:text-white transition-colors duration-200" />
+
                                     <div className="flex flex-col">
-                                        <span className="text-sm font-medium">Бүх оюутнууд</span>
-                                        <span className="text-[9px] text-orange-600 font-bold uppercase tracking-tighter">Зөвхөн Компани</span>
+                                        <span className="text-sm font-medium group-data-[highlighted]:text-white transition-colors duration-200">
+                                            Бүх оюутнууд
+                                        </span>
+
+                                        <span className="text-[9px] text-orange-600 font-bold uppercase tracking-tighter group-data-[highlighted]:text-white transition-colors duration-200">
+                                            Зөвхөн Компани
+                                        </span>
                                     </div>
                                 </Link>
                             </DropdownMenuItem>
@@ -240,11 +258,11 @@ export function Navbar() {
                                 <div className="space-y-3">
                                     <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest px-2 opacity-60">Ажлын байр</p>
                                     <div className="grid gap-1">
-                                        <Link href="/jobs?type=all" className="flex items-center gap-3 p-3 rounded-xl hover:bg-muted transition-colors font-medium text-sm" onClick={() => setIsOpen(false)}>
+                                        <Link href="/jobs" className="flex items-center gap-3 p-3 rounded-xl hover:bg-muted transition-colors font-medium text-sm" onClick={() => setIsOpen(false)}>
                                             <Briefcase className="w-5 h-5 text-muted-foreground" />
                                             Бие даасан ажил
                                         </Link>
-                                        <Link href="/jobs?type=intern" className="flex items-center gap-3 p-3 rounded-xl hover:bg-muted transition-colors font-medium text-sm" onClick={() => setIsOpen(false)}>
+                                        <Link href="/jobs?levels=intern" className="flex items-center gap-3 p-3 rounded-xl hover:bg-muted transition-colors font-medium text-sm" onClick={() => setIsOpen(false)}>
                                             <Zap className="w-5 h-5 text-muted-foreground" />
                                             Дадлагын зар
                                         </Link>

@@ -5,6 +5,9 @@ export interface User {
   id: string;
   email: string;
   role: string | UserRole;
+  phoneNumber?: string;
+  themeColor?: string;
+  emailNotifications?: boolean;
   createdAt: string;
 }
 
