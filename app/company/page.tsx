@@ -23,7 +23,9 @@ import {
     Search,
     Globe,
     Building2,
-    CheckCircle2
+    CheckCircle2,
+    AlertCircle,
+    Zap
 } from "lucide-react"
 import { ME, GET_COMPANY_PROFILE, UPDATE_COMPANY_PROFILE, CREATE_COMPANY_PROFILE, GET_ALL_JOBS, CREATE_JOB, GET_APPLICATIONS, UPDATE_APPLICATION_STATUS } from "../graphql/mutations"
 import { User, CompanyProfile, Job, Application, CompanyProfileInput, JobInput, JobStatus, ApplicationStatus } from "@/lib/type"
@@ -69,7 +71,10 @@ export default function CompanyPage() {
         description: "",
         industry: "",
         location: "",
-        website: ""
+        website: "",
+        foundedYear: undefined,
+        employeeCount: undefined,
+        slogan: ""
     })
 
     const [jobForm, setJobForm] = useState<JobInput>({
@@ -78,6 +83,10 @@ export default function CompanyPage() {
         type: "intern",
         location: "",
         salaryRange: "",
+        responsibilities: "",
+        requirements: "",
+        additionalInfo: "",
+        deadline: "",
         requiredSkills: []
     })
 
@@ -92,7 +101,10 @@ export default function CompanyPage() {
                 description: profile.description || "",
                 industry: profile.industry || "",
                 location: profile.location || "",
-                website: profile.website || ""
+                website: profile.website || "",
+                foundedYear: profile.foundedYear,
+                employeeCount: profile.employeeCount,
+                slogan: profile.slogan || ""
             })
         }
     }, [profileData])
@@ -104,6 +116,16 @@ export default function CompanyPage() {
         await client.clearStore()
         toast.success("Амжилттай гарлаа")
         router.push("/login")
+    }
+
+    const getTimeRemaining = (deadline?: string) => {
+        if (!deadline) return null
+        const diff = new Date(deadline).getTime() - new Date().getTime()
+        if (diff <= 0) return "Хугацаа дууссан"
+        const days = Math.floor(diff / (1000 * 60 * 60 * 24))
+        if (days > 0) return `${days} хоног үлдсэн`
+        const hours = Math.floor(diff / (1000 * 60 * 60))
+        return `${hours} цаг үлдсэн`
     }
 
     const handleUpdateProfile = async (e: React.FormEvent) => {
@@ -158,7 +180,18 @@ export default function CompanyPage() {
             })
             toast.success("Ажлын байр амжилттай бүртгэгдлээ!")
             setShowJobForm(false)
-            setJobForm({ title: "", description: "", type: "intern", location: "", salaryRange: "", requiredSkills: [] })
+            setJobForm({
+                title: "",
+                description: "",
+                type: "intern",
+                location: "",
+                salaryRange: "",
+                responsibilities: "",
+                requirements: "",
+                additionalInfo: "",
+                deadline: "",
+                requiredSkills: []
+            })
             setSkillsInput("")
             refetchJobs()
         } catch (err) {
@@ -390,6 +423,37 @@ export default function CompanyPage() {
                                                     />
                                                 </div>
                                             </div>
+                                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                                                <div className="space-y-2">
+                                                    <Label className="text-xs font-bold text-muted-foreground ml-0.5">Байгуулагдсан он</Label>
+                                                    <Input
+                                                        type="number"
+                                                        value={profileForm.foundedYear || ""}
+                                                        onChange={(e) => setProfileForm({ ...profileForm, foundedYear: parseInt(e.target.value) || undefined })}
+                                                        placeholder="Ж нь: 2010"
+                                                        className="h-10 rounded-xl bg-secondary/10 border-border/40 focus:bg-background transition-all"
+                                                    />
+                                                </div>
+                                                <div className="space-y-2">
+                                                    <Label className="text-xs font-bold text-muted-foreground ml-0.5">Ажилчдын тоо</Label>
+                                                    <Input
+                                                        type="number"
+                                                        value={profileForm.employeeCount || ""}
+                                                        onChange={(e) => setProfileForm({ ...profileForm, employeeCount: parseInt(e.target.value) || undefined })}
+                                                        placeholder="Ж нь: 50"
+                                                        className="h-10 rounded-xl bg-secondary/10 border-border/40 focus:bg-background transition-all"
+                                                    />
+                                                </div>
+                                            </div>
+                                            <div className="space-y-2">
+                                                <Label className="text-xs font-bold text-muted-foreground ml-0.5">Уриа үг</Label>
+                                                <Input
+                                                    value={profileForm.slogan || ""}
+                                                    onChange={(e) => setProfileForm({ ...profileForm, slogan: e.target.value })}
+                                                    placeholder="Компанийн уриа..."
+                                                    className="h-10 rounded-xl bg-secondary/10 border-border/40 focus:bg-background transition-all"
+                                                />
+                                            </div>
                                             <Button type="submit" disabled={updatingProfile || creatingProfile} className="h-10 px-8 rounded-xl font-bold shadow-lg shadow-primary/20">
                                                 {(updatingProfile || creatingProfile) ? (
                                                     <><Loader2 className="animate-spin mr-2 h-4 w-4" />Шинэчилж байна...</>
@@ -458,7 +522,7 @@ export default function CompanyPage() {
                                                             className="h-9 rounded-lg bg-background"
                                                         />
                                                     </div>
-                                                    <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                                         <div className="space-y-1.5">
                                                             <Label className="text-xs font-bold text-muted-foreground ml-0.5">Төрөл</Label>
                                                             <select
@@ -470,7 +534,7 @@ export default function CompanyPage() {
                                                                 <option value="junior">Жуниор</option>
                                                             </select>
                                                         </div>
-                                                        <div className="space-y-1.5 flex-1 col-span-2">
+                                                        <div className="space-y-1.5">
                                                             <Label className="text-xs font-bold text-muted-foreground ml-0.5">Цалин / Мэдээлэл</Label>
                                                             <Input
                                                                 value={jobForm.salaryRange || ""}
@@ -479,6 +543,42 @@ export default function CompanyPage() {
                                                                 className="h-9 rounded-lg bg-background"
                                                             />
                                                         </div>
+                                                        <div className="space-y-1.5">
+                                                            <Label className="text-xs font-bold text-muted-foreground ml-0.5">Дуусах хугацаа</Label>
+                                                            <Input
+                                                                type="date"
+                                                                value={jobForm.deadline || ""}
+                                                                onChange={(e) => setJobForm({ ...jobForm, deadline: e.target.value })}
+                                                                className="h-9 rounded-lg bg-background"
+                                                            />
+                                                        </div>
+                                                    </div>
+                                                    <div className="space-y-1.5">
+                                                        <Label className="text-xs font-bold text-muted-foreground ml-0.5">Гүйцэтгэх үндсэн үүрэг</Label>
+                                                        <textarea
+                                                            value={jobForm.responsibilities || ""}
+                                                            onChange={(e) => setJobForm({ ...jobForm, responsibilities: e.target.value })}
+                                                            placeholder="Ажлын байрны үүрэг хариуцлага..."
+                                                            className="w-full min-h-[100px] border rounded-lg p-3 bg-background text-sm outline-none focus:ring-1 focus:ring-primary"
+                                                        />
+                                                    </div>
+                                                    <div className="space-y-1.5">
+                                                        <Label className="text-xs font-bold text-muted-foreground ml-0.5">Дадлагат тавигдах шаардлага</Label>
+                                                        <textarea
+                                                            value={jobForm.requirements || ""}
+                                                            onChange={(e) => setJobForm({ ...jobForm, requirements: e.target.value })}
+                                                            placeholder="Мэргэжил, туршлага, ур чадвар..."
+                                                            className="w-full min-h-[100px] border rounded-lg p-3 bg-background text-sm outline-none focus:ring-1 focus:ring-primary"
+                                                        />
+                                                    </div>
+                                                    <div className="space-y-1.5">
+                                                        <Label className="text-xs font-bold text-muted-foreground ml-0.5">Нэмэлт мэдээлэл</Label>
+                                                        <textarea
+                                                            value={jobForm.additionalInfo || ""}
+                                                            onChange={(e) => setJobForm({ ...jobForm, additionalInfo: e.target.value })}
+                                                            placeholder="Бусад зүйлс..."
+                                                            className="w-full min-h-[80px] border rounded-lg p-3 bg-background text-sm outline-none focus:ring-1 focus:ring-primary"
+                                                        />
                                                     </div>
                                                     <Button type="submit" disabled={creatingJob} className="w-full h-10 rounded-xl font-bold">
                                                         {creatingJob ? <><Loader2 className="animate-spin mr-2 h-4 w-4" />Оруулж байна...</> : "Нийтлэх"}
@@ -502,6 +602,15 @@ export default function CompanyPage() {
                                                             <div className="flex items-center gap-3 text-[10px] text-muted-foreground uppercase font-bold tracking-wider">
                                                                 <span className="flex items-center gap-1"><Search className="w-3 h-3" />{job.location}</span>
                                                                 <span className="flex items-center gap-1"><Clock className="w-3 h-3" />{job.salaryRange || "Уян хатан"}</span>
+                                                                {job.deadline && (
+                                                                    <span className={cn(
+                                                                        "flex items-center gap-1",
+                                                                        new Date(job.deadline).getTime() - new Date().getTime() < 86400000 ? "text-red-500" : "text-amber-500"
+                                                                    )}>
+                                                                        <AlertCircle className="w-3 h-3" />
+                                                                        {getTimeRemaining(job.deadline)}
+                                                                    </span>
+                                                                )}
                                                             </div>
                                                         </div>
                                                         <div className={cn(
@@ -551,6 +660,15 @@ export default function CompanyPage() {
                                                             <div className="flex items-center gap-4 text-[10px] font-bold text-muted-foreground/70 uppercase tracking-widest pt-1">
                                                                 <span className="bg-secondary/40 px-2 py-0.5 rounded text-primary">MATCH: {Math.round(app.matchScore * 100)}%</span>
                                                                 <span className="flex items-center gap-1.5"><Clock className="w-3.5 h-3.5" />{new Date(parseInt(app.appliedAt) || Date.now()).toLocaleDateString()}</span>
+                                                                {app.job?.deadline && (
+                                                                    <span className={cn(
+                                                                        "flex items-center gap-1.5 px-2 py-0.5 rounded",
+                                                                        new Date(app.job.deadline).getTime() - new Date().getTime() < 86400000 ? "bg-red-50 text-red-600" : "bg-amber-50 text-amber-600"
+                                                                    )}>
+                                                                        <Zap className="w-3 h-3" />
+                                                                        {getTimeRemaining(app.job.deadline)}
+                                                                    </span>
+                                                                )}
                                                             </div>
                                                         </div>
 
@@ -599,8 +717,8 @@ export default function CompanyPage() {
                             )}
                         </div>
                     </div>
-                </div>
-            </main>
-        </div>
+                </div >
+            </main >
+        </div >
     )
 }

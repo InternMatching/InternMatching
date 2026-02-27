@@ -20,7 +20,14 @@ import {
     Building2,
     Wallet,
     ChevronRight,
-    SearchX
+    SearchX,
+    Calendar,
+    Users2,
+    Quote,
+    CheckCircle2,
+    AlertCircle,
+    Info,
+    Globe
 } from "lucide-react"
 import { useSearchParams, useRouter, usePathname } from "next/navigation"
 import Link from "next/link"
@@ -43,6 +50,7 @@ function JobsContent() {
     const [selectedLevels, setSelectedLevels] = useState<string[]>(
         searchParams.get("levels")?.split(",").filter(Boolean) || []
     )
+    const [selectedJob, setSelectedJob] = useState<Job | null>(null)
 
     // Sync state to URL
     useEffect(() => {
@@ -94,6 +102,16 @@ function JobsContent() {
     const clearFilters = () => {
         setSearchQuery("")
         setSelectedLevels([])
+    }
+
+    const getTimeRemaining = (deadline?: string) => {
+        if (!deadline) return null
+        const diff = new Date(deadline).getTime() - new Date().getTime()
+        if (diff <= 0) return "Хугацаа дууссан"
+        const days = Math.floor(diff / (1000 * 60 * 60 * 24))
+        if (days > 0) return `${days} хоног үлдсэн`
+        const hours = Math.floor(diff / (1000 * 60 * 60))
+        return `${hours} цаг үлдсэн`
     }
 
     const JobSkeleton = () => (
@@ -268,7 +286,10 @@ function JobsContent() {
                                                     </div>
                                                 </div>
 
-                                                <h2 className="text-lg md:text-xl font-bold mb-5 group-hover:text-primary transition-colors cursor-pointer leading-tight">
+                                                <h2
+                                                    className="text-lg md:text-xl font-bold mb-5 group-hover:text-primary transition-colors cursor-pointer leading-tight"
+                                                    onClick={() => setSelectedJob(job)}
+                                                >
                                                     {job.title}
                                                 </h2>
 
@@ -332,6 +353,161 @@ function JobsContent() {
                     </main>
                 </div>
             </div>
+
+            <Sheet open={!!selectedJob} onOpenChange={() => setSelectedJob(null)}>
+                <SheetContent className="w-full sm:max-w-xl overflow-y-auto">
+                    {selectedJob && (
+                        <div className="space-y-8 py-6">
+                            <SheetHeader className="space-y-4">
+                                <div className="flex flex-wrap items-center gap-2">
+                                    <span className={cn(
+                                        "px-2 py-0.5 rounded-md text-[9px] font-bold uppercase tracking-widest border",
+                                        selectedJob.type.toLowerCase() === 'intern'
+                                            ? 'bg-orange-50/5 text-orange-600 border-orange-500/20'
+                                            : 'bg-blue-50/5 text-blue-600 border-blue-500/20'
+                                    )}>
+                                        {selectedJob.type}
+                                    </span>
+                                    {selectedJob.deadline && (
+                                        <span className={cn(
+                                            "flex items-center gap-1.5 px-2 py-0.5 rounded-md text-[9px] font-bold uppercase tracking-widest border",
+                                            new Date(selectedJob.deadline).getTime() - new Date().getTime() < 86400000 ? "bg-red-50 text-red-600 border-red-500/20" : "bg-amber-50 text-amber-600 border-amber-500/20"
+                                        )}>
+                                            <AlertCircle className="w-3 h-3" />
+                                            {getTimeRemaining(selectedJob.deadline)}
+                                        </span>
+                                    )}
+                                </div>
+                                <SheetTitle className="text-2xl md:text-3xl font-black tracking-tight leading-tight">
+                                    {selectedJob.title}
+                                </SheetTitle>
+                                <div className="flex flex-wrap items-center gap-4 text-xs font-bold text-muted-foreground uppercase opacity-80">
+                                    <div className="flex items-center gap-1.5">
+                                        <Building2 className="w-3.5 h-3.5" />
+                                        {selectedJob.company?.companyName}
+                                    </div>
+                                    <div className="flex items-center gap-1.5">
+                                        <MapPin className="w-3.5 h-3.5" />
+                                        {selectedJob.location}
+                                    </div>
+                                </div>
+                            </SheetHeader>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div className="p-4 rounded-2xl bg-emerald-500/5 border border-emerald-500/10 space-y-1">
+                                    <div className="flex items-center gap-2 text-[10px] font-bold text-emerald-600 uppercase tracking-widest">
+                                        <Wallet className="w-3 h-3" />
+                                        Цалин / Урамшуулал
+                                    </div>
+                                    <p className="text-lg font-black text-emerald-700 dark:text-emerald-400">{selectedJob.salaryRange || "Тохиролцоно"}</p>
+                                </div>
+                                <div className="p-4 rounded-2xl bg-secondary/30 border border-border/40 space-y-1">
+                                    <div className="flex items-center gap-2 text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
+                                        <Calendar className="w-3 h-3" />
+                                        Нийтэлсэн огноо
+                                    </div>
+                                    <p className="text-lg font-black">{new Date(selectedJob.postedAt).toLocaleDateString()}</p>
+                                </div>
+                            </div>
+
+                            <div className="space-y-6">
+                                {selectedJob.responsibilities && (
+                                    <div className="space-y-3">
+                                        <h3 className="text-sm font-black uppercase tracking-widest text-primary flex items-center gap-2">
+                                            Гүйцэтгэх үндсэн үүрэг
+                                            <div className="h-px flex-1 bg-primary/10" />
+                                        </h3>
+                                        <div className="text-sm leading-relaxed text-foreground/80 font-medium whitespace-pre-wrap">
+                                            {selectedJob.responsibilities}
+                                        </div>
+                                    </div>
+                                )}
+
+                                {selectedJob.requirements && (
+                                    <div className="space-y-3">
+                                        <h3 className="text-sm font-black uppercase tracking-widest text-primary flex items-center gap-2">
+                                            Тавигдах шаардлага
+                                            <div className="h-px flex-1 bg-primary/10" />
+                                        </h3>
+                                        <div className="text-sm leading-relaxed text-foreground/80 font-medium whitespace-pre-wrap">
+                                            {selectedJob.requirements}
+                                        </div>
+                                    </div>
+                                )}
+
+                                {selectedJob.additionalInfo && (
+                                    <div className="space-y-3">
+                                        <h3 className="text-sm font-black uppercase tracking-widest text-muted-foreground flex items-center gap-2">
+                                            Нэмэлт мэдээлэл
+                                            <div className="h-px flex-1 bg-border/40" />
+                                        </h3>
+                                        <div className="text-sm leading-relaxed text-muted-foreground font-medium whitespace-pre-wrap italic">
+                                            {selectedJob.additionalInfo}
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+
+                            <Card className="border-primary/10 bg-primary/5 rounded-2xl overflow-hidden shadow-none">
+                                <CardHeader className="pb-3 border-b border-primary/10">
+                                    <div className="flex items-center gap-3">
+                                        <div className="w-10 h-10 rounded-xl bg-background flex items-center justify-center border border-primary/10 overflow-hidden shadow-inner">
+                                            <Building2 className="w-5 h-5 text-primary/40" />
+                                        </div>
+                                        <div>
+                                            <div className="text-[10px] font-bold text-primary uppercase tracking-widest leading-none mb-1">Компаний тухай</div>
+                                            <h4 className="text-sm font-black leading-none">{selectedJob.company?.companyName}</h4>
+                                        </div>
+                                    </div>
+                                </CardHeader>
+                                <CardContent className="p-4 space-y-4">
+                                    {selectedJob.company?.slogan && (
+                                        <div className="flex items-start gap-2 italic text-xs text-primary/70 mb-2">
+                                            <Quote className="w-3 h-3 shrink-0 opacity-40" />
+                                            <p>&quot;{selectedJob.company.slogan}&quot;</p>
+                                        </div>
+                                    )}
+                                    <div className="grid grid-cols-2 gap-3 text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+                                        <div className="flex flex-col gap-1">
+                                            <div className="flex items-center gap-1.5 opacity-60"><Calendar className="w-3 h-3" /> Байгуулагдсан</div>
+                                            <div className="text-foreground">{selectedJob.company?.foundedYear || "Тодорхойгүй"}</div>
+                                        </div>
+                                        <div className="flex flex-col gap-1">
+                                            <div className="flex items-center gap-1.5 opacity-60"><Users2 className="w-3 h-3" /> Ажилчид</div>
+                                            <div className="text-foreground">{selectedJob.company?.employeeCount || "Тодорхойгүй"}</div>
+                                        </div>
+                                    </div>
+                                    <p className="text-xs text-foreground/70 font-medium line-clamp-3">
+                                        {selectedJob.company?.description}
+                                    </p>
+                                    <div className="flex items-center gap-3 pt-2">
+                                        {selectedJob.company?.website && (
+                                            <a
+                                                href={selectedJob.company.website}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="flex items-center gap-1.5 text-[10px] font-bold text-primary hover:underline"
+                                            >
+                                                <Globe className="w-3 h-3" />
+                                                Вэбсайт
+                                            </a>
+                                        )}
+                                    </div>
+                                </CardContent>
+                            </Card>
+
+                            <div className="sticky bottom-0 pt-6 pb-2 bg-background/80 backdrop-blur-md">
+                                <Button className="w-full h-12 rounded-2xl font-black uppercase tracking-widest text-xs shadow-lg shadow-primary/20" asChild>
+                                    <Link href={`/login?redirect=jobs&id=${selectedJob.id}`}>
+                                        Одоо бүртгүүлэх
+                                        <ChevronRight className="w-4 h-4 ml-1" />
+                                    </Link>
+                                </Button>
+                            </div>
+                        </div>
+                    )}
+                </SheetContent>
+            </Sheet>
         </div>
     )
 }

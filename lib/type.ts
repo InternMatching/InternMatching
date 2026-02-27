@@ -57,6 +57,9 @@ export interface CompanyProfile {
   logoUrl?: string;
   isVerified: boolean;
   website?: string;
+  foundedYear?: number;
+  employeeCount?: number;
+  slogan?: string;
   updatedAt: string;
 }
 
@@ -72,6 +75,10 @@ export interface Job {
   requiredSkills: string[];
   location?: string;
   salaryRange?: string;
+  responsibilities?: string;
+  requirements?: string;
+  additionalInfo?: string;
+  deadline?: string;
   status: JobStatus;
   postedAt: string;
   company?: CompanyProfile;
@@ -110,6 +117,9 @@ export interface CompanyProfileInput {
   location?: string;
   logoUrl?: string;
   website?: string;
+  foundedYear?: number;
+  employeeCount?: number;
+  slogan?: string;
 }
 
 export interface JobInput {
@@ -119,6 +129,10 @@ export interface JobInput {
   requiredSkills?: string[];
   location?: string;
   salaryRange?: string;
+  responsibilities?: string;
+  requirements?: string;
+  additionalInfo?: string;
+  deadline?: string;
   status?: JobStatus;
 }
 

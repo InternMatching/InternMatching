@@ -118,6 +118,9 @@ export const GET_COMPANY_PROFILE = gql`
       location
       logoUrl
       website
+      foundedYear
+      employeeCount
+      slogan
       isVerified
     }
   }
@@ -131,6 +134,9 @@ export const UPDATE_COMPANY_PROFILE = gql`
       description
       industry
       location
+      foundedYear
+      employeeCount
+      slogan
     }
   }
 `;
@@ -166,10 +172,18 @@ export const GET_ALL_JOBS = gql`
       type
       location
       salaryRange
+      responsibilities
+      requirements
+      additionalInfo
+      deadline
       status
       postedAt
       company {
         companyName
+        location
+        foundedYear
+        employeeCount
+        slogan
       }
     }
   }
@@ -194,8 +208,25 @@ export const GET_APPLICATIONS = gql`
       job {
         id
         title
+        description
+        type
+        location
+        salaryRange
+        responsibilities
+        requirements
+        additionalInfo
+        deadline
+        postedAt
         company {
           companyName
+          industry
+          location
+          description
+          logoUrl
+          website
+          foundedYear
+          employeeCount
+          slogan
         }
       }
       student {

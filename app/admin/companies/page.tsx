@@ -10,13 +10,23 @@ import {
     Globe,
     ShieldCheck,
     Plus,
-    Loader2
+    Loader2,
+    Calendar,
+    Users2,
+    Quote
 } from "lucide-react"
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { toast } from "sonner"
+import {
+    Sheet,
+    SheetContent,
+    SheetDescription,
+    SheetHeader,
+    SheetTitle,
+} from "@/components/ui/sheet"
 
 const GET_ALL_COMPANIES = gql`
   query GetAllCompanies {
@@ -28,6 +38,9 @@ const GET_ALL_COMPANIES = gql`
       location
       logoUrl
       website
+      foundedYear
+      employeeCount
+      slogan
       isVerified
       updatedAt
     }
@@ -51,6 +64,9 @@ interface CompanyProfile {
     location: string
     logoUrl: string
     website: string
+    foundedYear?: number
+    employeeCount?: number
+    slogan?: string
     isVerified: boolean
     updatedAt: string
 }
@@ -63,6 +79,7 @@ export default function CompaniesManagementPage() {
     const [verifyCompany] = useMutation(VERIFY_COMPANY)
     const [searchTerm, setSearchTerm] = useState("")
     const [statusFilter, setStatusFilter] = useState("all")
+    const [selectedCompany, setSelectedCompany] = useState<CompanyProfile | null>(null)
 
     const filteredCompanies = (data?.getAllCompanyProfiles || []).filter(company => {
         const name = company.companyName || ""
@@ -206,6 +223,7 @@ export default function CompaniesManagementPage() {
                                         variant="outline"
                                         size="sm"
                                         className="flex-1 h-8 text-[10px] font-bold uppercase"
+                                        onClick={() => setSelectedCompany(company)}
                                     >
                                         Үзэх
                                     </Button>
@@ -225,6 +243,100 @@ export default function CompaniesManagementPage() {
                     ))
                 )}
             </div>
+
+            <Sheet open={!!selectedCompany} onOpenChange={() => setSelectedCompany(null)}>
+                <SheetContent className="w-full sm:max-w-md overflow-y-auto">
+                    {selectedCompany && (
+                        <div className="space-y-8 py-6">
+                            <SheetHeader className="space-y-4">
+                                <div className="flex items-center gap-4">
+                                    <div className="w-16 h-16 rounded-2xl bg-secondary flex items-center justify-center border-2 border-primary/10 overflow-hidden shadow-inner">
+                                        {selectedCompany.logoUrl ? (
+                                            <img src={selectedCompany.logoUrl} alt="" className="w-full h-full object-cover" />
+                                        ) : (
+                                            <Building2 className="w-8 h-8 text-primary/40" />
+                                        )}
+                                    </div>
+                                    <div>
+                                        <SheetTitle className="text-2xl font-black tracking-tight">{selectedCompany.companyName}</SheetTitle>
+                                        <SheetDescription className="text-primary font-bold uppercase tracking-widest text-[10px]">
+                                            {selectedCompany.industry}
+                                        </SheetDescription>
+                                    </div>
+                                </div>
+                                {selectedCompany.slogan && (
+                                    <div className="flex items-start gap-2 p-4 rounded-xl bg-primary/5 border border-primary/10 italic text-sm text-primary/80">
+                                        <Quote className="w-4 h-4 shrink-0 fill-primary/10" />
+                                        <p>&quot;{selectedCompany.slogan}&quot;</p>
+                                    </div>
+                                )}
+                            </SheetHeader>
+
+                            <div className="grid grid-cols-2 gap-4">
+                                <div className="p-4 rounded-2xl bg-secondary/30 border border-border/40 space-y-1">
+                                    <div className="flex items-center gap-2 text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
+                                        <Calendar className="w-3 h-3" />
+                                        Байгуулагдсан
+                                    </div>
+                                    <p className="text-lg font-black">{selectedCompany.foundedYear || "Тодорхойгүй"}</p>
+                                </div>
+                                <div className="p-4 rounded-2xl bg-secondary/30 border border-border/40 space-y-1">
+                                    <div className="flex items-center gap-2 text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
+                                        <Users2 className="w-3 h-3" />
+                                        Ажилчид
+                                    </div>
+                                    <p className="text-lg font-black">{selectedCompany.employeeCount || "Тодорхойгүй"}</p>
+                                </div>
+                            </div>
+
+                            <div className="space-y-4">
+                                <h3 className="text-sm font-black uppercase tracking-widest text-muted-foreground flex items-center gap-2">
+                                    <div className="h-px flex-1 bg-border/40" />
+                                    Танилцуулга
+                                    <div className="h-px flex-1 bg-border/40" />
+                                </h3>
+                                <p className="text-sm leading-relaxed text-foreground/80 font-medium">
+                                    {selectedCompany.description || "Танилцуулга байхгүй."}
+                                </p>
+                            </div>
+
+                            <div className="space-y-4">
+                                <h3 className="text-sm font-black uppercase tracking-widest text-muted-foreground flex items-center gap-2">
+                                    <div className="h-px flex-1 bg-border/40" />
+                                    Холбоо барих
+                                    <div className="h-px flex-1 bg-border/40" />
+                                </h3>
+                                <div className="space-y-3">
+                                    <div className="flex items-center gap-3 p-3 rounded-xl bg-background border border-border/40 text-sm font-bold">
+                                        <MapPin className="w-4 h-4 text-rose-500" />
+                                        {selectedCompany.location}
+                                    </div>
+                                    {selectedCompany.website && (
+                                        <a
+                                            href={selectedCompany.website}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="flex items-center gap-3 p-3 rounded-xl bg-background border border-border/40 text-sm font-bold text-primary hover:bg-primary/5 transition-colors"
+                                        >
+                                            <Globe className="w-4 h-4" />
+                                            {selectedCompany.website}
+                                        </a>
+                                    )}
+                                </div>
+                            </div>
+
+                            {!selectedCompany.isVerified && (
+                                <Button
+                                    className="w-full h-12 rounded-2xl font-black uppercase tracking-widest text-xs bg-emerald-600 hover:bg-emerald-700 shadow-lg shadow-emerald-500/20"
+                                    onClick={() => handleVerify(selectedCompany.id)}
+                                >
+                                    Баталгаажуулах
+                                </Button>
+                            )}
+                        </div>
+                    )}
+                </SheetContent>
+            </Sheet>
         </div>
     )
 }
