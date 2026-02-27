@@ -85,10 +85,10 @@ export default function LandingPage() {
                   <Button size="lg" className="h-14 px-8 rounded-2xl text-base font-semibold shadow-lg shadow-primary/20 group" asChild>
                     <Link href="/signup">
                       Одоо нэгдэх
-                      <ArrowRight className="ml-2 w-4 h-4 transition-transform group-hover:translate-x-1" />
+                      <ArrowRight className="ml-2 w-4 h-4 transition-transform group-hover:translate-x-1 " />
                     </Link>
                   </Button>
-                  <Button size="lg" variant="outline" className="h-14 px-8 rounded-2xl text-base font-semibold border-border/60" asChild>
+                  <Button size="lg" variant="outline" className="h-14 px-8 rounded-2xl hover:bg-primary  text-base font-semibold border-border/60" asChild>
                     <Link href="/login">Нэвтрэх</Link>
                   </Button>
                 </div>
@@ -223,10 +223,10 @@ export default function LandingPage() {
                       </li>
                     ))}
                   </ul>
-                  <Button className="w-full mt-10 h-12 rounded-xl bg-primary/5 hover:bg-primary/10 text-primary border border-primary/20 group/btn" variant="ghost" asChild>
+                  <Button className="w-full mt-16 h-12 rounded-xl bg-primary/5 hover:bg-primary text-primary hover:text-white border border-primary/20 group/btn" variant="ghost" asChild>
                     <Link href="/signup?role=student">
-                      Оюутнаар нэргэх
-                      <ArrowRight className="ml-2 w-4 h-4 transition-transform group-hover/btn:translate-x-1" />
+                      Оюутнаар нэвтрэх
+                      <ArrowRight className="ml-2 w-4 h-4 transition-transform group-hover/btn:translate-x-1 " />
                     </Link>
                   </Button>
                 </CardContent>
@@ -258,7 +258,7 @@ export default function LandingPage() {
                       </li>
                     ))}
                   </ul>
-                  <Button className="w-full mt-10 h-12 rounded-xl bg-primary/5 hover:bg-primary/10 text-primary border border-primary/20 group/btn" variant="ghost" asChild>
+                  <Button className="w-full mt-10 h-12 rounded-xl bg-primary/5 hover:bg-primary hover:text-white text-primary border border-primary/20 group/btn" variant="ghost" asChild>
                     <Link href="/signup?role=company">
                       Компаниар нэгдэх
                       <ArrowRight className="ml-2 w-4 h-4 transition-transform group-hover/btn:translate-x-1" />
@@ -294,13 +294,13 @@ export default function LandingPage() {
                   </p>
 
                   <div className="flex flex-col sm:flex-row gap-4 pt-4">
-                    <Button size="lg" variant="secondary" className="h-14 px-10 rounded-2xl text-base font-bold shadow-xl transition-all hover:scale-105 active:scale-95 group" asChild>
+                    <Button size="lg" variant="secondary" className="h-14 px-10 rounded-2xl text-base font-bold shadow-xl transition-all hover:bg-primary hover:text-white active:scale-95 group" asChild>
                       <Link href="/signup">
                         Бүртгэл үүсгэх
                         <ArrowRight className="ml-2 w-5 h-5 transition-transform group-hover:translate-x-1" />
                       </Link>
                     </Button>
-                    <Button variant="outline" className="h-14 px-8 rounded-2xl text-base font-semibold border-white/30 text-white hover:bg-white/10 hover:text-white backdrop-blur-sm" asChild>
+                    <Button variant="outline" className="h-14 px-8 rounded-2xl text-base font-semibold border-primary text-black hover:bg-primary hover:text-white backdrop-blur-sm" asChild>
                       <Link href="/login">Нэвтрэх</Link>
                     </Button>
                   </div>

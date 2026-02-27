@@ -60,6 +60,9 @@ export const ME = gql`
       id
       email
       role
+      phoneNumber
+      themeColor
+      emailNotifications
     }
   }
 `;
