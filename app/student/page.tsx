@@ -1,6 +1,7 @@
 "use client"
 
 import React, { useState, useEffect } from "react"
+import Image from "next/image"
 import { useRouter } from "next/navigation"
 import { useQuery, useMutation, useApolloClient } from "@apollo/client/react"
 import { Button } from "@/components/ui/button"
@@ -28,9 +29,11 @@ import {
     Calendar,
     Quote,
     Globe,
-    Info
+    Info,
+    Camera,
+    Plus
 } from "lucide-react"
-import { ME, GET_STUDENT_PROFILE, UPDATE_STUDENT_PROFILE, CREATE_STUDENT_PROFILE, GET_ALL_JOBS, CREATE_APPLICATION, GET_APPLICATIONS } from "../graphql/mutations"
+import { ME, GET_STUDENT_PROFILE, UPDATE_STUDENT_PROFILE, CREATE_STUDENT_PROFILE, GET_ALL_JOBS, CREATE_APPLICATION, GET_APPLICATIONS, UPLOAD_STUDENT_PROFILE_PICTURE } from "../graphql/mutations"
 import { User as UserType, StudentProfile, Job, Application, StudentProfileInput, JobStatus } from "@/lib/type"
 import { ThemeToggle } from "@/components/theme-toggle"
 import { toast } from "sonner"
@@ -67,12 +70,15 @@ export default function StudentPage() {
     const [updateProfile, { loading: updatingProfile }] = useMutation<{ updateStudentProfile: StudentProfile }, { input: StudentProfileInput }>(UPDATE_STUDENT_PROFILE)
     const [createProfile, { loading: creatingProfile }] = useMutation<{ createStudentProfile: StudentProfile }, { input: StudentProfileInput }>(CREATE_STUDENT_PROFILE)
     const [applyJob, { loading: applying }] = useMutation<{ createApplication: Application }, { jobId: string }>(CREATE_APPLICATION)
+    const [uploadProfilePicture, { loading: uploadingPicture }] = useMutation(UPLOAD_STUDENT_PROFILE_PICTURE)
 
     const [formData, setFormData] = useState<StudentProfileInput>({
         firstName: "",
         lastName: "",
         bio: "",
-        skills: []
+        skills: [],
+        experienceLevel: "intern",
+        education: []
     })
 
     const [skillsInput, setSkillsInput] = useState("")
@@ -95,7 +101,9 @@ export default function StudentPage() {
                 firstName: profile.firstName || "",
                 lastName: profile.lastName || "",
                 bio: profile.bio || "",
-                skills: profile.skills || []
+                skills: profile.skills || [],
+                experienceLevel: profile.experienceLevel || "intern",
+                education: profile.education || []
             })
             setSkillsInput(profile.skills?.join(", ") || "")
         }
@@ -144,7 +152,6 @@ export default function StudentPage() {
             toast.error("Алдаа гарлаа. Дахин оролдоно уу.")
         }
     }
-
     const handleApply = async (jobId: string) => {
         try {
             await applyJob({
@@ -156,6 +163,39 @@ export default function StudentPage() {
             console.error(err)
             toast.error("Та аль хэдийн илгээсэн байна эсвэл алдаа гарлаа.")
         }
+    }
+
+    const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0]
+        if (!file) return
+
+        // Validate file type
+        if (!file.type.startsWith('image/')) {
+            toast.error("Зөвхөн зураг оруулна уу")
+            return
+        }
+
+        // Validate file size (max 5MB)
+        if (file.size > 5 * 1024 * 1024) {
+            toast.error("Зургийн хэмжээ 5MB-аас бага байх ёстой")
+            return
+        }
+
+        const reader = new FileReader()
+        reader.onloadend = async () => {
+            const base64String = reader.result as string
+            try {
+                await uploadProfilePicture({
+                    variables: { base64Image: base64String }
+                })
+                toast.success("Профайл зураг шинэчлэгдлээ")
+                refetchProfile()
+            } catch (err) {
+                console.error(err)
+                toast.error("Зураг хуулахад алдаа гарлаа")
+            }
+        }
+        reader.readAsDataURL(file)
     }
 
     if (userLoading || profileLoading) {
@@ -247,8 +287,18 @@ export default function StudentPage() {
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
                                 <Button variant="ghost" className="h-9 px-2.5 rounded-xl gap-2 hover:bg-secondary">
-                                    <div className="w-6.5 h-6.5 rounded-lg bg-primary/5 flex items-center justify-center border border-primary/10">
-                                        <UserCircle className="h-4 w-4 text-primary" />
+                                    <div className="w-6.5 h-6.5 rounded-lg bg-primary/5 flex items-center justify-center border border-primary/10 overflow-hidden">
+                                        {profileData?.getStudentProfile?.profilePictureUrl ? (
+                                            <Image 
+                                                src={profileData.getStudentProfile.profilePictureUrl} 
+                                                alt="Profile" 
+                                                width={26} 
+                                                height={26} 
+                                                className="object-cover w-full h-full"
+                                            />
+                                        ) : (
+                                            <UserCircle className="h-4 w-4 text-primary" />
+                                        )}
                                     </div>
                                     <span className="text-xs font-bold text-foreground hidden sm:inline-block max-w-[100px] truncate">
                                         {profileData?.getStudentProfile?.firstName || "Оюутан"}
@@ -302,8 +352,36 @@ export default function StudentPage() {
                             {activeTab === "profile" && (
                                 <Card className="border-border/60 shadow-none rounded-2xl bg-background">
                                     <CardHeader className="p-6 md:p-8 border-b border-border/40 mb-2">
-                                        <CardTitle className="text-xl font-bold">Хувийн мэдээлэл</CardTitle>
-                                        <CardDescription className="text-sm">Дадлага хийх хүсэлт гаргахад таны энэ мэдээлэл компаниудад очих болно.</CardDescription>
+                                        <div className="flex flex-col sm:flex-row sm:items-center gap-6 mb-2">
+                                            <div className="relative group">
+                                                <div className="w-24 h-24 rounded-3xl bg-secondary/30 flex items-center justify-center border-2 border-border/50 overflow-hidden shadow-inner">
+                                                    {profileData?.getStudentProfile?.profilePictureUrl ? (
+                                                        <Image 
+                                                            src={profileData.getStudentProfile.profilePictureUrl} 
+                                                            alt="Profile" 
+                                                            width={96} 
+                                                            height={96} 
+                                                            className="object-cover w-full h-full"
+                                                        />
+                                                    ) : (
+                                                        <User className="w-10 h-10 text-muted-foreground/40" />
+                                                    )}
+                                                    {uploadingPicture && (
+                                                        <div className="absolute inset-0 bg-background/60 backdrop-blur-sm flex items-center justify-center">
+                                                            <Loader2 className="w-6 h-6 text-primary animate-spin" />
+                                                        </div>
+                                                    )}
+                                                </div>
+                                                <label className="absolute -bottom-2 -right-2 w-8 h-8 bg-primary rounded-xl flex items-center justify-center cursor-pointer shadow-lg shadow-primary/20 hover:scale-110 transition-transform">
+                                                    <Camera className="w-4 h-4 text-primary-foreground" />
+                                                    <input type="file" className="hidden" accept="image/*" onChange={handleImageUpload} disabled={uploadingPicture} />
+                                                </label>
+                                            </div>
+                                            <div className="space-y-1">
+                                                <CardTitle className="text-xl font-bold">Хувийн мэдээлэл</CardTitle>
+                                                <CardDescription className="text-sm italic">Дадлага хийх хүсэлт гаргахад таны энэ мэдээлэл компаниудад очих болно.</CardDescription>
+                                            </div>
+                                        </div>
                                     </CardHeader>
                                     <CardContent className="p-6 md:p-8">
                                         <form onSubmit={handleUpdateProfile} className="space-y-6">
@@ -353,6 +431,104 @@ export default function StudentPage() {
                                                     className="h-10 rounded-xl bg-secondary/20 border-border/50 focus:bg-background transition-all"
                                                 />
                                             </div>
+
+                                            <div className="space-y-2">
+                                                <Label className="text-xs font-bold text-muted-foreground ml-0.5">Түвшин</Label>
+                                                <select
+                                                    className="w-full h-10 rounded-xl bg-secondary/20 border border-border/50 focus:bg-background transition-all px-3 text-sm font-medium outline-none focus:ring-1 focus:ring-primary"
+                                                    value={formData.experienceLevel}
+                                                    onChange={(e) => setFormData({ ...formData, experienceLevel: e.target.value as any })}
+                                                >
+                                                    <option value="intern">Интерн</option>
+                                                    <option value="junior">Жуниор</option>
+                                                </select>
+                                            </div>
+
+                                            <div className="space-y-4">
+                                                <div className="flex items-center justify-between">
+                                                    <Label className="text-xs font-bold text-muted-foreground ml-0.5">Боловсрол</Label>
+                                                    <Button 
+                                                        type="button" 
+                                                        variant="ghost" 
+                                                        size="sm" 
+                                                        className="h-7 px-2 text-[10px] font-black uppercase tracking-tighter"
+                                                        onClick={() => {
+                                                            const education = [...(formData.education || [])]
+                                                            education.push({ school: "", degree: "", year: new Date().getFullYear() })
+                                                            setFormData({ ...formData, education })
+                                                        }}
+                                                    >
+                                                        <Plus className="w-3 h-3 mr-1" /> Нэмэх
+                                                    </Button>
+                                                </div>
+                                                
+                                                <div className="space-y-3">
+                                                    {(formData.education || []).map((edu, idx) => (
+                                                        <div key={idx} className="p-4 rounded-xl border border-border/40 bg-secondary/5 space-y-3 relative group">
+                                                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                                                <div className="space-y-1">
+                                                                    <Label className="text-[10px] font-bold text-muted-foreground uppercase">Сургууль</Label>
+                                                                    <Input 
+                                                                        value={edu.school} 
+                                                                        onChange={(e) => {
+                                                                            const education = [...(formData.education || [])]
+                                                                            education[idx] = { ...education[idx], school: e.target.value }
+                                                                            setFormData({ ...formData, education })
+                                                                        }}
+                                                                        placeholder="МУИС, ШУТИС..."
+                                                                        className="h-8 rounded-lg text-xs"
+                                                                    />
+                                                                </div>
+                                                                <div className="space-y-1">
+                                                                    <Label className="text-[10px] font-bold text-muted-foreground uppercase">Мэргэжил / Зэрэг</Label>
+                                                                    <Input 
+                                                                        value={edu.degree} 
+                                                                        onChange={(e) => {
+                                                                            const education = [...(formData.education || [])]
+                                                                            education[idx] = { ...education[idx], degree: e.target.value }
+                                                                            setFormData({ ...formData, education })
+                                                                        }}
+                                                                        placeholder="Програм хангамж, Бакалавр..."
+                                                                        className="h-8 rounded-lg text-xs"
+                                                                    />
+                                                                </div>
+                                                            </div>
+                                                            <div className="space-y-1">
+                                                                <Label className="text-[10px] font-bold text-muted-foreground uppercase">Төгссөн он</Label>
+                                                                <Input 
+                                                                    type="number"
+                                                                    value={edu.year} 
+                                                                    onChange={(e) => {
+                                                                        const education = [...(formData.education || [])]
+                                                                        education[idx] = { ...education[idx], year: parseInt(e.target.value) || 0 }
+                                                                        setFormData({ ...formData, education })
+                                                                    }}
+                                                                    placeholder="2024"
+                                                                    className="h-8 rounded-lg text-xs"
+                                                                />
+                                                            </div>
+                                                            <Button 
+                                                                type="button" 
+                                                                variant="ghost" 
+                                                                size="icon" 
+                                                                className="absolute -top-2 -right-2 h-6 w-6 rounded-full bg-destructive/10 text-destructive opacity-0 group-hover:opacity-100 transition-opacity"
+                                                                onClick={() => {
+                                                                    const education = (formData.education || []).filter((_, i) => i !== idx)
+                                                                    setFormData({ ...formData, education })
+                                                                }}
+                                                            >
+                                                                <LogOut className="w-3 h-3" />
+                                                            </Button>
+                                                        </div>
+                                                    ))}
+                                                    {(formData.education || []).length === 0 && (
+                                                        <p className="text-[11px] text-muted-foreground text-center py-4 bg-secondary/5 rounded-xl border border-dashed border-border/40">
+                                                            Боловсролын мэдээлэл нэмээгүй байна.
+                                                        </p>
+                                                    )}
+                                                </div>
+                                            </div>
+
                                             <Button type="submit" disabled={updatingProfile || creatingProfile} className="h-10 px-8 rounded-xl font-bold shadow-lg shadow-primary/20">
                                                 {(updatingProfile || creatingProfile) ? (
                                                     <><Loader2 className="animate-spin mr-2 h-4 w-4" />Хадгалж байна...</>
@@ -385,11 +561,24 @@ export default function StudentPage() {
 
                                                 return (
                                                     <Card key={job.id} className="group hover:border-primary/40 transition-all border-border/60 shadow-sm rounded-2xl overflow-hidden bg-background">
-                                                        <CardContent className="p-5 flex flex-col md:flex-row md:items-center justify-between gap-5 text-sm">
+                                                        <CardContent className="p-5 flex flex-col md:flex-row md:items-center justify-between gap-5 
+                                                    text-sm">
                                                             <div className="space-y-3">
                                                                 <div className="flex items-center gap-2">
-                                                                    <div className="w-9 h-9 bg-secondary/50 rounded-lg flex items-center justify-center">
-                                                                        <Building2 className="w-4.5 h-4.5 text-muted-foreground" />
+                                                                    <div className="w-10 h-10 bg-secondary/30 rounded-xl flex items-center justify-center border border-border/40 overflow-hidden shrink-0">
+                                                                        {job.company?.logoUrl ? (
+                                                                            <Image
+                                                                                src={job.company.logoUrl}
+                                                                                alt={job.company.companyName || ""}
+                                                                                width={40}
+                                                                                height={40}
+                                                                                className="object-cover w-full h-full"
+                                                                            />
+                                                                        ) : (
+                                                                            <span className="text-sm font-black text-primary/50 uppercase">
+                                                                                {job.company?.companyName?.[0] || <Building2 className="w-4 h-4 text-muted-foreground" />}
+                                                                            </span>
+                                                                        )}
                                                                     </div>
                                                                     <div className="flex flex-col cursor-pointer" onClick={() => setSelectedJob(job)}>
                                                                         <h3 className="font-bold text-base leading-none mb-1 group-hover:text-primary transition-colors">{job.title}</h3>
@@ -464,10 +653,27 @@ export default function StudentPage() {
                                                 <Card key={app.id} className="border-border/60 bg-background rounded-2xl shadow-sm">
                                                     <CardContent className="p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                                                         <div className="space-y-1.5 font-medium">
-                                                            <div className="flex items-center gap-2 cursor-pointer group" onClick={() => setSelectedJob(app.job as any)}>
-                                                                <h3 className="font-bold text-base leading-none group-hover:text-primary transition-colors">{app.job?.title}</h3>
+                                                            <div className="flex items-center gap-3 cursor-pointer group" onClick={() => setSelectedJob(app.job as any)}>
+                                                                <div className="w-10 h-10 bg-secondary/30 rounded-xl flex items-center justify-center border border-border/40 overflow-hidden shrink-0">
+                                                                    {app.job?.company?.logoUrl ? (
+                                                                        <Image
+                                                                            src={app.job.company.logoUrl}
+                                                                            alt={app.job.company.companyName || ""}
+                                                                            width={40}
+                                                                            height={40}
+                                                                            className="object-cover w-full h-full"
+                                                                        />
+                                                                    ) : (
+                                                                        <span className="text-sm font-black text-primary/50 uppercase">
+                                                                            {app.job?.company?.companyName?.[0] || <Building2 className="w-4 h-4 text-muted-foreground" />}
+                                                                        </span>
+                                                                    )}
+                                                                </div>
+                                                                <div>
+                                                                    <h3 className="font-bold text-base leading-none group-hover:text-primary transition-colors">{app.job?.title}</h3>
+                                                                    <p className="text-xs font-bold text-primary mt-0.5">{app.job?.company?.companyName} • {app.job?.location}</p>
+                                                                </div>
                                                             </div>
-                                                            <p className="text-xs font-bold text-primary">{app.job?.company?.companyName} • {app.job?.location}</p>
                                                             <p className="text-[10px] text-muted-foreground flex items-center gap-1.5 uppercase font-bold tracking-widest pt-1">
                                                                 <Clock className="w-3 h-3" />
                                                                 Илгээсэн: {new Date(parseInt(app.appliedAt) || Date.parse(app.appliedAt) || Date.now()).toLocaleDateString()}
@@ -610,7 +816,19 @@ export default function StudentPage() {
                                 <CardHeader className="pb-3 border-b border-primary/10">
                                     <div className="flex items-center gap-3">
                                         <div className="w-10 h-10 rounded-xl bg-background flex items-center justify-center border border-primary/10 overflow-hidden shadow-inner">
-                                            <Building2 className="w-5 h-5 text-primary/40" />
+                                            {selectedJob.company?.logoUrl ? (
+                                                <Image
+                                                    src={selectedJob.company.logoUrl}
+                                                    alt={selectedJob.company.companyName || ""}
+                                                    width={40}
+                                                    height={40}
+                                                    className="object-cover w-full h-full"
+                                                />
+                                            ) : (
+                                                <span className="text-sm font-black text-primary/50 uppercase">
+                                                    {selectedJob.company?.companyName?.[0] || <Building2 className="w-5 h-5 text-primary/40" />}
+                                                </span>
+                                            )}
                                         </div>
                                         <div>
                                             <div className="text-[10px] font-bold text-primary uppercase tracking-widest leading-none mb-1">Компаний тухай</div>

@@ -12,6 +12,7 @@ import {
     Users,
     Lock,
     Search,
+    ArrowLeft,
     ArrowRight,
     ShieldCheck,
     Filter,
@@ -108,7 +109,8 @@ function StudentsContent() {
         </div>
     )
 
-    const FilterSidebar = () => (
+    // Inline JSX variable (not a component) — prevents <Input> unmounting on every render
+    const filterPanel = (
         <div className="space-y-4 text-sm font-medium">
             <div className="space-y-2">
                 <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider ml-1">Нэрээр хайх</label>
@@ -153,6 +155,19 @@ function StudentsContent() {
     return (
         <div className="min-h-screen bg-[#FAFAFA] dark:bg-[#09090B] py-6 md:py-10">
             <div className="container mx-auto px-4 md:px-6 lg:px-12 max-w-7xl text-foreground">
+                {/* Back Button */}
+                <div className="mb-4">
+                    <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-8 px-3 rounded-xl text-xs font-bold text-muted-foreground hover:text-foreground hover:bg-secondary/40 transition-all gap-1.5"
+                        onClick={() => router.back()}
+                    >
+                        <ArrowLeft className="w-3.5 h-3.5" />
+                        Буцах
+                    </Button>
+                </div>
+
                 {/* Minimal Header */}
                 <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-8">
                     <div className="space-y-1">
@@ -181,7 +196,7 @@ function StudentsContent() {
                                     <SheetHeader className="mb-4">
                                         <SheetTitle className="text-lg font-bold">Хайлт & Шүүлтүүр</SheetTitle>
                                     </SheetHeader>
-                                    <FilterSidebar />
+                                    {filterPanel}
                                 </SheetContent>
                             </Sheet>
                         </div>
@@ -221,7 +236,7 @@ function StudentsContent() {
                         {/* Minimal Sidebar */}
                         <aside className="hidden lg:block w-64 shrink-0">
                             <div className="sticky top-24 space-y-6">
-                                <FilterSidebar />
+                                {filterPanel}
                                 <div className="p-4 rounded-2xl bg-secondary/20 border border-border/40 text-[11px] font-medium leading-relaxed text-muted-foreground">
                                     <div className="flex items-center gap-1.5 mb-1 text-foreground font-bold uppercase tracking-wider">
                                         <CheckCircle2 className="w-3.5 h-3.5 text-primary" />

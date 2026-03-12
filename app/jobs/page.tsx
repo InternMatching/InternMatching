@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useState, useMemo, useEffect, Suspense } from "react"
+import React, { useState, useMemo, useEffect, useRef, Suspense, useCallback } from "react"
 import { useQuery } from "@apollo/client/react"
 import { GET_ALL_JOBS } from "../graphql/mutations"
 import { Job, JobStatus } from "@/lib/type"
@@ -31,7 +31,9 @@ import {
 } from "lucide-react"
 import { useSearchParams, useRouter, usePathname } from "next/navigation"
 import Link from "next/link"
+import Image from "next/image"
 import { cn } from "@/lib/utils"
+import { toast } from "sonner"
 import {
     Sheet,
     SheetContent,
@@ -45,27 +47,37 @@ function JobsContent() {
     const router = useRouter()
     const pathname = usePathname()
 
-    // URL sync states
+    // Input state - шууд харагдана (debounce хийгдэхгүй)
     const [searchQuery, setSearchQuery] = useState(searchParams.get("query") || "")
     const [selectedLevels, setSelectedLevels] = useState<string[]>(
         searchParams.get("levels")?.split(",").filter(Boolean) || []
     )
     const [selectedJob, setSelectedJob] = useState<Job | null>(null)
 
-    // Sync state to URL
+    // URL-г debounce хийж шинэчлэх (300ms хүлээнэ)
+    // searchParams-г ref-д хадгалж, dependency array-д оруулахгүй
+    // (оруулбал router.replace → searchParams өөрчлөгдөх → effect дахин ажиллах → loop)
+    // Debounce only the URL update (background side-effect).
+    // Filtering uses `searchQuery` directly so it's instant.
+    const debounceRef = useRef<number | null>(null)
     useEffect(() => {
-        const params = new URLSearchParams(searchParams.toString())
-        if (searchQuery) params.set("query", searchQuery)
-        else params.delete("query")
+        if (debounceRef.current) clearTimeout(debounceRef.current)
 
-        if (selectedLevels.length > 0) params.set("levels", selectedLevels.join(","))
-        else params.delete("levels")
+        debounceRef.current = window.setTimeout(() => {
+            const params = new URLSearchParams()
+            if (searchQuery) params.set("query", searchQuery)
+            if (selectedLevels.length > 0) params.set("levels", selectedLevels.join(","))
 
-        const newUrl = `${pathname}?${params.toString()}`
-        if (window.location.search !== `?${params.toString()}`) {
-            router.replace(newUrl, { scroll: false })
+            const newSearch = params.toString() ? `?${params.toString()}` : ""
+            if (window.location.search !== newSearch) {
+                router.replace(`${pathname}${newSearch}`, { scroll: false })
+            }
+        }, 500)
+
+        return () => {
+            if (debounceRef.current) clearTimeout(debounceRef.current)
         }
-    }, [searchQuery, selectedLevels, pathname, router, searchParams])
+    }, [searchQuery, selectedLevels, pathname, router])
 
     const { data, loading, error } = useQuery<{ getAllJobs: Job[] }>(GET_ALL_JOBS, {
         variables: {
@@ -104,6 +116,20 @@ function JobsContent() {
         setSelectedLevels([])
     }
 
+    const handleApplyClick = (jobId: string) => {
+        const token = localStorage.getItem("token")
+        if (!token) {
+            toast.error("Та бүртгэлээ үүсгэнэ үү")
+            router.push(`/login?redirect=jobs&id=${jobId}`)
+        } else {
+            // Even if logged in, let's follow the user's flow
+            // Usually, this would check the role and redirect to the student dashboard
+            // But for now, we'll just redirect to login which handles redirection if already logged in
+            // Or better, redirect them to the student dashboard if token exists
+            router.push(`/login?redirect=jobs&id=${jobId}`)
+        }
+    }
+
     const getTimeRemaining = (deadline?: string) => {
         if (!deadline) return null
         const diff = new Date(deadline).getTime() - new Date().getTime()
@@ -140,7 +166,9 @@ function JobsContent() {
         </div>
     )
 
-    const FilterContent = () => (
+    // Rendered as inline JSX (not as a component) so the <Input> DOM node
+    // is never unmounted between renders — prevents focus loss on each keystroke.
+    const filterPanel = (
         <div className="space-y-4 text-sm font-medium">
             <div className="space-y-2">
                 <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider ml-1">Хайх</label>
@@ -228,7 +256,7 @@ function JobsContent() {
                                 <SheetHeader className="mb-4">
                                     <SheetTitle className="text-lg font-bold">Шүүлтүүр</SheetTitle>
                                 </SheetHeader>
-                                <FilterContent />
+                                {filterPanel}
                             </SheetContent>
                         </Sheet>
                     </div>
@@ -238,7 +266,7 @@ function JobsContent() {
                     {/* Minimal Sidebar */}
                     <aside className="hidden lg:block w-64 shrink-0">
                         <div className="sticky top-24 space-y-6">
-                            <FilterContent />
+                            {filterPanel}
                             <div className="p-4 rounded-2xl bg-secondary/20 border border-border/40 text-[11px] font-medium leading-relaxed text-muted-foreground">
                                 <div className="flex items-center gap-1.5 mb-1 text-foreground font-bold uppercase tracking-wider">
                                     <Briefcase className="w-3.5 h-3.5 text-primary" />
@@ -295,8 +323,18 @@ function JobsContent() {
 
                                                 <div className="flex flex-wrap items-center gap-6">
                                                     <div className="flex items-center gap-2.5">
-                                                        <div className="w-8 h-8 rounded-lg bg-secondary/50 flex items-center justify-center">
-                                                            <Building2 className="w-4 h-4 text-muted-foreground" />
+                                                        <div className="w-8 h-8 rounded-lg bg-secondary/50 flex items-center justify-center overflow-hidden">
+                                                            {job.company?.logoUrl ? (
+                                                                <Image
+                                                                    src={job.company.logoUrl}
+                                                                    alt={job.company.companyName || "logo"}
+                                                                    width={32}
+                                                                    height={32}
+                                                                    className="object-cover w-full h-full"
+                                                                />
+                                                            ) : (
+                                                                <Building2 className="w-4 h-4 text-muted-foreground" />
+                                                            )}
                                                         </div>
                                                         <div className="flex flex-col">
                                                             <span className="text-[9px] font-bold text-muted-foreground uppercase opacity-60 leading-none mb-0.5">Компани</span>
@@ -324,11 +362,13 @@ function JobsContent() {
                                             </div>
 
                                             <div className="md:w-48 bg-secondary/5 p-6 flex flex-col items-center justify-center md:border-l border-border/40 gap-3">
-                                                <Button size="sm" className="w-full h-10 rounded-xl gap-1.5 font-bold text-xs" asChild>
-                                                    <Link href={`/login?redirect=jobs&id=${job.id}`}>
-                                                        Илгээх
-                                                        <ChevronRight className="w-3.5 h-3.5" />
-                                                    </Link>
+                                                <Button 
+                                                    size="sm" 
+                                                    className="w-full h-10 rounded-xl gap-1.5 font-bold text-xs"
+                                                    onClick={() => handleApplyClick(job.id)}
+                                                >
+                                                    Илгээх
+                                                    <ChevronRight className="w-3.5 h-3.5" />
                                                 </Button>
                                                 <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest text-center opacity-70">Илгээх боломжтой</span>
                                             </div>
@@ -452,7 +492,17 @@ function JobsContent() {
                                 <CardHeader className="pb-3 border-b border-primary/10">
                                     <div className="flex items-center gap-3">
                                         <div className="w-10 h-10 rounded-xl bg-background flex items-center justify-center border border-primary/10 overflow-hidden shadow-inner">
-                                            <Building2 className="w-5 h-5 text-primary/40" />
+                                            {selectedJob.company?.logoUrl ? (
+                                                <Image
+                                                    src={selectedJob.company.logoUrl}
+                                                    alt={selectedJob.company.companyName || "logo"}
+                                                    width={40}
+                                                    height={40}
+                                                    className="object-cover w-full h-full"
+                                                />
+                                            ) : (
+                                                <Building2 className="w-5 h-5 text-primary/40" />
+                                            )}
                                         </div>
                                         <div>
                                             <div className="text-[10px] font-bold text-primary uppercase tracking-widest leading-none mb-1">Компаний тухай</div>
@@ -497,11 +547,12 @@ function JobsContent() {
                             </Card>
 
                             <div className="sticky bottom-0 pt-6 pb-2 bg-background/80 backdrop-blur-md">
-                                <Button className="w-full h-12 rounded-2xl font-black uppercase tracking-widest text-xs shadow-lg shadow-primary/20" asChild>
-                                    <Link href={`/login?redirect=jobs&id=${selectedJob.id}`}>
-                                        Одоо бүртгүүлэх
-                                        <ChevronRight className="w-4 h-4 ml-1" />
-                                    </Link>
+                                <Button 
+                                    className="w-full h-12 rounded-2xl font-black uppercase tracking-widest text-xs shadow-lg shadow-primary/20"
+                                    onClick={() => handleApplyClick(selectedJob.id)}
+                                >
+                                    Одоо бүртгүүлэх
+                                    <ChevronRight className="w-4 h-4 ml-1" />
                                 </Button>
                             </div>
                         </div>
