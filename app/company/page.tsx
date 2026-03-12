@@ -25,10 +25,12 @@ import {
     Building2,
     CheckCircle2,
     AlertCircle,
-    Zap
+    Zap,
+    Camera
 } from "lucide-react"
-import { ME, GET_COMPANY_PROFILE, UPDATE_COMPANY_PROFILE, CREATE_COMPANY_PROFILE, GET_ALL_JOBS, CREATE_JOB, GET_APPLICATIONS, UPDATE_APPLICATION_STATUS } from "../graphql/mutations"
-import { User, CompanyProfile, Job, Application, CompanyProfileInput, JobInput, JobStatus, ApplicationStatus } from "@/lib/type"
+import { ME, GET_COMPANY_PROFILE, UPDATE_COMPANY_PROFILE, CREATE_COMPANY_PROFILE, GET_ALL_JOBS, CREATE_JOB, GET_APPLICATIONS, UPDATE_APPLICATION_STATUS, UPLOAD_COMPANY_LOGO, GET_ALL_STUDENT_PROFILES } from "../graphql/mutations"
+import { User, CompanyProfile, Job, Application, CompanyProfileInput, JobInput, JobStatus, ApplicationStatus, StudentProfile } from "@/lib/type"
+import Image from "next/image"
 import { ThemeToggle } from "@/components/theme-toggle"
 import { toast } from "sonner"
 import {
@@ -50,7 +52,7 @@ import { cn } from "@/lib/utils"
 
 export default function CompanyPage() {
     const router = useRouter()
-    const [activeTab, setActiveTab] = useState<"profile" | "jobs" | "applicants">("profile")
+    const [activeTab, setActiveTab] = useState<"profile" | "jobs" | "applicants" | "students">("profile")
     const [isMenuOpen, setIsMenuOpen] = useState(false)
 
     // Auth & Profile Data
@@ -60,22 +62,26 @@ export default function CompanyPage() {
         variables: { companyProfileId: profileData?.getCompanyProfile?.id }
     })
     const { data: appsData, loading: appsLoading, refetch: refetchApps } = useQuery<{ getAllApplications: Application[] }>(GET_APPLICATIONS)
+    const { data: studentsData, loading: studentsLoading } = useQuery<{ getAllStudentProfiles: StudentProfile[] }>(GET_ALL_STUDENT_PROFILES)
 
     const [updateProfile, { loading: updatingProfile }] = useMutation<{ updateCompanyProfile: CompanyProfile }, { input: CompanyProfileInput }>(UPDATE_COMPANY_PROFILE)
     const [createProfile, { loading: creatingProfile }] = useMutation<{ createCompanyProfile: CompanyProfile }, { input: CompanyProfileInput }>(CREATE_COMPANY_PROFILE)
     const [createJob, { loading: creatingJob }] = useMutation<{ createJob: Job }, { input: JobInput }>(CREATE_JOB)
     const [updateAppStatus, { loading: updatingStatus }] = useMutation<{ updateApplicationStatus: Application }, { id: string, status: ApplicationStatus }>(UPDATE_APPLICATION_STATUS)
+    const [uploadLogo] = useMutation<{ uploadCompanyLogo: CompanyProfile }, { base64Image: string }>(UPLOAD_COMPANY_LOGO)
 
     const [profileForm, setProfileForm] = useState<CompanyProfileInput>({
         companyName: "",
         description: "",
         industry: "",
         location: "",
+        logoUrl: "",
         website: "",
         foundedYear: undefined,
         employeeCount: undefined,
         slogan: ""
     })
+    const [logoUploading, setLogoUploading] = useState(false)
 
     const [jobForm, setJobForm] = useState<JobInput>({
         title: "",
@@ -92,6 +98,8 @@ export default function CompanyPage() {
 
     const [showJobForm, setShowJobForm] = useState(false)
     const [skillsInput, setSkillsInput] = useState("")
+    const [selectedStudent, setSelectedStudent] = useState<StudentProfile | null>(null)
+    const [studentSearch, setStudentSearch] = useState("")
 
     useEffect(() => {
         if (profileData?.getCompanyProfile) {
@@ -101,6 +109,7 @@ export default function CompanyPage() {
                 description: profile.description || "",
                 industry: profile.industry || "",
                 location: profile.location || "",
+                logoUrl: profile.logoUrl || "",
                 website: profile.website || "",
                 foundedYear: profile.foundedYear,
                 employeeCount: profile.employeeCount,
@@ -108,6 +117,32 @@ export default function CompanyPage() {
             })
         }
     }, [profileData])
+
+    const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0]
+        if (!file) return
+
+        // Convert file to base64 data URL
+        const reader = new FileReader()
+        reader.onload = async () => {
+            const base64Image = reader.result as string
+            setLogoUploading(true)
+            try {
+                const { data } = await uploadLogo({ variables: { base64Image } })
+                if (data?.uploadCompanyLogo?.logoUrl) {
+                    setProfileForm(prev => ({ ...prev, logoUrl: data.uploadCompanyLogo.logoUrl }))
+                    toast.success("Лого амжилттай байршуулагдлаа!")
+                    refetchProfile()
+                }
+            } catch (err) {
+                console.error(err)
+                toast.error("Лого байршуулахад алдаа гарлаа")
+            } finally {
+                setLogoUploading(false)
+            }
+        }
+        reader.readAsDataURL(file)
+    }
 
     const client = useApolloClient()
 
@@ -230,6 +265,7 @@ export default function CompanyPage() {
         { id: 'profile', name: 'Компаний мэдээлэл', icon: Building },
         { id: 'jobs', name: 'Ажлын байрууд', icon: Briefcase },
         { id: 'applicants', name: 'Хүсэлтүүд', icon: Users },
+        { id: 'students', name: 'Оюутнууд', icon: Users },
     ]
 
     const SidebarContent = () => (
@@ -371,6 +407,50 @@ export default function CompanyPage() {
                                         </div>
                                     </CardHeader>
                                     <CardContent className="p-6 md:p-8">
+                                        {/* Logo Upload */}
+                                        <div className="flex items-center gap-5 mb-6 pb-6 border-b border-border/40">
+                                            <div className="relative group">
+                                                <div className="w-20 h-20 rounded-2xl bg-secondary/30 border-2 border-border/40 overflow-hidden flex items-center justify-center">
+                                                    {profileForm.logoUrl ? (
+                                                        <Image
+                                                            src={profileForm.logoUrl}
+                                                            alt="Company logo"
+                                                            width={80}
+                                                            height={80}
+                                                            className="object-cover w-full h-full"
+                                                        />
+                                                    ) : (
+                                                        <span className="text-2xl font-black text-primary/40 uppercase">
+                                                            {profileForm.companyName?.[0] || "C"}
+                                                        </span>
+                                                    )}
+                                                </div>
+                                                <label
+                                                    htmlFor="logo-upload"
+                                                    className="absolute inset-0 flex items-center justify-center bg-black/40 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
+                                                >
+                                                    {logoUploading ? (
+                                                        <Loader2 className="w-5 h-5 text-white animate-spin" />
+                                                    ) : (
+                                                        <Camera className="w-5 h-5 text-white" />
+                                                    )}
+                                                </label>
+                                                <input
+                                                    id="logo-upload"
+                                                    type="file"
+                                                    accept="image/*"
+                                                    className="hidden"
+                                                    onChange={handleLogoUpload}
+                                                    disabled={logoUploading}
+                                                />
+                                            </div>
+                                            <div>
+                                                <p className="text-sm font-bold mb-0.5">Компаний лого</p>
+                                                <p className="text-xs text-muted-foreground font-medium">Лого дээр дарж зураг сонгоно уу</p>
+                                                <p className="text-[10px] text-muted-foreground/60 font-medium mt-1">PNG, JPG, WEBP · Cloudinary-д хадгалагдана</p>
+                                            </div>
+                                        </div>
+
                                         <form onSubmit={handleUpdateProfile} className="space-y-6">
                                             <div className="space-y-2">
                                                 <Label className="text-xs font-bold text-muted-foreground ml-0.5">Компаний нэр</Label>
@@ -596,25 +676,42 @@ export default function CompanyPage() {
                                         <div className="grid gap-3">
                                             {myJobsData?.getAllJobs?.map((job) => (
                                                 <Card key={job.id} className="hover:border-primary/40 transition-all border-border/60 bg-background rounded-xl shadow-none">
-                                                    <CardContent className="p-4 flex items-center justify-between font-medium">
-                                                        <div className="flex flex-col">
-                                                            <h3 className="font-bold text-sm mb-0.5">{job.title}</h3>
-                                                            <div className="flex items-center gap-3 text-[10px] text-muted-foreground uppercase font-bold tracking-wider">
-                                                                <span className="flex items-center gap-1"><Search className="w-3 h-3" />{job.location}</span>
-                                                                <span className="flex items-center gap-1"><Clock className="w-3 h-3" />{job.salaryRange || "Уян хатан"}</span>
-                                                                {job.deadline && (
-                                                                    <span className={cn(
-                                                                        "flex items-center gap-1",
-                                                                        new Date(job.deadline).getTime() - new Date().getTime() < 86400000 ? "text-red-500" : "text-amber-500"
-                                                                    )}>
-                                                                        <AlertCircle className="w-3 h-3" />
-                                                                        {getTimeRemaining(job.deadline)}
+                                                    <CardContent className="p-4 flex items-center justify-between font-medium gap-4">
+                                                        <div className="flex items-center gap-3 flex-1 min-w-0">
+                                                            <div className="w-10 h-10 bg-secondary/30 rounded-xl flex items-center justify-center border border-border/40 overflow-hidden shrink-0">
+                                                                {profileData?.getCompanyProfile?.logoUrl ? (
+                                                                    <Image
+                                                                        src={profileData.getCompanyProfile.logoUrl}
+                                                                        alt={profileData.getCompanyProfile.companyName}
+                                                                        width={40}
+                                                                        height={40}
+                                                                        className="object-cover w-full h-full"
+                                                                    />
+                                                                ) : (
+                                                                    <span className="text-sm font-black text-primary/50 uppercase">
+                                                                        {profileData?.getCompanyProfile?.companyName?.[0] || <Building2 className="w-4 h-4 text-muted-foreground" />}
                                                                     </span>
                                                                 )}
                                                             </div>
+                                                            <div className="flex flex-col min-w-0">
+                                                                <h3 className="font-bold text-sm mb-0.5 truncate">{job.title}</h3>
+                                                                <div className="flex items-center gap-3 text-[10px] text-muted-foreground uppercase font-bold tracking-wider flex-wrap">
+                                                                    <span className="flex items-center gap-1"><Search className="w-3 h-3" />{job.location}</span>
+                                                                    <span className="flex items-center gap-1"><Clock className="w-3 h-3" />{job.salaryRange || "Уян хатан"}</span>
+                                                                    {job.deadline && (
+                                                                        <span className={cn(
+                                                                            "flex items-center gap-1",
+                                                                            new Date(job.deadline).getTime() - new Date().getTime() < 86400000 ? "text-red-500" : "text-amber-500"
+                                                                        )}>
+                                                                            <AlertCircle className="w-3 h-3" />
+                                                                            {getTimeRemaining(job.deadline)}
+                                                                        </span>
+                                                                    )}
+                                                                </div>
+                                                            </div>
                                                         </div>
                                                         <div className={cn(
-                                                            "px-2.5 py-0.5 rounded-md text-[9px] font-black uppercase tracking-widest border",
+                                                            "px-2.5 py-0.5 rounded-md text-[9px] font-black uppercase tracking-widest border shrink-0",
                                                             job.status === 'open' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : 'bg-secondary text-muted-foreground'
                                                         )}>
                                                             {job.status === 'open' ? 'Нээлттэй' : 'Хаагдсан'}
@@ -647,8 +744,20 @@ export default function CompanyPage() {
                                                     <CardContent className="p-5 flex flex-col md:flex-row md:items-center justify-between gap-5 font-medium">
                                                         <div className="flex-1 space-y-2">
                                                             <div className="flex items-center gap-3">
-                                                                <div className="w-10 h-10 bg-secondary/50 rounded-xl flex items-center justify-center font-bold text-primary border border-border/20 uppercase text-sm">
-                                                                    {app.student?.firstName?.[0]}{app.student?.lastName?.[0]}
+                                                                <div className="w-10 h-10 bg-secondary/50 rounded-xl flex items-center justify-center font-bold text-primary border border-border/20 overflow-hidden shrink-0">
+                                                                    {app.student?.profilePictureUrl ? (
+                                                                        <Image 
+                                                                            src={app.student.profilePictureUrl} 
+                                                                            alt={app.student.firstName || ""} 
+                                                                            width={40} 
+                                                                            height={40} 
+                                                                            className="object-cover w-full h-full"
+                                                                        />
+                                                                    ) : (
+                                                                        <span className="text-sm font-bold text-primary uppercase">
+                                                                            {app.student?.firstName?.[0]}{app.student?.lastName?.[0]}
+                                                                        </span>
+                                                                    )}
                                                                 </div>
                                                                 <div>
                                                                     <h3 className="font-bold text-base leading-none mb-1">{app.student?.firstName} {app.student?.lastName}</h3>
@@ -715,10 +824,206 @@ export default function CompanyPage() {
                                     )}
                                 </div>
                             )}
+
+                            {activeTab === "students" && (
+                                <div className="space-y-6">
+                                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border/40 pb-5 mb-2">
+                                        <div className="space-y-1">
+                                            <h2 className="text-xl font-bold tracking-tight">Оюутны жагсаалт</h2>
+                                            <p className="text-xs text-muted-foreground font-medium">Нийт {studentsData?.getAllStudentProfiles?.length || 0} оюутан бүртгэлтэй байна</p>
+                                        </div>
+                                        <div className="relative w-full sm:w-64">
+                                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                                            <Input 
+                                                placeholder="Оюутан хайх..." 
+                                                className="pl-10 h-10 rounded-xl bg-secondary/10 border-border/40 font-bold"
+                                                value={studentSearch}
+                                                onChange={(e) => setStudentSearch(e.target.value)}
+                                            />
+                                        </div>
+                                    </div>
+
+                                    {studentsLoading ? (
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                                            {[1, 2, 3, 4, 5, 6].map(i => <div key={i} className="h-44 rounded-2xl bg-secondary/20 animate-pulse" />)}
+                                        </div>
+                                    ) : (
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                                            {studentsData?.getAllStudentProfiles?.filter(s => 
+                                                `${s.firstName} ${s.lastName}`.toLowerCase().includes(studentSearch.toLowerCase()) ||
+                                                s.skills.some(skill => skill.toLowerCase().includes(studentSearch.toLowerCase()))
+                                            ).map((student) => (
+                                                <Card 
+                                                    key={student.id} 
+                                                    className="group hover:border-primary/40 transition-all border-border/60 bg-background rounded-2xl overflow-hidden cursor-pointer flex flex-col"
+                                                    onClick={() => setSelectedStudent(student)}
+                                                >
+                                                    <CardContent className="p-5 space-y-4 flex-1">
+                                                        <div className="flex items-center gap-3">
+                                                            <div className="w-12 h-12 rounded-2xl bg-secondary/30 flex items-center justify-center border border-border/40 overflow-hidden shrink-0">
+                                                                {student.profilePictureUrl ? (
+                                                                    <Image 
+                                                                        src={student.profilePictureUrl} 
+                                                                        alt={student.firstName || ""} 
+                                                                        width={48} 
+                                                                        height={48} 
+                                                                        className="object-cover w-full h-full"
+                                                                    />
+                                                                ) : (
+                                                                    <span className="text-lg font-black text-primary/50 uppercase">
+                                                                        {student.firstName?.[0] || <UserCircle className="w-5 h-5 text-muted-foreground" />}
+                                                                    </span>
+                                                                )}
+                                                            </div>
+                                                            <div className="min-w-0">
+                                                                <h3 className="font-bold text-sm truncate group-hover:text-primary transition-colors">{student.firstName} {student.lastName}</h3>
+                                                                <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest leading-none mt-1">
+                                                                    {student.experienceLevel}
+                                                                </p>
+                                                            </div>
+                                                        </div>
+                                                        <div className="space-y-3">
+                                                            <p className="text-xs text-muted-foreground/80 line-clamp-2 font-medium">
+                                                                {student.bio || "Танилцуулга оруулаагүй байна"}
+                                                            </p>
+                                                            <div className="flex flex-wrap gap-1.5">
+                                                                {student.skills.slice(0, 3).map((skill, idx) => (
+                                                                    <span key={idx} className="px-2 py-0.5 rounded-md bg-primary/5 text-primary text-[9px] font-black uppercase tracking-tight border border-primary/10">
+                                                                        {skill}
+                                                                    </span>
+                                                                ))}
+                                                                {student.skills.length > 3 && (
+                                                                    <span className="px-2 py-0.5 rounded-md bg-secondary text-muted-foreground text-[9px] font-black uppercase tracking-tight">
+                                                                        +{student.skills.length - 3}
+                                                                    </span>
+                                                                )}
+                                                            </div>
+                                                        </div>
+                                                    </CardContent>
+                                                    <div className="px-5 py-3 border-t border-border/40 bg-secondary/5 group-hover:bg-primary/5 transition-colors flex items-center justify-between">
+                                                        <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Профайл харах</span>
+                                                        <ChevronRight className="w-3 h-3 text-muted-foreground group-hover:translate-x-1 transition-transform" />
+                                                    </div>
+                                                </Card>
+                                            ))}
+                                        </div>
+                                    )}
+                                </div>
+                            )}
                         </div>
                     </div>
-                </div >
-            </main >
-        </div >
+                </div>
+            </main>
+
+            <Sheet open={!!selectedStudent} onOpenChange={() => setSelectedStudent(null)}>
+                <SheetContent className="w-full sm:max-w-xl overflow-y-auto p-0 border-l border-border/40">
+                    {selectedStudent && (
+                        <div className="flex flex-col h-full bg-background dark:bg-[#09090B]">
+                            {/* Profile Header Background */}
+                            <div className="h-32 bg-linear-to-r from-primary/10 via-primary/5 to-transparent relative">
+                                <div className="absolute -bottom-12 left-8">
+                                    <div className="w-24 h-24 rounded-4xl bg-background border-4 border-background shadow-xl overflow-hidden flex items-center justify-center">
+                                        {selectedStudent.profilePictureUrl ? (
+                                            <Image 
+                                                src={selectedStudent.profilePictureUrl} 
+                                                alt={selectedStudent.firstName || ""} 
+                                                width={96} 
+                                                height={96} 
+                                                className="object-cover w-full h-full"
+                                            />
+                                        ) : (
+                                            <UserCircle className="w-12 h-12 text-muted-foreground/30" />
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="px-8 pt-16 pb-8 space-y-8 flex-1 overflow-y-auto">
+                                <div className="space-y-4">
+                                    <div className="flex flex-wrap items-center justify-between gap-4">
+                                        <div>
+                                            <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-primary/10 text-primary text-[10px] font-black uppercase tracking-widest mb-3">
+                                                <Zap className="w-3 h-3" />
+                                                Оюутан
+                                            </div>
+                                            <SheetTitle className="text-3xl font-black tracking-tight leading-none mb-1">
+                                                {selectedStudent.firstName} {selectedStudent.lastName}
+                                            </SheetTitle>
+                                            <p className="text-sm font-bold text-muted-foreground uppercase tracking-widest opacity-60">
+                                                {selectedStudent.experienceLevel}
+                                            </p>
+                                        </div>
+                                        <div className="flex flex-col gap-2">
+                                            <Button className="rounded-xl h-10 px-6 font-bold shadow-lg shadow-primary/20">
+                                                Холбоо барих
+                                            </Button>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    <div className="p-4 rounded-2xl bg-secondary/30 border border-border/40 space-y-1">
+                                        <div className="flex items-center gap-2 text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
+                                            <Briefcase className="w-3 h-3" />
+                                            Төрөл
+                                        </div>
+                                        <p className="text-lg font-black capitalize">{selectedStudent.experienceLevel}</p>
+                                    </div>
+                                    <div className="p-4 rounded-2xl bg-secondary/30 border border-border/40 space-y-1">
+                                        <div className="flex items-center gap-2 text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
+                                            <Clock className="w-3 h-3" />
+                                            Сүүлд шинэчилсэн
+                                        </div>
+                                        <p className="text-lg font-black">{new Date(selectedStudent.updatedAt).toLocaleDateString()}</p>
+                                    </div>
+                                </div>
+
+                                <div className="space-y-3">
+                                    <h3 className="text-sm font-black uppercase tracking-widest text-primary flex items-center gap-2">
+                                        Миний тухай
+                                        <div className="h-px flex-1 bg-primary/10" />
+                                    </h3>
+                                    <p className="text-sm leading-relaxed text-foreground/80 font-medium whitespace-pre-wrap">
+                                        {selectedStudent.bio || "Танилцуулга оруулаагүй байна."}
+                                    </p>
+                                </div>
+
+                                <div className="space-y-3">
+                                    <h3 className="text-sm font-black uppercase tracking-widest text-primary flex items-center gap-2">
+                                        Ур чадварууд
+                                        <div className="h-px flex-1 bg-primary/10" />
+                                    </h3>
+                                    <div className="flex flex-wrap gap-2 pt-1">
+                                        {selectedStudent.skills.map((skill, idx) => (
+                                            <span key={idx} className="px-3 py-1.5 rounded-xl bg-primary/5 text-primary text-xs font-bold border border-primary/10">
+                                                {skill}
+                                            </span>
+                                        ))}
+                                    </div>
+                                </div>
+
+                                {selectedStudent.education && selectedStudent.education.length > 0 && (
+                                    <div className="space-y-4">
+                                        <h3 className="text-sm font-black uppercase tracking-widest text-primary flex items-center gap-2">
+                                            Боловсрол
+                                            <div className="h-px flex-1 bg-primary/10" />
+                                        </h3>
+                                        <div className="space-y-4 pt-1">
+                                            {selectedStudent.education.map((edu, idx) => (
+                                                <div key={idx} className="relative pl-6 before:absolute before:left-0 before:top-1.5 before:w-2 before:h-2 before:bg-primary before:rounded-full before:shadow-[0_0_10px_rgba(var(--primary),0.5)]">
+                                                    <h4 className="font-bold text-sm leading-none mb-1.5">{edu.school}</h4>
+                                                    <p className="text-xs text-muted-foreground font-medium mb-1">{edu.degree}</p>
+                                                    <span className="text-[10px] font-black text-primary/60 uppercase tracking-widest">{edu.year} он</span>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    )}
+                </SheetContent>
+            </Sheet>
+        </div>
     )
 }

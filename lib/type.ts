@@ -43,6 +43,7 @@ export interface StudentProfile {
   lastName?: string;
   skills: string[];
   cvUrl?: string;
+  profilePictureUrl?: string;
   bio?: string;
   experienceLevel?: ExperienceLevel;
   education?: Education[];
@@ -108,6 +109,7 @@ export interface StudentProfileInput {
   lastName?: string;
   skills?: string[];
   cvUrl?: string;
+  profilePictureUrl?: string;
   bio?: string;
   experienceLevel?: ExperienceLevel;
   education?: Education[];

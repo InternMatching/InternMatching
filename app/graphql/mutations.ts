@@ -76,6 +76,7 @@ export const GET_STUDENT_PROFILE = gql`
       lastName
       bio
       skills
+      profilePictureUrl
       experienceLevel
       education {
         school
@@ -94,6 +95,13 @@ export const UPDATE_STUDENT_PROFILE = gql`
       lastName
       bio
       skills
+      profilePictureUrl
+      experienceLevel
+      education {
+        school
+        degree
+        year
+      }
     }
   }
 `;
@@ -106,6 +114,13 @@ export const CREATE_STUDENT_PROFILE = gql`
       lastName
       bio
       skills
+      profilePictureUrl
+      experienceLevel
+      education {
+        school
+        degree
+        year
+      }
     }
   }
 `;
@@ -157,11 +172,19 @@ export const GET_ALL_STUDENT_PROFILES = gql`
   query GetAllStudentProfiles {
     getAllStudentProfiles {
       id
+      userId
       firstName
       lastName
       skills
       bio
+      profilePictureUrl
       experienceLevel
+      updatedAt
+      education {
+        school
+        degree
+        year
+      }
     }
   }
 `;
@@ -183,6 +206,7 @@ export const GET_ALL_JOBS = gql`
       postedAt
       company {
         companyName
+        logoUrl
         location
         foundedYear
         employeeCount
@@ -236,6 +260,7 @@ export const GET_APPLICATIONS = gql`
         id
         firstName
         lastName
+        profilePictureUrl
       }
     }
   }
@@ -255,6 +280,24 @@ export const UPDATE_APPLICATION_STATUS = gql`
     updateApplicationStatus(id: $id, status: $status) {
       id
       status
+    }
+  }
+`;
+
+export const UPLOAD_COMPANY_LOGO = gql`
+  mutation UploadCompanyLogo($base64Image: String!) {
+    uploadCompanyLogo(base64Image: $base64Image) {
+      id
+      logoUrl
+    }
+  }
+`;
+
+export const UPLOAD_STUDENT_PROFILE_PICTURE = gql`
+  mutation UploadStudentProfilePicture($base64Image: String!) {
+    uploadStudentProfilePicture(base64Image: $base64Image) {
+      id
+      profilePictureUrl
     }
   }
 `;
