@@ -83,8 +83,9 @@ function SignupContent() {
                     router.push("/student?onboarding=true")
                 }
             }
-        } catch (err) {
+        } catch (err: any) {
             console.error("Signup error:", err)
+            toast.error(err.message || "Бүртгэл үүсгэхэд алдаа гарлаа. Дахин оролдоно уу.")
         }
     }
 
