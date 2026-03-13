@@ -213,7 +213,7 @@ export default function StudentPage() {
 
     const navItems = [
         { id: 'profile', name: 'Профайл', icon: User },
-        { id: 'jobs', name: 'Ажлын байр', icon: Search },
+        { id: 'jobs', name: 'Дадлагууд', icon: Search },
         { id: 'applications', name: 'Миний хүсэлтүүд', icon: FileText },
     ]
 
@@ -440,7 +440,6 @@ export default function StudentPage() {
                                                     onChange={(e) => setFormData({ ...formData, experienceLevel: e.target.value as any })}
                                                 >
                                                     <option value="intern">Интерн</option>
-                                                    <option value="junior">Жуниор</option>
                                                 </select>
                                             </div>
 
@@ -544,7 +543,7 @@ export default function StudentPage() {
                             {activeTab === "jobs" && (
                                 <div className="space-y-4">
                                     <div className="flex items-center justify-between border-b border-border/40 pb-4 mb-6">
-                                        <h2 className="text-xl font-bold tracking-tight">Боломжит ажлын байрууд</h2>
+                                        <h2 className="text-xl font-bold tracking-tight">Нээлттэй дадлагууд</h2>
                                         <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
                                             {jobsData?.getAllJobs?.length || 0} нээлттэй зар
                                         </p>
@@ -627,7 +626,7 @@ export default function StudentPage() {
                                             {jobsData?.getAllJobs?.length === 0 && (
                                                 <div className="py-20 text-center space-y-3 bg-secondary/10 rounded-2xl border-2 border-dashed border-border/40">
                                                     <Search className="w-10 h-10 text-muted-foreground/30 mx-auto" />
-                                                    <p className="text-sm font-bold text-muted-foreground">Одоогоор нээлттэй ажлын байр алга байна.</p>
+                                                    <p className="text-sm font-bold text-muted-foreground">Одоогоор нээлттэй дадлагын байр алга байна.</p>
                                                 </div>
                                             )}
                                         </div>

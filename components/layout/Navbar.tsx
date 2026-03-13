@@ -163,17 +163,11 @@ export function Navbar() {
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                             <Button variant="ghost" className="h-10 px-4 rounded-xl font-semibold text-muted-foreground hover:text-white hover:bg-primary transition-all duration-300 ease-in-out data-[state=open]:text-primary group">
-                                Ажлын байр
+                                Дадлагууд
                                 <ChevronDown className="ml-1.5 w-3.5 h-3.5 transition-transform duration-200 group-data-[state=open]:rotate-180 opacity-60" />
                             </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="start" sideOffset={8} className="w-48 p-2 rounded-2xl shadow-lg border-border/40 animate-in fade-in slide-in-from-top-2 duration-200 ">
-                            <DropdownMenuItem asChild className="rounded-xl p-2.5 transition-all duration-300 ease-in-out  data-[highlighted]:bg-primary cursor-pointer group/item ">
-                                <Link href="/jobs" className="flex items-center gap-3  ">
-                                    <Briefcase className="w-4 h-4 text-muted-foreground group-hover/item:text-white  transition-all duration-300 ease-in-out " />
-                                    <span className="text-sm font-medium  ">Бүх ажил</span>
-                                </Link>
-                            </DropdownMenuItem>
                             <DropdownMenuItem asChild className="rounded-xl p-2.5 transition-all duration-300 ease-in-out  data-[highlighted]:bg-primary cursor-pointer group/item">
                                 <Link href="/jobs?levels=intern" className="flex items-center gap-3">
                                     <Zap className="w-4 h-4 text-muted-foreground group-hover/item:text-white transition-all duration-300 ease-in-out" />
@@ -256,11 +250,11 @@ export function Navbar() {
 
                             <div className="flex flex-col gap-6 p-6">
                                 <div className="space-y-3">
-                                    <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest px-2 opacity-60">Ажлын байр</p>
+                                    <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest px-2 opacity-60">Дадлагууд</p>
                                     <div className="grid gap-1">
-                                        <Link href="/jobs" className="flex items-center gap-3 p-3 rounded-xl hover:bg-muted transition-colors font-medium text-sm" onClick={() => setIsOpen(false)}>
+                                        <Link href="/jobs?levels=intern" className="flex items-center gap-3 p-3 rounded-xl hover:bg-muted transition-colors font-medium text-sm" onClick={() => setIsOpen(false)}>
                                             <Briefcase className="w-5 h-5 text-muted-foreground" />
-                                            Бие даасан ажил
+                                            Дадлагын зар
                                         </Link>
                                         <Link href="/jobs?levels=intern" className="flex items-center gap-3 p-3 rounded-xl hover:bg-muted transition-colors font-medium text-sm" onClick={() => setIsOpen(false)}>
                                             <Zap className="w-5 h-5 text-muted-foreground" />

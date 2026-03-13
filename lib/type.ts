@@ -27,8 +27,18 @@ export interface SignupInput {
   role: UserRole;
 }
 
+export interface SocialLoginInput {
+  email: string;
+  socialId: string;
+  provider: 'google' | 'github';
+  role?: UserRole;
+  firstName?: string;
+  lastName?: string;
+  profilePictureUrl?: string;
+}
+
 // Student Profile Types
-export type ExperienceLevel = 'intern' | 'junior';
+export type ExperienceLevel = 'intern';
 
 export interface Education {
   school: string;

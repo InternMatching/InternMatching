@@ -78,7 +78,7 @@ export default function LandingPage() {
                 </h1>
 
                 <p className="text-lg md:text-xl text-muted-foreground max-w-xl animate-in fade-in slide-in-from-bottom-8 duration-1000">
-                  Оюутан, төгсөгчдөд мэргэжлээрээ дадлага хийх, ажил олох, харин компаниудад шинээр төгсөж буй чадварлаг залуусыг илрүүлэхэд тусална.
+                  Оюутан, төгсөгчдөд мэргэжлээрээ дадлага хийх, харин компаниудад шинээр төгсөж буй чадварлаг залуусыг илрүүлэхэд тусална.
                 </p>
 
                 <div className="flex flex-col sm:flex-row gap-4 pt-4 animate-in fade-in slide-in-from-bottom-10 duration-1000">
@@ -246,7 +246,7 @@ export default function LandingPage() {
                 <CardContent className="p-8 pt-0">
                   <ul className="space-y-4">
                     {[
-                      "Дадлага болон ажлын зар байршуулах",
+                      "Дадлагын зар байршуулах",
                       "Шаардлага хангасан өргөдөл гаргагчдыг хянах",
                       "Багийнхаа төгс тохирох хүнийг олох"
                     ].map((item, idx) => (
@@ -271,71 +271,7 @@ export default function LandingPage() {
         </section>
 
         {/* Final CTA Section - Premium Redesign */}
-        <section className="py-24 relative">
-          <div className="container mx-auto px-6 lg:px-24">
-            <div className="relative overflow-hidden rounded-[2.5rem] bg-linear-to-br from-primary via-primary/95 to-primary/90 p-8 md:p-16 lg:p-24 shadow-2xl shadow-primary/20">
-              {/* Decorative elements */}
-              <div className="absolute top-0 right-0 w-96 h-96 bg-white/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
-              <div className="absolute bottom-0 left-0 w-64 h-64 bg-black/10 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2" />
 
-              <div className="relative z-10 grid lg:grid-cols-2 gap-12 items-center">
-                <div className="text-left space-y-6">
-                  <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/20 text-white text-xs font-bold uppercase tracking-wider backdrop-blur-md">
-                    <Zap className="w-3 h-3 fill-white" />
-                    <span>Карьераа хурдасга</span>
-                  </div>
-
-                  <h2 className="text-4xl md:text-5xl lg:text-6xl font-extrabold text-white tracking-tight leading-tight">
-                    Ирээдүйгээ <br /> <span className="text-white/80">өнөөдөр тодорхойл.</span>
-                  </h2>
-
-                  <p className="text-lg text-white/80 max-w-md leading-relaxed">
-                    InternMatch-д нэгдсэнээр та хязгааргүй боломжуудын үүдийг нээх болно. Дадлагаас эхлээд мэргэжлийн карьер хүртэл бид хамт байна.
-                  </p>
-
-                  <div className="flex flex-col sm:flex-row gap-4 pt-4">
-                    <Button size="lg" variant="secondary" className="h-14 px-10 rounded-2xl text-base font-bold shadow-xl transition-all hover:bg-primary hover:text-white active:scale-95 group" asChild>
-                      <Link href="/signup">
-                        Бүртгэл үүсгэх
-                        <ArrowRight className="ml-2 w-5 h-5 transition-transform group-hover:translate-x-1" />
-                      </Link>
-                    </Button>
-                    <Button variant="outline" className="h-14 px-8 rounded-2xl text-base font-semibold border-primary text-black hover:bg-primary hover:text-white backdrop-blur-sm" asChild>
-                      <Link href="/login">Нэвтрэх</Link>
-                    </Button>
-                  </div>
-                </div>
-
-                <div className="hidden lg:flex items-center justify-center">
-                  <div className="relative">
-                    {/* Floating Card Mockup for CTA */}
-                    <div className="bg-white/10 backdrop-blur-xl border border-white/20 p-8 rounded-3xl shadow-2xl animate-in fade-in zoom-in duration-700">
-                      <div className="flex items-center gap-4 mb-6">
-                        <div className="w-12 h-12 rounded-2xl bg-white/20 flex items-center justify-center">
-                          <CheckCircle2 className="w-6 h-6 text-white" />
-                        </div>
-                        <div className="space-y-1">
-                          <div className="h-2 w-32 bg-white/40 rounded-full" />
-                          <div className="h-2 w-20 bg-white/20 rounded-full" />
-                        </div>
-                      </div>
-                      <div className="space-y-3">
-                        <div className="h-2 w-full bg-white/10 rounded-full" />
-                        <div className="h-2 w-full bg-white/10 rounded-full" />
-                        <div className="h-2 w-2/3 bg-white/10 rounded-full" />
-                      </div>
-                    </div>
-                    {/* Badge */}
-                    <div className="absolute -bottom-6 -right-6 bg-white text-primary p-4 rounded-2xl shadow-xl font-bold flex items-center gap-2 animate-bounce">
-                      <Users className="w-5 h-5" />
-                      <span>500+ Хэрэглэгч</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
       </main>
 
       {/* Footer */}
@@ -350,7 +286,7 @@ export default function LandingPage() {
                 <span className="font-bold text-2xl text-foreground">InternMatch</span>
               </div>
               <p className="text-muted-foreground max-w-sm leading-relaxed">
-                Бид Монголын залуу үеийнхнийг бодит ажлын байр, дадлагын боломжоор хангаж, ирээдүйн чадварлаг боловсон хүчнийг бэлтгэх гүүр нь байх болно.
+                Бид Монголын залуу үеийнхнийг дадлагын боломжоор хангаж, ирээдүйн чадварлаг боловсон хүчнийг бэлтгэх гүүр нь байх болно.
               </p>
             </div>
             <div>

@@ -71,11 +71,11 @@ export default function JobsManagementPage() {
     })
 
     const handleDelete = async (id: string) => {
-        if (!confirm(`Энэ ажлын зарыг устгахдаа итгэлтэй байна уу?`)) return
+        if (!confirm(`Энэ дадлагын зарыг устгахдаа итгэлтэй байна уу?`)) return
 
         try {
             await deleteJob({ variables: { id } })
-            toast.success("Ажлын байр амжилттай устлаа")
+            toast.success("Дадлагын байр амжилттай устлаа")
             refetch()
         } catch (err: any) {
             toast.error(err.message || "Устгахад алдаа гарлаа")
@@ -89,8 +89,8 @@ export default function JobsManagementPage() {
         <div className="space-y-6">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
-                    <h1 className="text-2xl font-bold">Ажлын зарууд</h1>
-                    <p className="text-muted-foreground">Системд нийтлэгдсэн бүх ажлын байрны мэдээлэл.</p>
+                    <h1 className="text-2xl font-bold">Дадлагын зарууд</h1>
+                    <p className="text-muted-foreground">Системд нийтлэгдсэн бүх дадлагын байрны мэдээлэл.</p>
                 </div>
                 <Button>
                     <Plus className="w-4 h-4 mr-2" />
@@ -102,7 +102,7 @@ export default function JobsManagementPage() {
                 <div className="relative flex-1">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                     <Input
-                        placeholder="Ажлын нэрээр хайх..."
+                        placeholder="Зарын нэрээр хайх..."
                         className="pl-10"
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
@@ -128,7 +128,7 @@ export default function JobsManagementPage() {
                     <table className="w-full text-left border-collapse">
                         <thead>
                             <tr className="border-b bg-secondary/20">
-                                <th className="px-6 py-4 text-xs font-bold text-muted-foreground uppercase tracking-wider">Ажлын байр</th>
+                                <th className="px-6 py-4 text-xs font-bold text-muted-foreground uppercase tracking-wider">Дадлагын байр</th>
                                 <th className="px-6 py-4 text-xs font-bold text-muted-foreground uppercase tracking-wider">Компани</th>
                                 <th className="px-6 py-4 text-xs font-bold text-muted-foreground uppercase tracking-wider">Төлөв</th>
                                 <th className="px-6 py-4 text-xs font-bold text-muted-foreground uppercase tracking-wider text-right">Үйлдэл</th>
@@ -138,7 +138,7 @@ export default function JobsManagementPage() {
                             {filteredJobs.length === 0 ? (
                                 <tr>
                                     <td colSpan={4} className="px-6 py-20 text-center text-muted-foreground">
-                                        Ажлын зар олдсонгүй.
+                                        Дадлагын зар олдсонгүй.
                                     </td>
                                 </tr>
                             ) : (

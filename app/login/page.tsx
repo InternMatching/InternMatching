@@ -13,24 +13,101 @@ import {
     Loader2,
     Eye,
     EyeOff,
-    Linkedin,
     CheckCircle2,
-    ArrowRight
+    ArrowRight,
+    Github,
+    Building2
 } from "lucide-react"
-import { LOGIN } from "../graphql/mutations"
+import { toast } from "sonner"
+import { LOGIN, SOCIAL_LOGIN } from "../graphql/mutations"
 import { useMutation, useApolloClient } from "@apollo/client/react"
-import { AuthPayload, LoginInput } from "@/lib/type"
+import { AuthPayload, LoginInput, SocialLoginInput } from "@/lib/type"
+import { cn } from "@/lib/utils"
+import { useGoogleLogin } from '@react-oauth/google'
 
 export default function LoginPage() {
     const router = useRouter()
     const [showPassword, setShowPassword] = useState(false)
+    const [selectedRole, setSelectedRole] = useState<'student' | 'company'>("student")
     const [formData, setFormData] = useState({
         email: "",
         password: "",
     })
 
     const [login, { loading, error: mutationError }] = useMutation<{ login: AuthPayload }, { input: LoginInput }>(LOGIN)
+    const [socialLogin, { loading: socialLoading }] = useMutation<{ socialLogin: AuthPayload }, { input: SocialLoginInput }>(SOCIAL_LOGIN)
     const client = useApolloClient()
+
+    const googleLogin = useGoogleLogin({
+        onSuccess: async (tokenResponse) => {
+            toast.promise(
+                async () => {
+                    // 1. Fetch user profile from Google using the access token
+                    const res = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+                        headers: { Authorization: `Bearer ${tokenResponse.access_token}` },
+                    });
+                    const userInfo = await res.json();
+
+                    // 2. Send to backend
+                    const { data } = await socialLogin({
+                        variables: {
+                            input: {
+                                email: userInfo.email,
+                                socialId: userInfo.sub,
+                                provider: 'google',
+                                firstName: userInfo.given_name,
+                                lastName: userInfo.family_name,
+                                profilePictureUrl: userInfo.picture,
+                                role: selectedRole
+                            }
+                        }
+                    });
+
+                    if (data?.socialLogin?.token) {
+                        localStorage.setItem("token", data.socialLogin.token);
+                        await client.resetStore();
+                        
+                        const userRole = data.socialLogin.user.role;
+                        if (userRole === "COMPANY" || userRole.toLowerCase() === "company") {
+                            router.push("/company");
+                        } else if (userRole === "ADMIN" || userRole.toLowerCase() === "admin") {
+                            router.push("/admin");
+                        } else {
+                            router.push("/student");
+                        }
+                        return "Success";
+                    }
+                    throw new Error("Token not received");
+                },
+                {
+                    loading: "Google-оор нэвтэрч байна...",
+                    success: "Амжилттай нэвтэрлээ!",
+                    error: (err) => `Алдаа гарлаа: ${err.message}`
+                }
+            );
+        },
+        onError: () => toast.error("Google-ээр нэвтрэхэд алдаа гарлаа")
+    });
+
+    const handleSocialLogin = async (provider: 'google' | 'github') => {
+        if (provider === 'google') {
+            googleLogin();
+            return;
+        }
+
+        if (provider === 'github') {
+            // 1. Store the selected role so we can use it after the redirect
+            localStorage.setItem("pending_role", selectedRole);
+
+            // 2. Redirect to GitHub
+            const clientId = process.env.NEXT_PUBLIC_GITHUB_CLIENT_ID;
+            const redirectUri = `${window.location.origin}/auth/callback/github`;
+            const githubUrl = `https://github.com/login/oauth/authorize?client_id=${clientId}&redirect_uri=${redirectUri}&scope=user:email`;
+            
+            window.location.href = githubUrl;
+            return;
+        }
+    }
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
@@ -131,6 +208,63 @@ export default function LoginPage() {
                             </div>
                         )}
 
+                        {/* Role Selection for Social Signup */}
+                        <div className="mb-8 space-y-3">
+                            <Label className="text-sm font-semibold opacity-70">Таны оролцоо (Шинэ хэрэглэгч бол)</Label>
+                            <div className="grid grid-cols-2 gap-4">
+                                <button
+                                    type="button"
+                                    onClick={() => setSelectedRole("student")}
+                                    className={cn(
+                                        "flex flex-col items-start gap-2 p-4 rounded-2xl border-2 transition-all text-left group",
+                                        selectedRole === "student"
+                                            ? "border-primary bg-primary/5 ring-4 ring-primary/10"
+                                            : "border-border hover:border-primary/30 hover:bg-muted/30"
+                                    )}
+                                >
+                                    <div className={cn(
+                                        "w-8 h-8 rounded-lg flex items-center justify-center transition-colors",
+                                        selectedRole === "student" ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground group-hover:bg-primary/10 group-hover:text-primary"
+                                    )}>
+                                        <Briefcase className="w-4 h-4" />
+                                    </div>
+                                    <div>
+                                        <span className={cn(
+                                            "block font-bold text-xs",
+                                            selectedRole === "student" ? "text-primary" : "text-foreground"
+                                        )}>
+                                            Оюутан
+                                        </span>
+                                    </div>
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => setSelectedRole("company")}
+                                    className={cn(
+                                        "flex flex-col items-start gap-2 p-4 rounded-2xl border-2 transition-all text-left group",
+                                        selectedRole === "company"
+                                            ? "border-primary bg-primary/5 ring-4 ring-primary/10"
+                                            : "border-border hover:border-primary/30 hover:bg-muted/30"
+                                    )}
+                                >
+                                    <div className={cn(
+                                        "w-8 h-8 rounded-lg flex items-center justify-center transition-colors",
+                                        selectedRole === "company" ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground group-hover:bg-primary/10 group-hover:text-primary"
+                                    )}>
+                                        <Building2 className="w-4 h-4" />
+                                    </div>
+                                    <div>
+                                        <span className={cn(
+                                            "block font-bold text-xs",
+                                            selectedRole === "company" ? "text-primary" : "text-foreground"
+                                        )}>
+                                            Компани
+                                        </span>
+                                    </div>
+                                </button>
+                            </div>
+                        </div>
+
                         <form onSubmit={handleSubmit} className="space-y-5">
                             <div className="space-y-2">
                                 <Label htmlFor="email" className="text-sm font-medium">И-мэйл хаяг</Label>
@@ -184,8 +318,8 @@ export default function LoginPage() {
                                 </label>
                             </div>
 
-                            <Button type="submit" className="w-full h-11 rounded-xl font-semibold transition-all hover:-translate-y-px active:translate-y-0 shadow-lg shadow-primary/20" disabled={loading}>
-                                {loading ? (
+                            <Button type="submit" className="w-full h-11 rounded-xl font-semibold transition-all hover:-translate-y-px active:translate-y-0 shadow-lg shadow-primary/20" disabled={loading || socialLoading}>
+                                {loading || socialLoading ? (
                                     <>
                                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                                         Нэвтэрч байна...
@@ -206,7 +340,13 @@ export default function LoginPage() {
                         </div>
 
                         <div className="grid grid-cols-2 gap-4">
-                            <Button variant="outline" className="h-11 rounded-xl font-medium border-border/60 hover:bg-muted/50 transition-colors">
+                            <Button 
+                                type="button"
+                                variant="outline" 
+                                className="h-11 rounded-xl font-medium border-border/60 hover:bg-muted/50 transition-colors"
+                                onClick={() => handleSocialLogin('google')}
+                                disabled={socialLoading}
+                            >
                                 <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24">
                                     <path
                                         d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
@@ -228,9 +368,15 @@ export default function LoginPage() {
                                 </svg>
                                 Google
                             </Button>
-                            <Button variant="outline" className="h-11 rounded-xl font-medium border-border/60 hover:bg-muted/50 transition-colors">
-                                <Linkedin className="mr-2 h-4 w-4 text-[#0077b5] fill-[#0077b5]" />
-                                LinkedIn
+                            <Button 
+                                type="button"
+                                variant="outline" 
+                                className="h-11 rounded-xl font-medium border-border/60 hover:bg-muted/50 transition-colors"
+                                onClick={() => handleSocialLogin('github')}
+                                disabled={socialLoading}
+                            >
+                                <Github className="mr-2 h-4 w-4" />
+                                GitHub
                             </Button>
                         </div>
 

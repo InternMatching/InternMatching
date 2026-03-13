@@ -47,7 +47,7 @@ const navItems = [
     { name: 'Хэрэглэгчид', href: '/admin/users', icon: Users },
     { name: 'Баталгаажуулах', href: '/admin/verify', icon: ShieldCheck },
     { name: 'Компаниуд', href: '/admin/companies', icon: Building2 },
-    { name: 'Ажлын зарууд', href: '/admin/jobs', icon: Briefcase },
+    { name: 'Дадлагын зарууд', href: '/admin/jobs', icon: Briefcase },
     { name: 'Өргөдлүүд', href: '/admin/applications', icon: ClipboardList },
     { name: 'Аналитик', href: '/admin/analytics', icon: BarChart3 },
     { name: 'Үйлдлийн бүртгэл', href: '/admin/logs', icon: History },

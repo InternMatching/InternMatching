@@ -29,6 +29,24 @@ export const SIGNUP = gql`
   }
 `;
 
+export const SOCIAL_LOGIN = gql`
+  mutation SocialLogin($input: SocialLoginInput!) {
+    socialLogin(input: $input) {
+      token
+      user { id email role }
+    }
+  }
+`;
+
+export const GITHUB_LOGIN = gql`
+  mutation GithubLogin($code: String!, $role: UserRole) {
+    githubLogin(code: $code, role: $role) {
+      token
+      user { id email role }
+    }
+  }
+`;
+
 export const ADMIN_STATS = gql`
   query AdminStats($period: StatsPeriod) {
     adminStats(period: $period) {

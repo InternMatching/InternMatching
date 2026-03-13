@@ -32,7 +32,7 @@ export default function AnalyticsPage() {
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 {[
-                    { label: "Нийт ажилд зуучлалт", value: "1,280", trend: "+12.5%", icon: Briefcase, color: "text-blue-500" },
+                    { label: "Нийт дадлагад зуучлалт", value: "1,280", trend: "+12.5%", icon: Briefcase, color: "text-blue-500" },
                     { label: "Идэвхтэй оюутнууд", value: "8,420", trend: "+5.2%", icon: Users, color: "text-green-500" },
                     { label: "Хариу өгөлтийн хурд", value: "2.4 өдөр", trend: "-0.5%", icon: PieChart, color: "text-amber-500" }
                 ].map((stat, i) => (
