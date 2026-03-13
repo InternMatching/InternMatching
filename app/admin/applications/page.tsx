@@ -89,14 +89,14 @@ export default function ApplicationsManagementPage() {
         <div className="space-y-6">
             <div>
                 <h1 className="text-2xl font-bold">Өргөдлийн жагсаалт</h1>
-                <p className="text-muted-foreground">Системээр дамжсан бүх ажлын өргөдлүүдийг хянах хэсэг.</p>
+                <p className="text-muted-foreground">Системээр дамжсан бүх дадлагын хүсэлтүүдийг хянах хэсэг.</p>
             </div>
 
             <div className="flex flex-col md:flex-row gap-4">
                 <div className="relative flex-1">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                     <Input
-                        placeholder="Оюутан, ажил эсвэл компаниар хайх..."
+                        placeholder="Оюутан, дадлага эсвэл компаниар хайх..."
                         className="pl-10"
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
@@ -123,7 +123,7 @@ export default function ApplicationsManagementPage() {
                         <thead>
                             <tr className="border-b bg-secondary/20">
                                 <th className="px-6 py-4 text-xs font-bold text-muted-foreground uppercase tracking-wider">Оюутан</th>
-                                <th className="px-6 py-4 text-xs font-bold text-muted-foreground uppercase tracking-wider">Ажил / Компани</th>
+                                <th className="px-6 py-4 text-xs font-bold text-muted-foreground uppercase tracking-wider">Дадлага / Компани</th>
                                 <th className="px-6 py-4 text-xs font-bold text-muted-foreground uppercase tracking-wider">Таарамж</th>
                                 <th className="px-6 py-4 text-xs font-bold text-muted-foreground uppercase tracking-wider">Төлөв</th>
                                 <th className="px-6 py-4 text-xs font-bold text-muted-foreground uppercase tracking-wider text-right">Үйлдэл</th>

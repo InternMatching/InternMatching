@@ -263,7 +263,7 @@ export default function CompanyPage() {
 
     const navItems = [
         { id: 'profile', name: 'Компаний мэдээлэл', icon: Building },
-        { id: 'jobs', name: 'Ажлын байрууд', icon: Briefcase },
+        { id: 'jobs', name: 'Дадлагын зарууд', icon: Briefcase },
         { id: 'applicants', name: 'Хүсэлтүүд', icon: Users },
         { id: 'students', name: 'Оюутнууд', icon: Users },
     ]
@@ -551,7 +551,7 @@ export default function CompanyPage() {
                                     <div className="flex items-center justify-between border-b border-border/40 pb-5 mb-2">
                                         <div className="space-y-1">
                                             <h2 className="text-xl font-bold tracking-tight">Нийтэлсэн зарууд</h2>
-                                            <p className="text-xs text-muted-foreground font-medium">Нийт {myJobsData?.getAllJobs?.length || 0} ажлын байр</p>
+                                            <p className="text-xs text-muted-foreground font-medium">Нийт {myJobsData?.getAllJobs?.length || 0} дадлагын зар</p>
                                         </div>
                                         <Button size="sm" onClick={() => setShowJobForm(!showJobForm)} className="rounded-xl h-9 px-4 font-bold">
                                             {showJobForm ? "Болих" : <><PlusCircle className="w-3.5 h-3.5 mr-2" />Шинэ зар</>}
@@ -561,13 +561,13 @@ export default function CompanyPage() {
                                     {showJobForm && (
                                         <Card className="border-primary/20 bg-primary/5 shadow-none rounded-2xl animate-in fade-in zoom-in-95 duration-200">
                                             <CardHeader className="pb-4">
-                                                <CardTitle className="text-lg">Шинэ ажлын байр нэмэх</CardTitle>
+                                                <CardTitle className="text-lg">Шинэ дадлагын зар нэмэх</CardTitle>
                                             </CardHeader>
                                             <CardContent>
                                                 <form onSubmit={handleCreateJob} className="space-y-4">
                                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                                         <div className="space-y-1.5">
-                                                            <Label className="text-xs font-bold text-muted-foreground ml-0.5">Ажлын нэр</Label>
+                                                            <Label className="text-xs font-bold text-muted-foreground ml-0.5">Зарны нэр</Label>
                                                             <Input
                                                                 value={jobForm.title}
                                                                 onChange={(e) => setJobForm({ ...jobForm, title: e.target.value })}
@@ -611,7 +611,6 @@ export default function CompanyPage() {
                                                                 onChange={(e) => setJobForm({ ...jobForm, type: e.target.value as any })}
                                                             >
                                                                 <option value="intern">Интерн</option>
-                                                                <option value="junior">Жуниор</option>
                                                             </select>
                                                         </div>
                                                         <div className="space-y-1.5">

@@ -122,10 +122,6 @@ function JobsContent() {
             toast.error("Та бүртгэлээ үүсгэнэ үү")
             router.push(`/login?redirect=jobs&id=${jobId}`)
         } else {
-            // Even if logged in, let's follow the user's flow
-            // Usually, this would check the role and redirect to the student dashboard
-            // But for now, we'll just redirect to login which handles redirection if already logged in
-            // Or better, redirect them to the student dashboard if token exists
             router.push(`/login?redirect=jobs&id=${jobId}`)
         }
     }
@@ -174,7 +170,7 @@ function JobsContent() {
                 <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider ml-1">Хайх</label>
                 <div className="relative">
                     <Input
-                        placeholder="Ажил, байршил..."
+                        placeholder="Дадлага, байршил..."
                         className="rounded-xl pl-9 h-10 border-border/60 bg-secondary/10 focus:bg-background transition-all text-sm"
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
@@ -187,7 +183,7 @@ function JobsContent() {
                 <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider ml-1">Түвшин</label>
                 <Card className="border-border/40 shadow-none rounded-xl bg-secondary/5 overflow-hidden">
                     <CardContent className="p-1 space-y-0.5">
-                        {['intern', 'junior'].map((level) => (
+                        {['intern'].map((level) => (
                             <label key={level} className="flex items-center gap-3 p-2.5 rounded-lg hover:bg-secondary/40 transition-all cursor-pointer group">
                                 <Checkbox
                                     id={level}
@@ -197,7 +193,7 @@ function JobsContent() {
                                 />
                                 <div className="flex flex-col">
                                     <span className="text-xs font-bold group-hover:text-primary transition-colors capitalize">
-                                        {level === 'intern' ? 'Дадлага' : 'Junior'} ({level})
+                                        {'Дадлага'}
                                     </span>
                                 </div>
                             </label>
@@ -231,10 +227,10 @@ function JobsContent() {
                             <span>Нээлттэй боломжууд</span>
                         </div>
                         <h1 className="text-2xl md:text-3xl font-bold tracking-tight">
-                            Ажил <span className="text-primary">&</span> Дадлага
+                            Нийт дадлагууд
                         </h1>
                         <p className="text-muted-foreground text-sm font-medium">
-                            Таны хүссэн ажлын байр энд байж магадгүй.
+                            Таны хүссэн дадлагын байр энд байж магадгүй.
                         </p>
                     </div>
 
@@ -362,8 +358,8 @@ function JobsContent() {
                                             </div>
 
                                             <div className="md:w-48 bg-secondary/5 p-6 flex flex-col items-center justify-center md:border-l border-border/40 gap-3">
-                                                <Button 
-                                                    size="sm" 
+                                                <Button
+                                                    size="sm"
                                                     className="w-full h-10 rounded-xl gap-1.5 font-bold text-xs"
                                                     onClick={() => handleApplyClick(job.id)}
                                                 >
@@ -547,7 +543,7 @@ function JobsContent() {
                             </Card>
 
                             <div className="sticky bottom-0 pt-6 pb-2 bg-background/80 backdrop-blur-md">
-                                <Button 
+                                <Button
                                     className="w-full h-12 rounded-2xl font-black uppercase tracking-widest text-xs shadow-lg shadow-primary/20"
                                     onClick={() => handleApplyClick(selectedJob.id)}
                                 >
