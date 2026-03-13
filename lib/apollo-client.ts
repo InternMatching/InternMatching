@@ -1,6 +1,7 @@
 import { ApolloClient, InMemoryCache, HttpLink } from '@apollo/client';
 import { setContext } from '@apollo/client/link/context';
-const graphqlUrl = process.env.NEXT_PUBLIC_GRAPHQL_URL || 'http://localhost:4001/graphql';
+// || 'http://localhost:4001/graphql';
+const graphqlUrl = process.env.NEXT_PUBLIC_GRAPHQL_URL 
 console.log("🌐 Using GraphQL Endpoint:", graphqlUrl);
 
 const httpLink = new HttpLink({
