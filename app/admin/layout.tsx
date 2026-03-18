@@ -160,28 +160,33 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                                     <span className="text-xs font-bold text-foreground hidden sm:inline-block">Админ</span>
                                 </Button>
                             </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end" sideOffset={8} className="w-52 p-1.5 rounded-2xl shadow-xl border-border/40 bg-background">
-                                <DropdownMenuLabel className="font-normal px-3 py-2">
-                                    <div className="flex flex-col space-y-0.5">
-                                        <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-1">Систем хариуцагч</p>
-                                        <p className="text-sm font-bold leading-none truncate text-foreground">
+                            <DropdownMenuContent align="end" sideOffset={8} className="w-64 p-2 rounded-2xl shadow-xl border-border/40 bg-background">
+                                <div className="px-3 py-3 flex items-center gap-3">
+                                    <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center border border-primary/10 shrink-0">
+                                        <ShieldCheck className="h-5 w-5 text-primary" />
+                                    </div>
+                                    <div className="flex flex-col min-w-0">
+                                        <p className="text-sm font-bold leading-tight truncate text-foreground">
+                                            Админ
+                                        </p>
+                                        <p className="text-[11px] text-muted-foreground truncate leading-tight mt-0.5">
                                             {userData?.me?.email}
                                         </p>
                                     </div>
-                                </DropdownMenuLabel>
-                                <DropdownMenuSeparator className="bg-border/40" />
-                                <DropdownMenuItem asChild className="rounded-xl px-3 py-2 transition-all cursor-pointer font-bold text-xs">
-                                    <Link href="/admin/settings" className="flex items-center">
-                                        <Settings className="mr-2.5 h-3.5 w-3.5 text-muted-foreground" />
-                                        <span>Тохиргоо</span>
+                                </div>
+                                <DropdownMenuSeparator className="bg-border/40 my-1" />
+                                <DropdownMenuItem asChild className="rounded-xl px-3 py-2.5 transition-all cursor-pointer font-bold text-xs gap-2.5">
+                                    <Link href="/admin/settings">
+                                        <Settings className="h-4 w-4" />
+                                        Тохиргоо
                                     </Link>
                                 </DropdownMenuItem>
                                 <DropdownMenuItem
                                     onClick={handleLogout}
-                                    className="rounded-xl px-3 py-2 transition-all cursor-pointer text-destructive focus:bg-destructive/10 focus:text-destructive font-bold text-xs"
+                                    className="rounded-xl px-3 py-2.5 transition-all cursor-pointer text-destructive focus:bg-destructive/10 focus:text-destructive font-bold text-xs gap-2.5"
                                 >
-                                    <LogOut className="mr-2.5 h-3.5 w-3.5" />
-                                    <span>Гарах</span>
+                                    <LogOut className="h-4 w-4" />
+                                    Системээс гарах
                                 </DropdownMenuItem>
                             </DropdownMenuContent>
                         </DropdownMenu>

@@ -132,31 +132,6 @@ export default function SettingsPage() {
                         </CardContent>
                     </Card>
 
-                    <Card>
-                        <CardHeader>
-                            <CardTitle className="text-lg">Харагдац</CardTitle>
-                        </CardHeader>
-                        <CardContent className="space-y-4">
-                            <div className="flex items-center justify-between">
-                                <span className="text-sm font-medium">Системийн өнгө</span>
-                                <div className="flex bg-secondary p-1 rounded-md">
-                                    <button
-                                        onClick={() => setAdminData({ ...adminData, themeColor: 'light' })}
-                                        className={`px-3 py-1 text-xs font-medium rounded-md transition-all ${adminData.themeColor === 'light' ? 'bg-background shadow-sm' : 'text-muted-foreground'}`}
-                                    >
-                                        Цагаан
-                                    </button>
-                                    <button
-                                        onClick={() => setAdminData({ ...adminData, themeColor: 'dark' })}
-                                        className={`px-3 py-1 text-xs font-medium rounded-md transition-all ${adminData.themeColor === 'dark' ? 'bg-background shadow-sm' : 'text-muted-foreground'}`}
-                                    >
-                                        Харанхуй
-                                    </button>
-                                </div>
-                            </div>
-                        </CardContent>
-                    </Card>
-
                     <div className="flex justify-end">
                         <Button onClick={handleSave} className="h-10 px-8">
                             <Save className="w-4 h-4 mr-2" />

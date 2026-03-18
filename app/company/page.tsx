@@ -26,9 +26,12 @@ import {
     CheckCircle2,
     AlertCircle,
     Zap,
-    Camera
+    Camera,
+    Users2,
+    Pencil,
+    Trash2
 } from "lucide-react"
-import { ME, GET_COMPANY_PROFILE, UPDATE_COMPANY_PROFILE, CREATE_COMPANY_PROFILE, GET_ALL_JOBS, CREATE_JOB, GET_APPLICATIONS, UPDATE_APPLICATION_STATUS, UPLOAD_COMPANY_LOGO, GET_ALL_STUDENT_PROFILES } from "../graphql/mutations"
+import { ME, GET_COMPANY_PROFILE, UPDATE_COMPANY_PROFILE, CREATE_COMPANY_PROFILE, GET_ALL_JOBS, CREATE_JOB, UPDATE_JOB, DELETE_JOB, GET_APPLICATIONS, UPDATE_APPLICATION_STATUS, UPLOAD_COMPANY_LOGO, GET_ALL_STUDENT_PROFILES } from "../graphql/mutations"
 import { User, CompanyProfile, Job, Application, CompanyProfileInput, JobInput, JobStatus, ApplicationStatus, StudentProfile } from "@/lib/type"
 import Image from "next/image"
 import { ThemeToggle } from "@/components/theme-toggle"
@@ -68,6 +71,8 @@ export default function CompanyPage() {
     const [createProfile, { loading: creatingProfile }] = useMutation<{ createCompanyProfile: CompanyProfile }, { input: CompanyProfileInput }>(CREATE_COMPANY_PROFILE)
     const [createJob, { loading: creatingJob }] = useMutation<{ createJob: Job }, { input: JobInput }>(CREATE_JOB)
     const [updateAppStatus, { loading: updatingStatus }] = useMutation<{ updateApplicationStatus: Application }, { id: string, status: ApplicationStatus }>(UPDATE_APPLICATION_STATUS)
+    const [updateJob, { loading: updatingJob }] = useMutation(UPDATE_JOB)
+    const [deleteJob, { loading: deletingJob }] = useMutation(DELETE_JOB)
     const [uploadLogo] = useMutation<{ uploadCompanyLogo: CompanyProfile }, { base64Image: string }>(UPLOAD_COMPANY_LOGO)
 
     const [profileForm, setProfileForm] = useState<CompanyProfileInput>({
@@ -97,6 +102,7 @@ export default function CompanyPage() {
     })
 
     const [showJobForm, setShowJobForm] = useState(false)
+    const [editingJob, setEditingJob] = useState<Job | null>(null)
     const [skillsInput, setSkillsInput] = useState("")
     const [selectedStudent, setSelectedStudent] = useState<StudentProfile | null>(null)
     const [studentSearch, setStudentSearch] = useState("")
@@ -121,6 +127,12 @@ export default function CompanyPage() {
     const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0]
         if (!file) return
+
+        // Validate file size (max 10MB)
+        if (file.size > 10 * 1024 * 1024) {
+            toast.error("Логоны хэмжээ 10MB-аас бага байх ёстой")
+            return
+        }
 
         // Convert file to base64 data URL
         const reader = new FileReader()
@@ -235,6 +247,54 @@ export default function CompanyPage() {
         }
     }
 
+    const handleEditJob = (job: Job) => {
+        setEditingJob(job)
+        setJobForm({
+            title: job.title,
+            description: job.description || "",
+            type: job.type,
+            requiredSkills: job.requiredSkills || [],
+            location: job.location || "",
+            salaryRange: job.salaryRange || "",
+            responsibilities: job.responsibilities || "",
+            requirements: job.requirements || "",
+            additionalInfo: job.additionalInfo || "",
+            deadline: job.deadline ? job.deadline.split("T")[0] : "",
+            maxParticipants: job.maxParticipants,
+        })
+        setSkillsInput((job.requiredSkills || []).join(", "))
+        setShowJobForm(true)
+    }
+
+    const handleUpdateJob = async (e: React.FormEvent) => {
+        e.preventDefault()
+        if (!editingJob) return
+        try {
+            await updateJob({ variables: { id: editingJob.id, input: jobForm } })
+            toast.success("Зар амжилттай шинэчлэгдлээ!")
+            setShowJobForm(false)
+            setEditingJob(null)
+            setJobForm({ title: "", description: "", type: "intern", location: "", salaryRange: "", responsibilities: "", requirements: "", additionalInfo: "", deadline: "", requiredSkills: [] })
+            setSkillsInput("")
+            refetchJobs()
+        } catch (err) {
+            console.error(err)
+            toast.error("Зар шинэчлэхэд алдаа гарлаа")
+        }
+    }
+
+    const handleDeleteJob = async (jobId: string, jobTitle: string) => {
+        if (!confirm(`"${jobTitle}" зарыг устгахдаа итгэлтэй байна уу?`)) return
+        try {
+            await deleteJob({ variables: { id: jobId } })
+            toast.success("Зар амжилттай устгагдлаа!")
+            refetchJobs()
+        } catch (err) {
+            console.error(err)
+            toast.error("Зар устгахад алдаа гарлаа")
+        }
+    }
+
     const handleStatusUpdate = async (appId: string, status: ApplicationStatus) => {
         try {
             await updateAppStatus({
@@ -346,22 +406,37 @@ export default function CompanyPage() {
                                     </span>
                                 </Button>
                             </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end" sideOffset={8} className="w-52 p-1.5 rounded-2xl shadow-xl border-border/40 bg-background">
-                                <DropdownMenuLabel className="font-normal px-3 py-2">
-                                    <div className="flex flex-col space-y-0.5">
-                                        <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest leading-none mb-1">Нэвтэрсэн</p>
-                                        <p className="text-sm font-bold leading-none truncate text-foreground">
+                            <DropdownMenuContent align="end" sideOffset={8} className="w-64 p-2 rounded-2xl shadow-xl border-border/40 bg-background">
+                                <div className="px-3 py-3 flex items-center gap-3">
+                                    <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center border border-primary/10 overflow-hidden shrink-0">
+                                        {profileData?.getCompanyProfile?.logoUrl ? (
+                                            <Image
+                                                src={profileData.getCompanyProfile.logoUrl}
+                                                alt="Logo"
+                                                width={40}
+                                                height={40}
+                                                className="object-cover w-full h-full"
+                                            />
+                                        ) : (
+                                            <Building2 className="h-5 w-5 text-primary" />
+                                        )}
+                                    </div>
+                                    <div className="flex flex-col min-w-0">
+                                        <p className="text-sm font-bold leading-tight truncate text-foreground">
+                                            {profileForm.companyName || "Миний бизнес"}
+                                        </p>
+                                        <p className="text-[11px] text-muted-foreground truncate leading-tight mt-0.5">
                                             {userData?.me?.email}
                                         </p>
                                     </div>
-                                </DropdownMenuLabel>
-                                <DropdownMenuSeparator className="bg-border/40" />
+                                </div>
+                                <DropdownMenuSeparator className="bg-border/40 my-1" />
                                 <DropdownMenuItem
                                     onClick={handleLogout}
-                                    className="rounded-xl px-3 py-2 transition-all cursor-pointer text-destructive focus:bg-destructive/10 focus:text-destructive font-bold text-xs"
+                                    className="rounded-xl px-3 py-2.5 transition-all cursor-pointer text-destructive focus:bg-destructive/10 focus:text-destructive font-bold text-xs gap-2.5"
                                 >
-                                    <LogOut className="mr-2.5 h-3.5 w-3.5" />
-                                    <span>Системээс гарах</span>
+                                    <LogOut className="h-4 w-4" />
+                                    Системээс гарах
                                 </DropdownMenuItem>
                             </DropdownMenuContent>
                         </DropdownMenu>
@@ -553,7 +628,7 @@ export default function CompanyPage() {
                                             <h2 className="text-xl font-bold tracking-tight">Нийтэлсэн зарууд</h2>
                                             <p className="text-xs text-muted-foreground font-medium">Нийт {myJobsData?.getAllJobs?.length || 0} дадлагын зар</p>
                                         </div>
-                                        <Button size="sm" onClick={() => setShowJobForm(!showJobForm)} className="rounded-xl h-9 px-4 font-bold">
+                                        <Button size="sm" onClick={() => { setShowJobForm(!showJobForm); setEditingJob(null); setJobForm({ title: "", description: "", type: "intern", location: "", salaryRange: "", responsibilities: "", requirements: "", additionalInfo: "", deadline: "", requiredSkills: [] }); setSkillsInput("") }} className="rounded-xl h-9 px-4 font-bold">
                                             {showJobForm ? "Болих" : <><PlusCircle className="w-3.5 h-3.5 mr-2" />Шинэ зар</>}
                                         </Button>
                                     </div>
@@ -561,10 +636,10 @@ export default function CompanyPage() {
                                     {showJobForm && (
                                         <Card className="border-primary/20 bg-primary/5 shadow-none rounded-2xl animate-in fade-in zoom-in-95 duration-200">
                                             <CardHeader className="pb-4">
-                                                <CardTitle className="text-lg">Шинэ дадлагын зар нэмэх</CardTitle>
+                                                <CardTitle className="text-lg">{editingJob ? `"${editingJob.title}" зарыг засах` : "Шинэ дадлагын зар нэмэх"}</CardTitle>
                                             </CardHeader>
                                             <CardContent>
-                                                <form onSubmit={handleCreateJob} className="space-y-4">
+                                                <form onSubmit={editingJob ? handleUpdateJob : handleCreateJob} className="space-y-4">
                                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                                         <div className="space-y-1.5">
                                                             <Label className="text-xs font-bold text-muted-foreground ml-0.5">Зарны нэр</Label>
@@ -631,6 +706,17 @@ export default function CompanyPage() {
                                                                 className="h-9 rounded-lg bg-background"
                                                             />
                                                         </div>
+                                                        <div className="space-y-1.5">
+                                                            <Label className="text-xs font-bold text-muted-foreground ml-0.5">Хүлээн авах тоо</Label>
+                                                            <Input
+                                                                type="number"
+                                                                min={1}
+                                                                value={jobForm.maxParticipants ?? ""}
+                                                                onChange={(e) => setJobForm({ ...jobForm, maxParticipants: e.target.value ? parseInt(e.target.value) : undefined })}
+                                                                placeholder="Ж нь: 5"
+                                                                className="h-9 rounded-lg bg-background"
+                                                            />
+                                                        </div>
                                                     </div>
                                                     <div className="space-y-1.5">
                                                         <Label className="text-xs font-bold text-muted-foreground ml-0.5">Гүйцэтгэх үндсэн үүрэг</Label>
@@ -660,7 +746,7 @@ export default function CompanyPage() {
                                                         />
                                                     </div>
                                                     <Button type="submit" disabled={creatingJob} className="w-full h-10 rounded-xl font-bold">
-                                                        {creatingJob ? <><Loader2 className="animate-spin mr-2 h-4 w-4" />Оруулж байна...</> : "Нийтлэх"}
+                                                        {(creatingJob || updatingJob) ? <><Loader2 className="animate-spin mr-2 h-4 w-4" />{editingJob ? "Шинэчилж байна..." : "Оруулж байна..."}</> : editingJob ? "Шинэчлэх" : "Нийтлэх"}
                                                     </Button>
                                                 </form>
                                             </CardContent>
@@ -709,11 +795,34 @@ export default function CompanyPage() {
                                                                 </div>
                                                             </div>
                                                         </div>
-                                                        <div className={cn(
-                                                            "px-2.5 py-0.5 rounded-md text-[9px] font-black uppercase tracking-widest border shrink-0",
-                                                            job.status === 'open' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : 'bg-secondary text-muted-foreground'
-                                                        )}>
-                                                            {job.status === 'open' ? 'Нээлттэй' : 'Хаагдсан'}
+                                                        <div className="flex items-center gap-2 shrink-0">
+                                                            <span className="flex items-center gap-1 text-[10px] font-bold text-muted-foreground">
+                                                                <Users2 className="w-3 h-3" />
+                                                                {job.applicationCount}{job.maxParticipants ? `/${job.maxParticipants}` : ""}
+                                                            </span>
+                                                            <div className={cn(
+                                                                "px-2.5 py-0.5 rounded-md text-[9px] font-black uppercase tracking-widest border",
+                                                                job.status === 'open' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : 'bg-secondary text-muted-foreground'
+                                                            )}>
+                                                                {job.status === 'open' ? 'Нээлттэй' : 'Хаагдсан'}
+                                                            </div>
+                                                            <Button
+                                                                variant="ghost"
+                                                                size="sm"
+                                                                className="h-8 w-8 p-0 rounded-lg hover:bg-primary/10 hover:text-primary"
+                                                                onClick={() => handleEditJob(job)}
+                                                            >
+                                                                <Pencil className="w-3.5 h-3.5" />
+                                                            </Button>
+                                                            <Button
+                                                                variant="ghost"
+                                                                size="sm"
+                                                                className="h-8 w-8 p-0 rounded-lg hover:bg-red-50 hover:text-red-600"
+                                                                onClick={() => handleDeleteJob(job.id, job.title)}
+                                                                disabled={deletingJob}
+                                                            >
+                                                                <Trash2 className="w-3.5 h-3.5" />
+                                                            </Button>
                                                         </div>
                                                     </CardContent>
                                                 </Card>
@@ -767,7 +876,7 @@ export default function CompanyPage() {
                                                             </div>
                                                             <div className="flex items-center gap-4 text-[10px] font-bold text-muted-foreground/70 uppercase tracking-widest pt-1">
                                                                 <span className="bg-secondary/40 px-2 py-0.5 rounded text-primary">MATCH: {Math.round(app.matchScore * 100)}%</span>
-                                                                <span className="flex items-center gap-1.5"><Clock className="w-3.5 h-3.5" />{new Date(parseInt(app.appliedAt) || Date.now()).toLocaleDateString()}</span>
+                                                                <span className="flex items-center gap-1.5"><Clock className="w-3.5 h-3.5" />{new Date(app.appliedAt).toLocaleDateString()}</span>
                                                                 {app.job?.deadline && (
                                                                     <span className={cn(
                                                                         "flex items-center gap-1.5 px-2 py-0.5 rounded",

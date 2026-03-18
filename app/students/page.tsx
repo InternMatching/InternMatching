@@ -204,19 +204,19 @@ function StudentsContent() {
                 </div>
 
                 {!isCompany ? (
-                    <div className="max-w-xl mx-auto py-8">
-                        <Card className="border-border/60 shadow-none rounded-3xl overflow-hidden bg-background">
+                    <div className="max-w-xl mx-auto py-8 flex items-center justify-center min-h-[60vh]">
+                        <Card className="border-border/60 shadow-none rounded-3xl overflow-hidden bg-background animate-in fade-in slide-in-from-bottom-8 duration-700 ease-out fill-mode-both">
                             <CardContent className="p-8 md:p-12 flex flex-col items-center text-center space-y-6">
-                                <div className="p-4 bg-primary/5 rounded-2xl">
+                                <div className="p-4 bg-primary/5 rounded-2xl animate-in fade-in zoom-in-75 duration-500 delay-300 fill-mode-both">
                                     <Lock className="w-10 h-10 text-primary" />
                                 </div>
-                                <div className="space-y-2">
+                                <div className="space-y-2 animate-in fade-in slide-in-from-bottom-4 duration-500 delay-200 fill-mode-both">
                                     <h2 className="text-xl font-bold">Хязгаарлагдмал хэсэг</h2>
                                     <p className="text-muted-foreground text-sm leading-relaxed max-w-sm">
                                         Оюутнуудын профайл болон холбоо барих мэдээллийг үзэхийн тулд заавал <span className="text-foreground font-bold">Компани</span> эрхээр нэвтэрнэ үү.
                                     </p>
                                 </div>
-                                <div className="flex flex-col sm:flex-row gap-2.2 w-full pt-2">
+                                <div className="flex flex-col sm:flex-row gap-2.5 w-full pt-2 animate-in fade-in slide-in-from-bottom-4 duration-500 delay-400 fill-mode-both">
                                     <Button className="flex-1 h-10 rounded-xl font-bold" asChild>
                                         <Link href="/login?redirect=students">Нэвтрэх</Link>
                                     </Button>
@@ -224,7 +224,7 @@ function StudentsContent() {
                                         <Link href="/signup">Бүртгүүлэх</Link>
                                     </Button>
                                 </div>
-                                <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground font-medium uppercase tracking-wider">
+                                <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground font-medium uppercase tracking-wider animate-in fade-in duration-500 delay-500 fill-mode-both">
                                     <ShieldCheck className="w-3.5 h-3.5" />
                                     Аюулгүй байдал
                                 </div>
