@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useState, useEffect } from "react"
+import React, { useState, useEffect, useRef } from "react"
 import Image from "next/image"
 import { useRouter } from "next/navigation"
 import { useQuery, useMutation, useApolloClient } from "@apollo/client/react"
@@ -294,11 +294,11 @@ export default function StudentPage() {
                                 <Button variant="ghost" className="h-9 px-2.5 rounded-xl gap-2 hover:bg-secondary">
                                     <div className="w-6.5 h-6.5 rounded-lg bg-primary/5 flex items-center justify-center border border-primary/10 overflow-hidden">
                                         {profileData?.getStudentProfile?.profilePictureUrl ? (
-                                            <Image 
-                                                src={profileData.getStudentProfile.profilePictureUrl} 
-                                                alt="Profile" 
-                                                width={26} 
-                                                height={26} 
+                                            <Image
+                                                src={profileData.getStudentProfile.profilePictureUrl}
+                                                alt="Profile"
+                                                width={26}
+                                                height={26}
                                                 className="object-cover w-full h-full"
                                             />
                                         ) : (
@@ -378,11 +378,11 @@ export default function StudentPage() {
                                             <div className="relative group">
                                                 <div className="w-24 h-24 rounded-3xl bg-secondary/30 flex items-center justify-center border-2 border-border/50 overflow-hidden shadow-inner">
                                                     {profileData?.getStudentProfile?.profilePictureUrl ? (
-                                                        <Image 
-                                                            src={profileData.getStudentProfile.profilePictureUrl} 
-                                                            alt="Profile" 
-                                                            width={96} 
-                                                            height={96} 
+                                                        <Image
+                                                            src={profileData.getStudentProfile.profilePictureUrl}
+                                                            alt="Profile"
+                                                            width={96}
+                                                            height={96}
                                                             className="object-cover w-full h-full"
                                                         />
                                                     ) : (
