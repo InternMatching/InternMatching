@@ -1,6 +1,6 @@
 "use client"
 
-import React from "react"
+import React, { useState, useMemo } from "react"
 import { useQuery } from "@apollo/client/react"
 import { gql } from "@apollo/client"
 import {
@@ -54,7 +54,18 @@ export default function LogsPage() {
         }
     };
 
+    const [searchQuery, setSearchQuery] = useState("")
     const activities = data?.adminStats?.recentActivities || []
+
+    const filteredActivities = useMemo(() => {
+        if (!searchQuery.trim()) return activities
+        const q = searchQuery.toLowerCase()
+        return activities.filter((log: any) =>
+            log.user?.toLowerCase().includes(q) ||
+            log.action?.toLowerCase().includes(q) ||
+            log.type?.toLowerCase().includes(q)
+        )
+    }, [activities, searchQuery])
 
     if (loading) return <div className="flex justify-center p-12"><Loader2 className="animate-spin" /></div>
 
@@ -67,7 +78,7 @@ export default function LogsPage() {
 
             <div className="relative">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                <Input placeholder="Хэрэглэгч эсвэл үйлдлээр хайх..." className="pl-10" />
+                <Input placeholder="Хэрэглэгч эсвэл үйлдлээр хайх..." className="pl-10" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} />
             </div>
 
             <Card>
@@ -82,14 +93,14 @@ export default function LogsPage() {
                             </tr>
                         </thead>
                         <tbody className="divide-y">
-                            {activities.length === 0 ? (
+                            {filteredActivities.length === 0 ? (
                                 <tr>
                                     <td colSpan={4} className="px-6 py-20 text-center text-muted-foreground">
-                                        Бүртгэл байхгүй байна.
+                                        {searchQuery ? "Хайлтад тохирох үр дүн олдсонгүй." : "Бүртгэл байхгүй байна."}
                                     </td>
                                 </tr>
                             ) : (
-                                activities.map((log) => {
+                                filteredActivities.map((log: any) => {
                                     const Icon = getActivityIcon(log.type)
                                     return (
                                         <tr key={log.id} className="hover:bg-secondary/10 transition-colors">

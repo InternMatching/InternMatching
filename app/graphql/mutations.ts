@@ -100,6 +100,7 @@ export const GET_STUDENT_PROFILE = gql`
         school
         degree
         year
+        status
       }
     }
   }
@@ -119,6 +120,7 @@ export const UPDATE_STUDENT_PROFILE = gql`
         school
         degree
         year
+        status
       }
     }
   }
@@ -138,6 +140,7 @@ export const CREATE_STUDENT_PROFILE = gql`
         school
         degree
         year
+        status
       }
     }
   }
@@ -202,6 +205,7 @@ export const GET_ALL_STUDENT_PROFILES = gql`
         school
         degree
         year
+        status
       }
     }
   }
@@ -220,6 +224,8 @@ export const GET_ALL_JOBS = gql`
       requirements
       additionalInfo
       deadline
+      maxParticipants
+      applicationCount
       status
       postedAt
       company {
@@ -239,7 +245,35 @@ export const CREATE_JOB = gql`
     createJob(input: $input) {
       id
       title
+      maxParticipants
+      applicationCount
     }
+  }
+`;
+
+export const UPDATE_JOB = gql`
+  mutation UpdateJob($id: ID!, $input: JobInput!) {
+    updateJob(id: $id, input: $input) {
+      id
+      title
+      description
+      type
+      requiredSkills
+      location
+      salaryRange
+      responsibilities
+      requirements
+      additionalInfo
+      deadline
+      maxParticipants
+      status
+    }
+  }
+`;
+
+export const DELETE_JOB = gql`
+  mutation DeleteJob($id: ID!) {
+    deleteJob(id: $id)
   }
 `;
 

@@ -44,6 +44,7 @@ export interface Education {
   school: string;
   degree: string;
   year: number;
+  status?: "studying" | "graduated";
 }
 
 export interface StudentProfile {
@@ -93,6 +94,8 @@ export interface Job {
   requirements?: string;
   additionalInfo?: string;
   deadline?: string;
+  maxParticipants?: number;
+  applicationCount: number;
   status: JobStatus;
   postedAt: string;
   company?: CompanyProfile;
@@ -148,6 +151,7 @@ export interface JobInput {
   requirements?: string;
   additionalInfo?: string;
   deadline?: string;
+  maxParticipants?: number;
   status?: JobStatus;
 }
 

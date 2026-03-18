@@ -69,18 +69,28 @@ export default function UsersManagementPage() {
         return matchesSearch && matchesRole
     })
 
-    const handleDelete = async (userId: string) => {
-        if (!confirm("Та энэ хэрэглэгчийг устгахдаа итгэлтэй байна уу?")) return
-
-        try {
-            const { data: deleteData } = await deleteUser({ variables: { userId } })
-            if (deleteData?.deleteUser) {
-                toast.success("Хэрэглэгчийг амжилттай устгалаа")
-                refetch()
-            }
-        } catch (err: any) {
-            toast.error(err.message || "Хэрэглэгчийг устгахад алдаа гарлаа")
-        }
+    const handleDelete = (user: User) => {
+        toast(`${user.email} хэрэглэгчийг устгах уу?`, {
+            action: {
+                label: "Устгах",
+                onClick: async () => {
+                    try {
+                        const { data: deleteData } = await deleteUser({ variables: { userId: user.id } })
+                        if (deleteData?.deleteUser) {
+                            toast.success("Хэрэглэгчийг амжилттай устгалаа")
+                            refetch()
+                        }
+                    } catch (err: any) {
+                        toast.error(err.message || "Хэрэглэгчийг устгахад алдаа гарлаа")
+                    }
+                },
+            },
+            cancel: {
+                label: "Болих",
+                onClick: () => {},
+            },
+            duration: 8000,
+        })
     }
 
     const getRoleName = (role: string) => {
@@ -186,7 +196,7 @@ export default function UsersManagementPage() {
                                                     variant="ghost"
                                                     size="icon"
                                                     className="h-8 w-8 text-destructive"
-                                                    onClick={() => handleDelete(user.id)}
+                                                    onClick={() => handleDelete(user)}
                                                     disabled={user.role === 'admin'}
                                                 >
                                                     <Trash2 className="w-4 h-4" />
@@ -200,6 +210,7 @@ export default function UsersManagementPage() {
                     </table>
                 </div>
             </Card>
+
         </div>
     )
 }
