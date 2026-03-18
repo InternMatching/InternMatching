@@ -15,7 +15,9 @@ import {
     UserCircle,
     Settings,
     LayoutDashboard,
-    LogIn
+    LogIn,
+    GraduationCap,
+    Building2
 } from "lucide-react"
 import { ThemeToggle } from "@/components/theme-toggle"
 import {
@@ -68,6 +70,23 @@ export function Navbar() {
                 <Link href="/signup">
                     <UserPlus className="w-4 h-4 mr-2 md:hidden" />
                     Бүртгүүлэх
+                </Link>
+            </Button>
+        </div>
+    )
+
+    const RoleButtons = ({ className }: { className?: string }) => (
+        <div className={cn("flex flex-col gap-3 w-full", className)}>
+            <Button size="lg" className="w-full h-12 rounded-xl font-bold text-sm bg-foreground text-background hover:bg-foreground/90" asChild onClick={() => setIsOpen(false)}>
+                <Link href="/signup?role=student">
+                    <GraduationCap className="w-5 h-5 mr-2" />
+                    Оюутан
+                </Link>
+            </Button>
+            <Button variant="outline" size="lg" className="w-full h-12 rounded-xl font-bold text-sm border-border" asChild onClick={() => setIsOpen(false)}>
+                <Link href="/signup?role=company">
+                    <Building2 className="w-5 h-5 mr-2" />
+                    Компани
                 </Link>
             </Button>
         </div>
@@ -256,10 +275,6 @@ export function Navbar() {
                                             <Briefcase className="w-5 h-5 text-muted-foreground" />
                                             Дадлагын зар
                                         </Link>
-                                        <Link href="/jobs?levels=intern" className="flex items-center gap-3 p-3 rounded-xl hover:bg-muted transition-colors font-medium text-sm" onClick={() => setIsOpen(false)}>
-                                            <Zap className="w-5 h-5 text-muted-foreground" />
-                                            Дадлагын зар
-                                        </Link>
                                     </div>
                                 </div>
 
@@ -280,7 +295,7 @@ export function Navbar() {
                                     {isLoggedIn ? (
                                         <UserProfileDropdown mobile />
                                     ) : (
-                                        <AuthButtons className="flex-col w-full" mobile />
+                                        <RoleButtons />
                                     )}
                                 </div>
                             </div>

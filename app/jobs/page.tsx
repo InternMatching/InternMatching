@@ -13,8 +13,6 @@ import {
     Search,
     Clock,
     MapPin,
-    Zap,
-    Filter,
     X,
     Building2,
     Wallet,
@@ -33,13 +31,6 @@ import { useSearchParams, useRouter, usePathname } from "next/navigation"
 import Image from "next/image"
 import { cn } from "@/lib/utils"
 import { toast } from "sonner"
-import {
-    Sheet,
-    SheetContent,
-    SheetHeader,
-    SheetTitle,
-    SheetTrigger,
-} from "@/components/ui/sheet"
 
 function JobsContent() {
     const searchParams = useSearchParams()
@@ -351,6 +342,11 @@ function JobsContent() {
                             </Sheet>
                         </div>
                     </div>
+                    {(searchQuery || selectedLevels.length > 0) && (
+                        <Button variant="ghost" size="icon" className="h-10 w-10 rounded-xl shrink-0" onClick={clearFilters}>
+                            <X className="w-4 h-4" />
+                        </Button>
+                    )}
                 </div>
 
                 {/* Two-panel layout */}
