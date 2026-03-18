@@ -13,6 +13,7 @@ import {
     Search,
     Clock,
     MapPin,
+    Filter,
     X,
     Building2,
     Wallet,
@@ -31,6 +32,13 @@ import { useSearchParams, useRouter, usePathname } from "next/navigation"
 import Image from "next/image"
 import { cn } from "@/lib/utils"
 import { toast } from "sonner"
+import {
+    Sheet,
+    SheetContent,
+    SheetHeader,
+    SheetTitle,
+    SheetTrigger,
+} from "@/components/ui/sheet"
 
 function JobsContent() {
     const searchParams = useSearchParams()
@@ -387,7 +395,7 @@ function JobsContent() {
                                             "flex items-start gap-3.5 p-4 cursor-pointer transition-all hover:bg-secondary/30",
                                             selectedJob?.id === job.id && "bg-primary/5 border-l-2 border-l-primary"
                                         )}
-                                        onClick={() => setSelectedJob(job)}
+                                        onClick={() => { setSelectedJob(job); if (window.innerWidth < 1024) router.push(`/jobs/${job.id}`) }}
                                     >
                                         <div className="w-11 h-11 rounded-xl bg-secondary/40 flex items-center justify-center border border-border/30 overflow-hidden shrink-0 mt-0.5">
                                             {job.company?.logoUrl ? (
@@ -429,12 +437,6 @@ function JobsContent() {
                         )}
                     </div>
 
-                    {/* RIGHT: Job detail (mobile — sheet) */}
-                    <Sheet open={!!selectedJob && typeof window !== "undefined" && window.innerWidth < 1024} onOpenChange={(open) => { if (!open) setSelectedJob(null) }}>
-                        <SheetContent className="w-full sm:max-w-xl overflow-y-auto p-6">
-                            {selectedJob && <DetailPanel job={selectedJob} />}
-                        </SheetContent>
-                    </Sheet>
                 </div>
             </div>
 
