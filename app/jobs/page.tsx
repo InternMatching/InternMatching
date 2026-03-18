@@ -13,8 +13,6 @@ import {
     Search,
     Clock,
     MapPin,
-    Zap,
-    Filter,
     X,
     Building2,
     Wallet,
@@ -23,7 +21,6 @@ import {
     Calendar,
     Users2,
     Quote,
-    AlertCircle,
     Globe,
     Share2,
     Copy,
@@ -33,13 +30,6 @@ import { useSearchParams, useRouter, usePathname } from "next/navigation"
 import Image from "next/image"
 import { cn } from "@/lib/utils"
 import { toast } from "sonner"
-import {
-    Sheet,
-    SheetContent,
-    SheetHeader,
-    SheetTitle,
-    SheetTrigger,
-} from "@/components/ui/sheet"
 
 function JobsContent() {
     const searchParams = useSearchParams()
@@ -306,8 +296,8 @@ function JobsContent() {
     return (
         <div className="min-h-screen bg-[#FAFAFA] dark:bg-[#09090B]">
             <div className="container mx-auto px-4 md:px-6 lg:px-8 max-w-7xl text-foreground">
-                {/* Top bar */}
-                <div className="flex items-center justify-between py-5 border-b border-border/40">
+                {/* Top bar — hidden on mobile, shown on sm+ */}
+                <div className="hidden sm:flex items-center justify-between py-5 border-b border-border/40">
                     <div className="flex items-center gap-3">
                         <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
                             <Briefcase className="w-4 h-4 text-primary-foreground" />
@@ -315,8 +305,7 @@ function JobsContent() {
                         <span className="font-bold text-base tracking-tight">InternMatch</span>
                     </div>
                     <div className="flex items-center gap-3">
-                        {/* Search */}
-                        <div className="relative hidden sm:block">
+                        <div className="relative">
                             <Input
                                 placeholder="Дадлага, компани хайх..."
                                 className="w-64 rounded-xl pl-9 h-9 border-border/60 bg-secondary/10 text-sm"
@@ -325,39 +314,40 @@ function JobsContent() {
                             />
                             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
                         </div>
-                        {/* Mobile filter */}
-                        <div className="sm:hidden">
-                            <Sheet>
-                                <SheetTrigger asChild>
-                                    <Button variant="outline" size="sm" className="h-9 rounded-xl gap-2">
-                                        <Filter className="w-3.5 h-3.5" />
-                                        Шүүлтүүр
-                                    </Button>
-                                </SheetTrigger>
-                                <SheetContent side="bottom" className="rounded-t-3xl h-[50vh] p-6 bg-background">
-                                    <SheetHeader className="mb-4">
-                                        <SheetTitle className="text-lg font-bold">Шүүлтүүр</SheetTitle>
-                                    </SheetHeader>
-                                    <div className="space-y-4">
-                                        <div className="relative">
-                                            <Input placeholder="Хайх..." className="rounded-xl pl-9 h-10" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} />
-                                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
-                                        </div>
-                                        {(searchQuery || selectedLevels.length > 0) && (
-                                            <Button variant="ghost" size="sm" className="w-full h-8 text-xs" onClick={clearFilters}><X className="w-3 h-3 mr-2" />Арилгах</Button>
-                                        )}
-                                    </div>
-                                </SheetContent>
-                            </Sheet>
-                        </div>
                     </div>
                 </div>
 
-                {/* Two-panel layout */}
-                <div className="flex flex-col lg:flex-row gap-0 min-h-[calc(100vh-80px)]">
+                {/* Mobile search + filter bar */}
+                <div className="sm:hidden flex items-center gap-2 py-3">
+                    <div className="relative flex-1">
+                        <Input
+                            placeholder="Хайх..."
+                            className="rounded-xl pl-9 h-10 border-border/60 bg-secondary/10 text-sm"
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                        />
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
+                    </div>
+                    {(searchQuery || selectedLevels.length > 0) && (
+                        <Button variant="ghost" size="icon" className="h-10 w-10 rounded-xl shrink-0" onClick={clearFilters}>
+                            <X className="w-4 h-4" />
+                        </Button>
+                    )}
+                </div>
+
+                {/* Mobile: job count header */}
+                <div className="sm:hidden pb-2">
+                    <h2 className="text-sm font-bold text-muted-foreground">
+                        Нээлттэй дадлага
+                        <span className="font-medium ml-1.5">({filteredJobs.length})</span>
+                    </h2>
+                </div>
+
+                {/* Two-panel layout (desktop) / Single list (mobile) */}
+                <div className="flex flex-col lg:flex-row gap-0 lg:min-h-[calc(100vh-80px)]">
                     {/* LEFT: Job list */}
-                    <div className="w-full lg:w-[420px] shrink-0 border-r border-border/40">
-                        <div className="p-4 border-b border-border/40 bg-background/80 backdrop-blur-sm sticky top-0 z-10">
+                    <div className="w-full lg:w-[420px] shrink-0 lg:border-r border-border/40">
+                        <div className="hidden sm:block p-4 border-b border-border/40 bg-background/80 backdrop-blur-sm sticky top-0 z-10">
                             <h2 className="text-sm font-bold">
                                 Нээлттэй ажлын байрууд
                                 <span className="text-muted-foreground font-medium ml-1.5">({filteredJobs.length})</span>
@@ -389,9 +379,9 @@ function JobsContent() {
                                         key={job.id}
                                         className={cn(
                                             "flex items-start gap-3.5 p-4 cursor-pointer transition-all hover:bg-secondary/30",
-                                            selectedJob?.id === job.id && "bg-primary/5 border-l-2 border-l-primary"
+                                            selectedJob?.id === job.id && "lg:bg-primary/5 lg:border-l-2 lg:border-l-primary"
                                         )}
-                                        onClick={() => setSelectedJob(job)}
+                                        onClick={() => { setSelectedJob(job); if (window.innerWidth < 1024) router.push(`/jobs/${job.id}`) }}
                                     >
                                         <div className="w-11 h-11 rounded-xl bg-secondary/40 flex items-center justify-center border border-border/30 overflow-hidden shrink-0 mt-0.5">
                                             {job.company?.logoUrl ? (
@@ -411,6 +401,7 @@ function JobsContent() {
                                                 <span className="flex items-center gap-1"><Users2 className="w-3 h-3" />{job.applicationCount}</span>
                                             </div>
                                         </div>
+                                        <ChevronRight className="w-4 h-4 text-muted-foreground/30 shrink-0 mt-3 lg:hidden" />
                                     </div>
                                 ))}
                             </div>
@@ -433,12 +424,6 @@ function JobsContent() {
                         )}
                     </div>
 
-                    {/* RIGHT: Job detail (mobile — sheet) */}
-                    <Sheet open={!!selectedJob && typeof window !== "undefined" && window.innerWidth < 1024} onOpenChange={(open) => { if (!open) setSelectedJob(null) }}>
-                        <SheetContent className="w-full sm:max-w-xl overflow-y-auto p-6">
-                            {selectedJob && <DetailPanel job={selectedJob} />}
-                        </SheetContent>
-                    </Sheet>
                 </div>
             </div>
 
