@@ -60,7 +60,7 @@ export default function StudentPage() {
     const [activeTab, setActiveTab] = useState<"profile" | "jobs" | "applications">("profile")
     const [isMenuOpen, setIsMenuOpen] = useState(false)
 
-    // Auth & Profile Data
+
     const { data: userData, loading: userLoading, error: userError } = useQuery<{ me: UserType }>(ME)
     const { data: profileData, loading: profileLoading, refetch: refetchProfile } = useQuery<{ getStudentProfile: StudentProfile }>(GET_STUDENT_PROFILE)
     const { data: jobsData, loading: jobsLoading } = useQuery<{ getAllJobs: Job[] }>(GET_ALL_JOBS, {
