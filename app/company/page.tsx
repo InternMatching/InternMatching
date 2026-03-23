@@ -761,8 +761,9 @@ export default function CompanyPage() {
                                         <div className="grid gap-3">
                                             {myJobsData?.getAllJobs?.map((job) => (
                                                 <Card key={job.id} className="hover:border-primary/40 transition-all border-border/60 bg-background rounded-xl shadow-none">
-                                                    <CardContent className="p-4 flex items-center justify-between font-medium gap-4">
-                                                        <div className="flex items-center gap-3 flex-1 min-w-0">
+                                                    <CardContent className="p-4 font-medium">
+                                                        {/* Top row: logo + title + actions */}
+                                                        <div className="flex items-start gap-3">
                                                             <div className="w-10 h-10 bg-secondary/30 rounded-xl flex items-center justify-center border border-border/40 overflow-hidden shrink-0">
                                                                 {profileData?.getCompanyProfile?.logoUrl ? (
                                                                     <Image
@@ -778,51 +779,66 @@ export default function CompanyPage() {
                                                                     </span>
                                                                 )}
                                                             </div>
-                                                            <div className="flex flex-col min-w-0">
-                                                                <h3 className="font-bold text-sm mb-0.5 truncate">{job.title}</h3>
-                                                                <div className="flex items-center gap-3 text-[10px] text-muted-foreground uppercase font-bold tracking-wider flex-wrap">
-                                                                    <span className="flex items-center gap-1"><Search className="w-3 h-3" />{job.location}</span>
-                                                                    <span className="flex items-center gap-1"><Clock className="w-3 h-3" />{job.salaryRange || "Уян хатан"}</span>
-                                                                    {job.deadline && (
-                                                                        <span className={cn(
-                                                                            "flex items-center gap-1",
-                                                                            new Date(job.deadline).getTime() - new Date().getTime() < 86400000 ? "text-red-500" : "text-amber-500"
-                                                                        )}>
-                                                                            <AlertCircle className="w-3 h-3" />
-                                                                            {getTimeRemaining(job.deadline)}
-                                                                        </span>
-                                                                    )}
-                                                                </div>
+                                                            <h3 className="font-bold text-sm truncate flex-1 min-w-0 pt-2">{job.title}</h3>
+                                                            {/* Desktop: edit/delete in top row */}
+                                                            <div className="hidden md:flex items-center gap-1 shrink-0 ml-auto">
+                                                                <Button
+                                                                    variant="ghost"
+                                                                    size="sm"
+                                                                    className="h-8 w-8 p-0 rounded-lg hover:bg-primary/10 hover:text-primary"
+                                                                    onClick={() => handleEditJob(job)}
+                                                                >
+                                                                    <Pencil className="w-3.5 h-3.5" />
+                                                                </Button>
+                                                                <Button
+                                                                    variant="ghost"
+                                                                    size="sm"
+                                                                    className="h-8 w-8 p-0 rounded-lg hover:bg-red-50 hover:text-red-600"
+                                                                    onClick={() => handleDeleteJob(job.id, job.title)}
+                                                                    disabled={deletingJob}
+                                                                >
+                                                                    <Trash2 className="w-3.5 h-3.5" />
+                                                                </Button>
                                                             </div>
                                                         </div>
-                                                        <div className="flex items-center gap-2 shrink-0">
-                                                            <span className="flex items-center gap-1 text-[10px] font-bold text-muted-foreground">
+
+                                                        {/* Bottom row: metadata tags */}
+                                                        <div className="flex items-center gap-2 sm:gap-3 flex-wrap mt-2 sm:ml-[52px] text-[10px] text-muted-foreground uppercase font-bold tracking-wider">
+                                                            <span className="flex items-center gap-1"><Search className="w-3 h-3" />{job.location}</span>
+                                                            <span className="flex items-center gap-1"><Clock className="w-3 h-3" />{job.salaryRange || "Уян хатан"}</span>
+                                                            <span className="flex items-center gap-1">
                                                                 <Users2 className="w-3 h-3" />
                                                                 {job.applicationCount}{job.maxParticipants ? `/${job.maxParticipants}` : ""}
                                                             </span>
-                                                            <div className={cn(
-                                                                "px-2.5 py-0.5 rounded-md text-[9px] font-black uppercase tracking-widest border",
-                                                                job.status === 'open' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : 'bg-secondary text-muted-foreground'
-                                                            )}>
-                                                                {job.status === 'open' ? 'Нээлттэй' : 'Хаагдсан'}
+                                                            {job.deadline && (
+                                                                <span className={cn(
+                                                                    "flex items-center gap-1",
+                                                                    new Date(job.deadline).getTime() - new Date().getTime() < 86400000 ? "text-red-500" : "text-amber-500"
+                                                                )}>
+                                                                    <AlertCircle className="w-3 h-3" />
+                                                                    {getTimeRemaining(job.deadline)}
+                                                                </span>
+                                                            )}
+                                                            {/* Mobile: edit/delete after metadata */}
+                                                            <div className="flex md:hidden items-center gap-1 shrink-0 ml-auto">
+                                                                <Button
+                                                                    variant="ghost"
+                                                                    size="sm"
+                                                                    className="h-7 w-7 p-0 rounded-lg hover:bg-primary/10 hover:text-primary"
+                                                                    onClick={() => handleEditJob(job)}
+                                                                >
+                                                                    <Pencil className="w-3 h-3" />
+                                                                </Button>
+                                                                <Button
+                                                                    variant="ghost"
+                                                                    size="sm"
+                                                                    className="h-7 w-7 p-0 rounded-lg hover:bg-red-50 hover:text-red-600"
+                                                                    onClick={() => handleDeleteJob(job.id, job.title)}
+                                                                    disabled={deletingJob}
+                                                                >
+                                                                    <Trash2 className="w-3 h-3" />
+                                                                </Button>
                                                             </div>
-                                                            <Button
-                                                                variant="ghost"
-                                                                size="sm"
-                                                                className="h-8 w-8 p-0 rounded-lg hover:bg-primary/10 hover:text-primary"
-                                                                onClick={() => handleEditJob(job)}
-                                                            >
-                                                                <Pencil className="w-3.5 h-3.5" />
-                                                            </Button>
-                                                            <Button
-                                                                variant="ghost"
-                                                                size="sm"
-                                                                className="h-8 w-8 p-0 rounded-lg hover:bg-red-50 hover:text-red-600"
-                                                                onClick={() => handleDeleteJob(job.id, job.title)}
-                                                                disabled={deletingJob}
-                                                            >
-                                                                <Trash2 className="w-3.5 h-3.5" />
-                                                            </Button>
                                                         </div>
                                                     </CardContent>
                                                 </Card>
@@ -854,11 +870,11 @@ export default function CompanyPage() {
                                                             <div className="flex items-center gap-3">
                                                                 <div className="w-10 h-10 bg-secondary/50 rounded-xl flex items-center justify-center font-bold text-primary border border-border/20 overflow-hidden shrink-0">
                                                                     {app.student?.profilePictureUrl ? (
-                                                                        <Image 
-                                                                            src={app.student.profilePictureUrl} 
-                                                                            alt={app.student.firstName || ""} 
-                                                                            width={40} 
-                                                                            height={40} 
+                                                                        <Image
+                                                                            src={app.student.profilePictureUrl}
+                                                                            alt={app.student.firstName || ""}
+                                                                            width={40}
+                                                                            height={40}
                                                                             className="object-cover w-full h-full"
                                                                         />
                                                                     ) : (
@@ -942,8 +958,8 @@ export default function CompanyPage() {
                                         </div>
                                         <div className="relative w-full sm:w-64">
                                             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                                            <Input 
-                                                placeholder="Оюутан хайх..." 
+                                            <Input
+                                                placeholder="Оюутан хайх..."
                                                 className="pl-10 h-10 rounded-xl bg-secondary/10 border-border/40 font-bold"
                                                 value={studentSearch}
                                                 onChange={(e) => setStudentSearch(e.target.value)}
@@ -957,12 +973,12 @@ export default function CompanyPage() {
                                         </div>
                                     ) : (
                                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                                            {studentsData?.getAllStudentProfiles?.filter(s => 
+                                            {studentsData?.getAllStudentProfiles?.filter(s =>
                                                 `${s.firstName} ${s.lastName}`.toLowerCase().includes(studentSearch.toLowerCase()) ||
                                                 s.skills.some(skill => skill.toLowerCase().includes(studentSearch.toLowerCase()))
                                             ).map((student) => (
-                                                <Card 
-                                                    key={student.id} 
+                                                <Card
+                                                    key={student.id}
                                                     className="group hover:border-primary/40 transition-all border-border/60 bg-background rounded-2xl overflow-hidden cursor-pointer flex flex-col"
                                                     onClick={() => setSelectedStudent(student)}
                                                 >
@@ -970,11 +986,11 @@ export default function CompanyPage() {
                                                         <div className="flex items-center gap-3">
                                                             <div className="w-12 h-12 rounded-2xl bg-secondary/30 flex items-center justify-center border border-border/40 overflow-hidden shrink-0">
                                                                 {student.profilePictureUrl ? (
-                                                                    <Image 
-                                                                        src={student.profilePictureUrl} 
-                                                                        alt={student.firstName || ""} 
-                                                                        width={48} 
-                                                                        height={48} 
+                                                                    <Image
+                                                                        src={student.profilePictureUrl}
+                                                                        alt={student.firstName || ""}
+                                                                        width={48}
+                                                                        height={48}
                                                                         className="object-cover w-full h-full"
                                                                     />
                                                                 ) : (
@@ -1032,11 +1048,11 @@ export default function CompanyPage() {
                                 <div className="absolute -bottom-12 left-8">
                                     <div className="w-24 h-24 rounded-4xl bg-background border-4 border-background shadow-xl overflow-hidden flex items-center justify-center">
                                         {selectedStudent.profilePictureUrl ? (
-                                            <Image 
-                                                src={selectedStudent.profilePictureUrl} 
-                                                alt={selectedStudent.firstName || ""} 
-                                                width={96} 
-                                                height={96} 
+                                            <Image
+                                                src={selectedStudent.profilePictureUrl}
+                                                alt={selectedStudent.firstName || ""}
+                                                width={96}
+                                                height={96}
                                                 className="object-cover w-full h-full"
                                             />
                                         ) : (
