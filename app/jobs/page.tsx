@@ -32,6 +32,13 @@ import { useSearchParams, useRouter, usePathname } from "next/navigation"
 import Image from "next/image"
 import { cn } from "@/lib/utils"
 import { toast } from "sonner"
+import {
+    Sheet,
+    SheetContent,
+    SheetHeader,
+    SheetTitle,
+    SheetTrigger,
+} from "@/components/ui/sheet"
 
 function JobsContent() {
     const searchParams = useSearchParams()
