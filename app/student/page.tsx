@@ -738,7 +738,7 @@ export default function StudentPage() {
                                                                 {app.status}
                                                             </span>
                                                             <div className="text-[10px] font-bold text-muted-foreground/60 bg-secondary/40 px-2 py-0.5 rounded-md self-start sm:self-auto">
-                                                                MATCH: {Math.round(app.matchScore * 100)}%
+                                                                MATCH: {Math.round(app.matchScore)}%
                                                             </div>
                                                         </div>
                                                     </CardContent>

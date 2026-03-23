@@ -200,7 +200,23 @@ export default function JobDetailPage() {
                     )}
 
                     {/* Stats row */}
-                    <div className="grid grid-cols-3 gap-3">
+                    <div className={cn("grid gap-3", job.matchScore != null ? "grid-cols-2 sm:grid-cols-4" : "grid-cols-3")}>
+                        {job.matchScore != null && (
+                            <div className={cn(
+                                "p-4 rounded-2xl border text-center",
+                                job.matchScore >= 70 ? "bg-emerald-50 border-emerald-100" :
+                                job.matchScore >= 40 ? "bg-amber-50 border-amber-100" :
+                                "bg-secondary/20 border-border/30"
+                            )}>
+                                <p className={cn(
+                                    "text-3xl font-black",
+                                    job.matchScore >= 70 ? "text-emerald-600" :
+                                    job.matchScore >= 40 ? "text-amber-600" :
+                                    "text-muted-foreground"
+                                )}>{Math.round(job.matchScore)}%</p>
+                                <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Тохирол</p>
+                            </div>
+                        )}
                         <div className="p-4 rounded-2xl bg-secondary/20 border border-border/30 text-center">
                             <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-1">Цалин</p>
                             <p className="text-sm font-black">{job.salaryRange || "Тохиролцоно"}</p>

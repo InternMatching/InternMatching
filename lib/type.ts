@@ -99,6 +99,7 @@ export interface Job {
   status: JobStatus;
   postedAt: string;
   company?: CompanyProfile;
+  matchScore?: number;
 }
 
 // Application Types
