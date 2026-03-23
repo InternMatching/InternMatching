@@ -891,7 +891,7 @@ export default function CompanyPage() {
                                                                 </div>
                                                             </div>
                                                             <div className="flex items-center gap-4 text-[10px] font-bold text-muted-foreground/70 uppercase tracking-widest pt-1">
-                                                                <span className="bg-secondary/40 px-2 py-0.5 rounded text-primary">MATCH: {Math.round(app.matchScore * 100)}%</span>
+                                                                <span className="bg-secondary/40 px-2 py-0.5 rounded text-primary">MATCH: {Math.round(app.matchScore)}%</span>
                                                                 <span className="flex items-center gap-1.5"><Clock className="w-3.5 h-3.5" />{new Date(app.appliedAt).toLocaleDateString()}</span>
                                                                 {app.job?.deadline && (
                                                                     <span className={cn(

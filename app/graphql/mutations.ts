@@ -226,6 +226,8 @@ export const GET_ALL_JOBS = gql`
       deadline
       maxParticipants
       applicationCount
+      requiredSkills
+      matchScore
       status
       postedAt
       company {
@@ -235,6 +237,7 @@ export const GET_ALL_JOBS = gql`
         foundedYear
         employeeCount
         slogan
+        website
       }
     }
   }

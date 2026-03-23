@@ -180,7 +180,23 @@ function JobsContent() {
             </div>
 
             {/* Stats row */}
-            <div className="grid grid-cols-3 gap-3">
+            <div className={cn("grid gap-3", job.matchScore != null ? "grid-cols-2 sm:grid-cols-4" : "grid-cols-3")}>
+                {job.matchScore != null && (
+                    <div className={cn(
+                        "p-4 rounded-2xl border text-center",
+                        job.matchScore >= 70 ? "bg-emerald-50 border-emerald-100" :
+                        job.matchScore >= 40 ? "bg-amber-50 border-amber-100" :
+                        "bg-secondary/20 border-border/30"
+                    )}>
+                        <p className={cn(
+                            "text-3xl font-black",
+                            job.matchScore >= 70 ? "text-emerald-600" :
+                            job.matchScore >= 40 ? "text-amber-600" :
+                            "text-muted-foreground"
+                        )}>{Math.round(job.matchScore)}%</p>
+                        <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Тохирол</p>
+                    </div>
+                )}
                 <div className="p-4 rounded-2xl bg-secondary/20 border border-border/30 text-center">
                     <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-1">Цалин</p>
                     <p className="text-sm font-black">{job.salaryRange || "Тохиролцоно"}</p>
@@ -413,6 +429,16 @@ function JobsContent() {
                                             <div className="flex items-center gap-3 text-[11px] text-muted-foreground font-medium">
                                                 <span className="flex items-center gap-1"><Wallet className="w-3 h-3" />{job.salaryRange || "Тохиролцоно"}</span>
                                                 <span className="flex items-center gap-1"><Users2 className="w-3 h-3" />{job.applicationCount}</span>
+                                                {job.matchScore != null && (
+                                                    <span className={cn(
+                                                        "px-1.5 py-0.5 rounded text-[10px] font-bold",
+                                                        job.matchScore >= 70 ? "text-emerald-600 bg-emerald-50" :
+                                                        job.matchScore >= 40 ? "text-amber-600 bg-amber-50" :
+                                                        "text-muted-foreground bg-secondary/40"
+                                                    )}>
+                                                        {Math.round(job.matchScore)}%
+                                                    </span>
+                                                )}
                                             </div>
                                         </div>
                                     </div>
