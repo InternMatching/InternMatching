@@ -32,10 +32,11 @@ import {
     Info,
     Camera,
     Plus,
-    XCircle
+    XCircle,
+    Mail
 } from "lucide-react"
-import { ME, GET_STUDENT_PROFILE, UPDATE_STUDENT_PROFILE, CREATE_STUDENT_PROFILE, GET_ALL_JOBS, CREATE_APPLICATION, GET_APPLICATIONS, UPLOAD_STUDENT_PROFILE_PICTURE } from "../graphql/mutations"
-import { User as UserType, StudentProfile, Job, Application, StudentProfileInput, JobStatus } from "@/lib/type"
+import { ME, GET_STUDENT_PROFILE, UPDATE_STUDENT_PROFILE, CREATE_STUDENT_PROFILE, GET_ALL_JOBS, CREATE_APPLICATION, GET_APPLICATIONS, UPLOAD_STUDENT_PROFILE_PICTURE, GET_INVITATIONS, RESPOND_TO_INVITATION } from "../graphql/mutations"
+import { User as UserType, StudentProfile, Job, Application, StudentProfileInput, JobStatus, Invitation } from "@/lib/type"
 import { ThemeToggle } from "@/components/theme-toggle"
 import { toast } from "sonner"
 import {
@@ -57,7 +58,7 @@ import { cn } from "@/lib/utils"
 
 export default function StudentPage() {
     const router = useRouter()
-    const [activeTab, setActiveTab] = useState<"profile" | "jobs" | "applications">("profile")
+    const [activeTab, setActiveTab] = useState<"profile" | "jobs" | "applications" | "invitations">("profile")
     const [isMenuOpen, setIsMenuOpen] = useState(false)
 
 
@@ -73,6 +74,10 @@ export default function StudentPage() {
     const [applyJob] = useMutation<{ createApplication: Application }, { jobId: string }>(CREATE_APPLICATION)
     const [applyingJobId, setApplyingJobId] = useState<string | null>(null)
     const [uploadProfilePicture, { loading: uploadingPicture }] = useMutation(UPLOAD_STUDENT_PROFILE_PICTURE)
+    const { data: invitationsData, loading: invitationsLoading, refetch: refetchInvitations } = useQuery<{ getInvitations: Invitation[] }>(GET_INVITATIONS)
+    const [respondToInvitation, { loading: respondingInvitation }] = useMutation(RESPOND_TO_INVITATION, {
+        refetchQueries: [{ query: GET_INVITATIONS }],
+    })
 
     const [formData, setFormData] = useState<StudentProfileInput>({
         firstName: "",
@@ -80,11 +85,53 @@ export default function StudentPage() {
         bio: "",
         skills: [],
         experienceLevel: "intern",
+        isActivelyLooking: true,
         education: []
     })
 
     const [skillsInput, setSkillsInput] = useState("")
-    const [selectedJob, setSelectedJob] = useState<Job | null>(null)
+    const profileInitialized = useRef(false)
+    const [autoSaveStatus, setAutoSaveStatus] = useState<"idle" | "saving" | "saved">("idle")
+    const latestFormData = useRef(formData)
+    latestFormData.current = formData
+
+    // Auto-save function
+    const doAutoSave = async (data: StudentProfileInput) => {
+        if (!profileInitialized.current) return
+        if (!data.firstName?.trim() || !data.lastName?.trim()) return
+        setAutoSaveStatus("saving")
+        try {
+            if (profileData?.getStudentProfile) {
+                await updateProfile({ variables: { input: data } })
+            } else {
+                await createProfile({ variables: { input: data } })
+            }
+            refetchProfile()
+            setAutoSaveStatus("saved")
+            setTimeout(() => setAutoSaveStatus("idle"), 2000)
+        } catch {
+            setAutoSaveStatus("idle")
+        }
+    }
+
+    // Save on tab change
+    const handleTabChange = (tab: typeof activeTab) => {
+        if (activeTab === "profile" && profileInitialized.current) {
+            doAutoSave(latestFormData.current)
+        }
+        setActiveTab(tab)
+    }
+
+    // Save on page unload
+    useEffect(() => {
+        const handleBeforeUnload = () => {
+            if (profileInitialized.current) {
+                doAutoSave(latestFormData.current)
+            }
+        }
+        window.addEventListener("beforeunload", handleBeforeUnload)
+        return () => window.removeEventListener("beforeunload", handleBeforeUnload)
+    }, [])
 
     const getTimeRemaining = (deadline?: string) => {
         if (!deadline) return null
@@ -105,11 +152,16 @@ export default function StudentPage() {
                 bio: profile.bio || "",
                 skills: profile.skills || [],
                 experienceLevel: profile.experienceLevel || "intern",
+                isActivelyLooking: profile.isActivelyLooking ?? true,
                 education: profile.education || []
             })
             setSkillsInput(profile.skills?.join(", ") || "")
+            setTimeout(() => { profileInitialized.current = true }, 100)
+        } else if (!profileLoading && userData?.me) {
+            // New user, no profile yet — allow auto-save after init
+            setTimeout(() => { profileInitialized.current = true }, 100)
         }
-    }, [profileData])
+    }, [profileData, profileLoading, userData])
 
     const client = useApolloClient()
 
@@ -122,37 +174,7 @@ export default function StudentPage() {
 
     const handleUpdateProfile = async (e: React.FormEvent) => {
         e.preventDefault()
-
-        if (!formData.firstName?.trim()) {
-            toast.error("Нэр оруулна уу")
-            return
-        }
-        if (!formData.lastName?.trim()) {
-            toast.error("Овог оруулна уу")
-            return
-        }
-
-        try {
-            if (profileData?.getStudentProfile) {
-                await updateProfile({
-                    variables: {
-                        input: formData
-                    }
-                })
-                toast.success("Профайл амжилттай шинэчлэгдлээ!")
-            } else {
-                await createProfile({
-                    variables: {
-                        input: formData
-                    }
-                })
-                toast.success("Оюутны бүртгэл амжилттай хийгдлээ!")
-            }
-            refetchProfile()
-        } catch (err) {
-            console.error(err)
-            toast.error("Алдаа гарлаа. Дахин оролдоно уу.")
-        }
+        doAutoSave(formData)
     }
     const handleApply = async (jobId: string) => {
         setApplyingJobId(jobId)
@@ -167,6 +189,17 @@ export default function StudentPage() {
             toast.error("Та аль хэдийн илгээсэн байна эсвэл алдаа гарлаа.")
         } finally {
             setApplyingJobId(null)
+        }
+    }
+
+    const handleInvitationResponse = async (invitationId: string, status: "accepted" | "rejected") => {
+        try {
+            await respondToInvitation({
+                variables: { id: invitationId, status },
+            })
+            toast.success(status === "accepted" ? "Урилгыг зөвшөөрлөө!" : "Урилгыг татгалзлаа")
+        } catch (err: any) {
+            toast.error(err.message || "Алдаа гарлаа")
         }
     }
 
@@ -220,6 +253,7 @@ export default function StudentPage() {
         { id: 'profile', name: 'Профайл', icon: User },
         { id: 'jobs', name: 'Дадлагууд', icon: Search },
         { id: 'applications', name: 'Миний хүсэлтүүд', icon: FileText },
+        { id: 'invitations', name: 'Ирсэн урилгууд', icon: Mail },
     ]
 
     const SidebarContent = () => (
@@ -235,7 +269,7 @@ export default function StudentPage() {
                             isActive ? "bg-primary/10 text-primary hover:bg-primary/20" : "hover:bg-secondary/50 text-muted-foreground hover:text-foreground"
                         )}
                         onClick={() => {
-                            setActiveTab(item.id as any)
+                            handleTabChange(item.id as any)
                             setIsMenuOpen(false)
                         }}
                     >
@@ -399,9 +433,25 @@ export default function StudentPage() {
                                                     <input type="file" className="hidden" accept="image/*" onChange={handleImageUpload} disabled={uploadingPicture} />
                                                 </label>
                                             </div>
-                                            <div className="space-y-1">
+                                            <div className="space-y-1 flex-1">
                                                 <CardTitle className="text-xl font-bold">Хувийн мэдээлэл</CardTitle>
                                                 <CardDescription className="text-sm italic">Дадлага хийх хүсэлт гаргахад таны энэ мэдээлэл компаниудад очих болно.</CardDescription>
+                                            </div>
+                                            <div className="flex items-center gap-2">
+                                                <span className="text-xs font-bold text-muted-foreground">{formData.isActivelyLooking !== false ? "Идэвхтэй" : "Идэвхгүй"}</span>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setFormData(prev => ({ ...prev, isActivelyLooking: !prev.isActivelyLooking }))}
+                                                    className={cn(
+                                                        "relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out",
+                                                        formData.isActivelyLooking !== false ? "bg-primary" : "bg-secondary"
+                                                    )}
+                                                >
+                                                    <span className={cn(
+                                                        "pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow-lg ring-0 transition duration-200 ease-in-out",
+                                                        formData.isActivelyLooking !== false ? "translate-x-5" : "translate-x-0"
+                                                    )} />
+                                                </button>
                                             </div>
                                         </div>
                                     </CardHeader>
@@ -569,13 +619,17 @@ export default function StudentPage() {
                                                 </div>
                                             </div>
 
-                                            <Button type="submit" disabled={updatingProfile || creatingProfile} className="h-10 px-8 rounded-xl font-bold shadow-lg shadow-primary/20">
-                                                {(updatingProfile || creatingProfile) ? (
-                                                    <><Loader2 className="animate-spin mr-2 h-4 w-4" />Хадгалж байна...</>
-                                                ) : (
-                                                    profileData?.getStudentProfile ? "Өөрчлөлтийг хадгалах" : "Профайл үүсгэх"
+                                            <div className="flex items-center gap-2 text-sm text-muted-foreground h-10">
+                                                {autoSaveStatus === "saving" && (
+                                                    <><Loader2 className="animate-spin h-4 w-4" /><span>Хадгалж байна...</span></>
                                                 )}
-                                            </Button>
+                                                {autoSaveStatus === "saved" && (
+                                                    <><CheckCircle className="h-4 w-4 text-emerald-500" /><span className="text-emerald-500">Хадгалагдлаа</span></>
+                                                )}
+                                                {autoSaveStatus === "idle" && profileInitialized.current && (
+                                                    <span className="text-muted-foreground/60">Өөрчлөлт автоматаар хадгалагдана</span>
+                                                )}
+                                            </div>
                                         </form>
                                     </CardContent>
                                 </Card>
@@ -598,10 +652,11 @@ export default function StudentPage() {
                                             {jobsData?.getAllJobs?.map((job) => {
                                                 const isApplied = appsData?.getAllApplications?.some(app => app.jobId === job.id) ||
                                                     appsData?.getAllApplications?.some(app => app.job?.id === job.id);
+                                                const isExpired = job.deadline ? new Date(job.deadline).getTime() < Date.now() : false;
 
                                                 return (
-                                                    <Card key={job.id} className="group hover:border-primary/40 transition-all border-border/60 shadow-sm rounded-2xl overflow-hidden bg-background">
-                                                        <CardContent className="p-5 flex flex-col md:flex-row md:items-center justify-between gap-5 
+                                                    <Card key={job.id} className={cn("group transition-all border-border/60 shadow-sm rounded-2xl overflow-hidden bg-background", isExpired ? "opacity-50 pointer-events-none" : "hover:border-primary/40")}>
+                                                        <CardContent className="p-5 flex flex-col md:flex-row md:items-center justify-between gap-5
                                                     text-sm">
                                                             <div className="space-y-3">
                                                                 <div className="flex items-center gap-2">
@@ -620,7 +675,7 @@ export default function StudentPage() {
                                                                             </span>
                                                                         )}
                                                                     </div>
-                                                                    <div className="flex flex-col cursor-pointer" onClick={() => setSelectedJob(job)}>
+                                                                    <div className="flex flex-col cursor-pointer" onClick={() => router.push(`/jobs/${job.id}`)}>
                                                                         <h3 className="font-bold text-base leading-none mb-1 group-hover:text-primary transition-colors">{job.title}</h3>
                                                                         <p className="text-xs font-bold text-primary flex items-center gap-1 leading-none">
                                                                             {job.company?.companyName}
@@ -694,7 +749,7 @@ export default function StudentPage() {
                                                 <Card key={app.id} className="border-border/60 bg-background rounded-2xl shadow-sm">
                                                     <CardContent className="p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                                                         <div className="space-y-1.5 font-medium">
-                                                            <div className="flex items-center gap-3 cursor-pointer group" onClick={() => setSelectedJob(app.job as any)}>
+                                                            <div className="flex items-center gap-3 cursor-pointer group" onClick={() => router.push(`/jobs/${app.job?.id}`)}>
                                                                 <div className="w-10 h-10 bg-secondary/30 rounded-xl flex items-center justify-center border border-border/40 overflow-hidden shrink-0">
                                                                     {app.job?.company?.logoUrl ? (
                                                                         <Image
@@ -754,181 +809,115 @@ export default function StudentPage() {
                                     )}
                                 </div>
                             )}
+
+                            {activeTab === "invitations" && (
+                                <div className="space-y-4">
+                                    <div className="flex items-center justify-between border-b border-border/40 pb-4 mb-6">
+                                        <h2 className="text-xl font-bold tracking-tight">Компаниас ирсэн урилгууд</h2>
+                                        <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
+                                            {invitationsData?.getInvitations?.length || 0} урилга
+                                        </p>
+                                    </div>
+                                    {invitationsLoading ? (
+                                        <div className="space-y-4">
+                                            {[1, 2].map(i => <div key={i} className="h-28 rounded-2xl bg-secondary/20 animate-pulse" />)}
+                                        </div>
+                                    ) : (
+                                        <div className="grid gap-4">
+                                            {invitationsData?.getInvitations?.map((invitation) => (
+                                                <Card key={invitation.id} className="border-border/60 bg-background rounded-2xl shadow-sm overflow-hidden">
+                                                    <CardContent className="p-5 space-y-4">
+                                                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                                                            <div className="flex items-center gap-3">
+                                                                <div className="w-11 h-11 bg-secondary/30 rounded-xl flex items-center justify-center border border-border/40 overflow-hidden shrink-0">
+                                                                    {invitation.company?.logoUrl ? (
+                                                                        <Image
+                                                                            src={invitation.company.logoUrl}
+                                                                            alt={invitation.company.companyName || ""}
+                                                                            width={44}
+                                                                            height={44}
+                                                                            className="object-cover w-full h-full"
+                                                                        />
+                                                                    ) : (
+                                                                        <span className="text-sm font-black text-primary/50 uppercase">
+                                                                            {invitation.company?.companyName?.[0] || <Building2 className="w-4 h-4 text-muted-foreground" />}
+                                                                        </span>
+                                                                    )}
+                                                                </div>
+                                                                <div>
+                                                                    <h3 className="font-bold text-base leading-none mb-1">{invitation.company?.companyName}</h3>
+                                                                    <div className="flex items-center gap-2 text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
+                                                                        {invitation.company?.industry && <span>{invitation.company.industry}</span>}
+                                                                        {invitation.company?.location && (
+                                                                            <>
+                                                                                <span>•</span>
+                                                                                <span>{invitation.company.location}</span>
+                                                                            </>
+                                                                        )}
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                            <div className="flex items-center gap-2">
+                                                                {invitation.status === "pending" ? (
+                                                                    <>
+                                                                        <Button
+                                                                            size="sm"
+                                                                            className="h-8 px-4 rounded-xl font-bold text-xs bg-emerald-600 hover:bg-emerald-700"
+                                                                            onClick={() => handleInvitationResponse(invitation.id, "accepted")}
+                                                                            disabled={respondingInvitation}
+                                                                        >
+                                                                            <CheckCircle className="w-3.5 h-3.5 mr-1.5" />
+                                                                            Зөвшөөрөх
+                                                                        </Button>
+                                                                        <Button
+                                                                            size="sm"
+                                                                            variant="outline"
+                                                                            className="h-8 px-4 rounded-xl font-bold text-xs text-red-600 border-red-200 hover:bg-red-50"
+                                                                            onClick={() => handleInvitationResponse(invitation.id, "rejected")}
+                                                                            disabled={respondingInvitation}
+                                                                        >
+                                                                            <XCircle className="w-3.5 h-3.5 mr-1.5" />
+                                                                            Татгалзах
+                                                                        </Button>
+                                                                    </>
+                                                                ) : (
+                                                                    <span className={cn(
+                                                                        "text-[9px] font-black px-2.5 py-1 rounded-md uppercase tracking-widest border",
+                                                                        invitation.status === "accepted" ? "bg-emerald-50 text-emerald-600 border-emerald-200" : "bg-red-50 text-red-600 border-red-200"
+                                                                    )}>
+                                                                        {invitation.status === "accepted" ? "Зөвшөөрсөн" : "Татгалзсан"}
+                                                                    </span>
+                                                                )}
+                                                            </div>
+                                                        </div>
+                                                        {invitation.message && (
+                                                            <div className="p-3 rounded-xl bg-secondary/20 border border-border/30">
+                                                                <p className="text-xs text-muted-foreground font-medium leading-relaxed">
+                                                                    &ldquo;{invitation.message}&rdquo;
+                                                                </p>
+                                                            </div>
+                                                        )}
+                                                        <p className="text-[10px] text-muted-foreground flex items-center gap-1.5 uppercase font-bold tracking-widest">
+                                                            <Clock className="w-3 h-3" />
+                                                            Илгээсэн: {new Date(invitation.sentAt).toLocaleDateString()}
+                                                        </p>
+                                                    </CardContent>
+                                                </Card>
+                                            ))}
+                                            {invitationsData?.getInvitations?.length === 0 && (
+                                                <div className="py-20 text-center space-y-3 bg-secondary/10 rounded-2xl border-2 border-dashed border-border/40">
+                                                    <Mail className="w-10 h-10 text-muted-foreground/30 mx-auto" />
+                                                    <p className="text-sm font-bold text-muted-foreground">Одоогоор урилга ирээгүй байна.</p>
+                                                </div>
+                                            )}
+                                        </div>
+                                    )}
+                                </div>
+                            )}
                         </div>
                     </div>
                 </div>
             </main>
-
-            <Sheet open={!!selectedJob} onOpenChange={() => setSelectedJob(null)}>
-                <SheetContent className="w-full sm:max-w-xl overflow-y-auto">
-                    {selectedJob && (
-                        <div className="space-y-8 py-6">
-                            <SheetHeader className="space-y-4">
-                                <div className="flex flex-wrap items-center gap-2">
-                                    <span className={cn(
-                                        "px-2 py-0.5 rounded-md text-[9px] font-bold uppercase tracking-widest border",
-                                        selectedJob.type.toLowerCase() === 'intern'
-                                            ? 'bg-orange-50/5 text-orange-600 border-orange-500/20'
-                                            : 'bg-blue-50/5 text-blue-600 border-blue-500/20'
-                                    )}>
-                                        {selectedJob.type}
-                                    </span>
-                                    {selectedJob.deadline && (
-                                        <span className={cn(
-                                            "flex items-center gap-1.5 px-2 py-0.5 rounded-md text-[9px] font-bold uppercase tracking-widest border",
-                                            new Date(selectedJob.deadline).getTime() - new Date().getTime() < 86400000 ? "bg-red-50 text-red-600 border-red-500/20" : "bg-amber-50 text-amber-600 border-amber-500/20"
-                                        )}>
-                                            <AlertCircle className="w-3 h-3" />
-                                            {getTimeRemaining(selectedJob.deadline)}
-                                        </span>
-                                    )}
-                                </div>
-                                <SheetTitle className="text-2xl md:text-3xl font-black tracking-tight leading-tight">
-                                    {selectedJob.title}
-                                </SheetTitle>
-                                <div className="flex flex-wrap items-center gap-4 text-xs font-bold text-muted-foreground uppercase opacity-80">
-                                    <div className="flex items-center gap-1.5">
-                                        <Building2 className="w-3.5 h-3.5" />
-                                        {selectedJob.company?.companyName}
-                                    </div>
-                                    <div className="flex items-center gap-1.5">
-                                        <MapPin className="w-3.5 h-3.5" />
-                                        {selectedJob.location}
-                                    </div>
-                                </div>
-                            </SheetHeader>
-
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div className="p-4 rounded-2xl bg-emerald-500/5 border border-emerald-500/10 space-y-1">
-                                    <div className="flex items-center gap-2 text-[10px] font-bold text-emerald-600 uppercase tracking-widest">
-                                        <Wallet className="w-3 h-3" />
-                                        Цалин / Урамшуулал
-                                    </div>
-                                    <p className="text-lg font-black text-emerald-700 dark:text-emerald-400">{selectedJob.salaryRange || "Тохиролцоно"}</p>
-                                </div>
-                                <div className="p-4 rounded-2xl bg-secondary/30 border border-border/40 space-y-1">
-                                    <div className="flex items-center gap-2 text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
-                                        <Calendar className="w-3 h-3" />
-                                        Нийтэлсэн огноо
-                                    </div>
-                                    <p className="text-lg font-black">{new Date(selectedJob.postedAt).toLocaleDateString()}</p>
-                                </div>
-                            </div>
-
-                            <div className="space-y-6">
-                                {selectedJob.responsibilities && (
-                                    <div className="space-y-3">
-                                        <h3 className="text-sm font-black uppercase tracking-widest text-primary flex items-center gap-2">
-                                            Гүйцэтгэх үндсэн үүрэг
-                                            <div className="h-px flex-1 bg-primary/10" />
-                                        </h3>
-                                        <div className="text-sm leading-relaxed text-foreground/80 font-medium whitespace-pre-wrap">
-                                            {selectedJob.responsibilities}
-                                        </div>
-                                    </div>
-                                )}
-
-                                {selectedJob.requirements && (
-                                    <div className="space-y-3">
-                                        <h3 className="text-sm font-black uppercase tracking-widest text-primary flex items-center gap-2">
-                                            Тавигдах шаардлага
-                                            <div className="h-px flex-1 bg-primary/10" />
-                                        </h3>
-                                        <div className="text-sm leading-relaxed text-foreground/80 font-medium whitespace-pre-wrap">
-                                            {selectedJob.requirements}
-                                        </div>
-                                    </div>
-                                )}
-
-                                {selectedJob.additionalInfo && (
-                                    <div className="space-y-3">
-                                        <h3 className="text-sm font-black uppercase tracking-widest text-muted-foreground flex items-center gap-2">
-                                            Нэмэлт мэдээлэл
-                                            <div className="h-px flex-1 bg-border/40" />
-                                        </h3>
-                                        <div className="text-sm leading-relaxed text-muted-foreground font-medium whitespace-pre-wrap italic">
-                                            {selectedJob.additionalInfo}
-                                        </div>
-                                    </div>
-                                )}
-                            </div>
-
-                            <Card className="border-primary/10 bg-primary/5 rounded-2xl overflow-hidden shadow-none">
-                                <CardHeader className="pb-3 border-b border-primary/10">
-                                    <div className="flex items-center gap-3">
-                                        <div className="w-10 h-10 rounded-xl bg-background flex items-center justify-center border border-primary/10 overflow-hidden shadow-inner">
-                                            {selectedJob.company?.logoUrl ? (
-                                                <Image
-                                                    src={selectedJob.company.logoUrl}
-                                                    alt={selectedJob.company.companyName || ""}
-                                                    width={40}
-                                                    height={40}
-                                                    className="object-cover w-full h-full"
-                                                />
-                                            ) : (
-                                                <span className="text-sm font-black text-primary/50 uppercase">
-                                                    {selectedJob.company?.companyName?.[0] || <Building2 className="w-5 h-5 text-primary/40" />}
-                                                </span>
-                                            )}
-                                        </div>
-                                        <div>
-                                            <div className="text-[10px] font-bold text-primary uppercase tracking-widest leading-none mb-1">Компаний тухай</div>
-                                            <h4 className="text-sm font-black leading-none">{selectedJob.company?.companyName}</h4>
-                                        </div>
-                                    </div>
-                                </CardHeader>
-                                <CardContent className="p-4 space-y-4">
-                                    {selectedJob.company?.slogan && (
-                                        <div className="flex items-start gap-2 italic text-xs text-primary/70 mb-2">
-                                            <Quote className="w-3 h-3 shrink-0 opacity-40" />
-                                            <p>&quot;{selectedJob.company.slogan}&quot;</p>
-                                        </div>
-                                    )}
-                                    <div className="grid grid-cols-2 gap-3 text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
-                                        <div className="flex flex-col gap-1">
-                                            <div className="flex items-center gap-1.5 opacity-60"><Calendar className="w-3 h-3" /> Байгуулагдсан</div>
-                                            <div className="text-foreground">{selectedJob.company?.foundedYear || "Тодорхойгүй"}</div>
-                                        </div>
-                                        <div className="flex flex-col gap-1">
-                                            <div className="flex items-center gap-1.5 opacity-60"><Users2 className="w-3 h-3" /> Ажилчид</div>
-                                            <div className="text-foreground">{selectedJob.company?.employeeCount || "Тодорхойгүй"}</div>
-                                        </div>
-                                    </div>
-                                    <p className="text-xs text-foreground/70 font-medium line-clamp-3">
-                                        {selectedJob.company?.description}
-                                    </p>
-                                    <div className="flex items-center gap-3 pt-2">
-                                        {selectedJob.company?.website && (
-                                            <a
-                                                href={selectedJob.company.website}
-                                                target="_blank"
-                                                rel="noopener noreferrer"
-                                                className="flex items-center gap-1.5 text-[10px] font-bold text-primary hover:underline"
-                                            >
-                                                <Globe className="w-3 h-3" />
-                                                Вэбсайт
-                                            </a>
-                                        )}
-                                    </div>
-                                </CardContent>
-                            </Card>
-
-                            <div className="sticky bottom-0 pt-6 pb-2 bg-background/80 backdrop-blur-md">
-                                <Button
-                                    className="w-full h-12 rounded-2xl font-black uppercase tracking-widest text-xs shadow-lg shadow-primary/20"
-                                    onClick={() => {
-                                        handleApply(selectedJob.id);
-                                        setSelectedJob(null);
-                                    }}
-                                    disabled={applyingJobId !== null || appsData?.getAllApplications?.some(app => app.jobId === selectedJob.id)}
-                                >
-                                    Хүсэлт илгээх
-                                </Button>
-                            </div>
-                        </div>
-                    )}
-                </SheetContent>
-            </Sheet>
         </div>
     )
 }
