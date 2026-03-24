@@ -96,6 +96,7 @@ export const GET_STUDENT_PROFILE = gql`
       skills
       profilePictureUrl
       experienceLevel
+      isActivelyLooking
       education {
         school
         degree
@@ -194,12 +195,18 @@ export const GET_ALL_STUDENT_PROFILES = gql`
     getAllStudentProfiles {
       id
       userId
+      user {
+        id
+        email
+        phoneNumber
+      }
       firstName
       lastName
       skills
       bio
       profilePictureUrl
       experienceLevel
+      isActivelyLooking
       updatedAt
       education {
         school
@@ -353,6 +360,56 @@ export const UPLOAD_STUDENT_PROFILE_PICTURE = gql`
     uploadStudentProfilePicture(base64Image: $base64Image) {
       id
       profilePictureUrl
+    }
+  }
+`;
+
+// Invitations
+export const GET_INVITATIONS = gql`
+  query GetInvitations($companyProfileId: ID, $studentProfileId: ID) {
+    getInvitations(companyProfileId: $companyProfileId, studentProfileId: $studentProfileId) {
+      id
+      companyProfileId
+      studentProfileId
+      message
+      status
+      sentAt
+      respondedAt
+      company {
+        id
+        companyName
+        logoUrl
+        industry
+        location
+      }
+      student {
+        id
+        firstName
+        lastName
+        profilePictureUrl
+        skills
+        experienceLevel
+      }
+    }
+  }
+`;
+
+export const SEND_INVITATION = gql`
+  mutation SendInvitation($studentProfileId: ID!, $message: String) {
+    sendInvitation(studentProfileId: $studentProfileId, message: $message) {
+      id
+      status
+      sentAt
+    }
+  }
+`;
+
+export const RESPOND_TO_INVITATION = gql`
+  mutation RespondToInvitation($id: ID!, $status: InvitationStatus!) {
+    respondToInvitation(id: $id, status: $status) {
+      id
+      status
+      respondedAt
     }
   }
 `;

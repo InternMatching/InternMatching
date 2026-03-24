@@ -1,9 +1,9 @@
 "use client"
 
 import React, { useMemo } from "react"
-import { useQuery } from "@apollo/client/react"
-import { GET_ALL_JOBS } from "../../graphql/mutations"
-import { Job, JobStatus } from "@/lib/type"
+import { useQuery, useMutation } from "@apollo/client/react"
+import { GET_ALL_JOBS, ME, GET_APPLICATIONS, CREATE_APPLICATION } from "../../graphql/mutations"
+import { Job, JobStatus, User, Application } from "@/lib/type"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
@@ -19,7 +19,9 @@ import {
     Globe,
     Share2,
     Copy,
-    Check
+    Check,
+    CheckCircle,
+    Loader2
 } from "lucide-react"
 import { useParams, useRouter } from "next/navigation"
 import Image from "next/image"
@@ -32,24 +34,55 @@ export default function JobDetailPage() {
     const jobId = params.id as string
     const [shareOpen, setShareOpen] = React.useState(false)
     const [copied, setCopied] = React.useState(false)
+    const [applyingJob, setApplyingJob] = React.useState(false)
+
+    const { data: userData } = useQuery<{ me: User }>(ME)
+    const isStudent = userData?.me?.role?.toLowerCase() === "student"
+    const isLoggedIn = !!userData?.me
 
     const { data, loading, error } = useQuery<{ getAllJobs: Job[] }>(GET_ALL_JOBS, {
         variables: { status: "open" as JobStatus },
         fetchPolicy: "cache-first"
     })
 
+    const { data: appsData, refetch: refetchApps } = useQuery<{ getAllApplications: Application[] }>(
+        GET_APPLICATIONS,
+        { skip: !isStudent }
+    )
+
+    const [createApplication] = useMutation<{ createApplication: Application }, { jobId: string }>(CREATE_APPLICATION)
+
     const job = useMemo(() => {
         if (!data?.getAllJobs) return null
         return data.getAllJobs.find(j => j.id === jobId) || null
     }, [data, jobId])
 
-    const handleApplyClick = () => {
-        const token = localStorage.getItem("token")
-        if (!token) {
-            toast.error("Та бүртгэлээ үүсгэнэ үү")
+    const isApplied = useMemo(() => {
+        if (!appsData?.getAllApplications || !jobId) return false
+        return appsData.getAllApplications.some(app => app.jobId === jobId || app.job?.id === jobId)
+    }, [appsData, jobId])
+
+    const handleApplyClick = async () => {
+        if (!isLoggedIn) {
+            toast.error("Нэвтэрч орно уу")
             router.push(`/login?redirect=jobs&id=${jobId}`)
-        } else {
-            router.push(`/login?redirect=jobs&id=${jobId}`)
+            return
+        }
+        if (!isStudent) {
+            toast.error("Зөвхөн оюутан хүсэлт илгээх боломжтой")
+            return
+        }
+        if (isApplied) return
+
+        setApplyingJob(true)
+        try {
+            await createApplication({ variables: { jobId } })
+            toast.success("Хүсэлт амжилттай илгээгдлээ!")
+            refetchApps()
+        } catch (err: any) {
+            toast.error(err.message || "Хүсэлт илгээхэд алдаа гарлаа")
+        } finally {
+            setApplyingJob(false)
         }
     }
 
@@ -160,10 +193,21 @@ export default function JobDetailPage() {
                     {/* Action buttons */}
                     <div className="flex items-center gap-2">
                         <Button
-                            className="flex-1 h-11 rounded-xl font-bold text-sm"
+                            className={cn(
+                                "flex-1 h-11 rounded-xl font-bold text-sm",
+                                isApplied && "bg-emerald-50 text-emerald-600 border border-emerald-200 hover:bg-emerald-100"
+                            )}
+                            variant={isApplied ? "outline" : "default"}
                             onClick={handleApplyClick}
+                            disabled={isApplied || applyingJob}
                         >
-                            Өргөдөл илгээх
+                            {isApplied ? (
+                                <><CheckCircle className="w-4 h-4 mr-2" />Илгээсэн</>
+                            ) : applyingJob ? (
+                                <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Илгээж байна...</>
+                            ) : (
+                                "Өргөдөл илгээх"
+                            )}
                         </Button>
                         <Button
                             variant="outline"

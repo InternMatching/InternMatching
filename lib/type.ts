@@ -50,6 +50,7 @@ export interface Education {
 export interface StudentProfile {
   id: string;
   userId: string;
+  user?: User;
   firstName?: string;
   lastName?: string;
   skills: string[];
@@ -57,6 +58,7 @@ export interface StudentProfile {
   profilePictureUrl?: string;
   bio?: string;
   experienceLevel?: ExperienceLevel;
+  isActivelyLooking?: boolean;
   education?: Education[];
   updatedAt: string;
 }
@@ -117,6 +119,21 @@ export interface Application {
   student?: StudentProfile;
 }
 
+// Invitation Types
+export type InvitationStatus = 'pending' | 'accepted' | 'rejected';
+
+export interface Invitation {
+  id: string;
+  companyProfileId: string;
+  studentProfileId: string;
+  message?: string;
+  status: InvitationStatus;
+  sentAt: string;
+  respondedAt?: string;
+  company?: CompanyProfile;
+  student?: StudentProfile;
+}
+
 // Input Types
 export interface StudentProfileInput {
   firstName?: string;
@@ -126,6 +143,7 @@ export interface StudentProfileInput {
   profilePictureUrl?: string;
   bio?: string;
   experienceLevel?: ExperienceLevel;
+  isActivelyLooking?: boolean;
   education?: Education[];
 }
 

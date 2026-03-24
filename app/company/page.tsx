@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useState, useEffect } from "react"
+import React, { useState, useEffect, useRef } from "react"
 import { useRouter } from "next/navigation"
 import { useQuery, useMutation, useApolloClient } from "@apollo/client/react"
 import { Button } from "@/components/ui/button"
@@ -29,10 +29,18 @@ import {
     Camera,
     Users2,
     Pencil,
-    Trash2
+    Trash2,
+    Eye,
+    MapPin,
+    DollarSign,
+    FileText,
+    ArrowLeft,
+    Calendar,
+    Send
 } from "lucide-react"
-import { ME, GET_COMPANY_PROFILE, UPDATE_COMPANY_PROFILE, CREATE_COMPANY_PROFILE, GET_ALL_JOBS, CREATE_JOB, UPDATE_JOB, DELETE_JOB, GET_APPLICATIONS, UPDATE_APPLICATION_STATUS, UPLOAD_COMPANY_LOGO, GET_ALL_STUDENT_PROFILES } from "../graphql/mutations"
-import { User, CompanyProfile, Job, Application, CompanyProfileInput, JobInput, JobStatus, ApplicationStatus, StudentProfile } from "@/lib/type"
+import { ME, GET_COMPANY_PROFILE, UPDATE_COMPANY_PROFILE, CREATE_COMPANY_PROFILE, GET_ALL_JOBS, CREATE_JOB, UPDATE_JOB, DELETE_JOB, GET_APPLICATIONS, UPDATE_APPLICATION_STATUS, UPLOAD_COMPANY_LOGO, GET_ALL_STUDENT_PROFILES, SEND_INVITATION, GET_INVITATIONS } from "../graphql/mutations"
+import { User, CompanyProfile, Job, Application, CompanyProfileInput, JobInput, JobStatus, ApplicationStatus, StudentProfile, Invitation } from "@/lib/type"
+import Link from "next/link"
 import Image from "next/image"
 import { ThemeToggle } from "@/components/theme-toggle"
 import { toast } from "sonner"
@@ -58,7 +66,7 @@ export default function CompanyPage() {
     const [activeTab, setActiveTab] = useState<"profile" | "jobs" | "applicants" | "students">("profile")
     const [isMenuOpen, setIsMenuOpen] = useState(false)
 
-    // Auth & Profile Data
+
     const { data: userData, loading: userLoading, error: userError } = useQuery<{ me: User }>(ME)
     const { data: profileData, loading: profileLoading, refetch: refetchProfile } = useQuery<{ getCompanyProfile: CompanyProfile }>(GET_COMPANY_PROFILE)
     const { data: myJobsData, loading: jobsLoading, refetch: refetchJobs } = useQuery<{ getAllJobs: Job[] }>(GET_ALL_JOBS, {
@@ -74,6 +82,10 @@ export default function CompanyPage() {
     const [updateJob, { loading: updatingJob }] = useMutation(UPDATE_JOB)
     const [deleteJob, { loading: deletingJob }] = useMutation(DELETE_JOB)
     const [uploadLogo] = useMutation<{ uploadCompanyLogo: CompanyProfile }, { base64Image: string }>(UPLOAD_COMPANY_LOGO)
+    const { data: invitationsData } = useQuery<{ getInvitations: Invitation[] }>(GET_INVITATIONS)
+    const [sendInvitation, { loading: sendingInvitation }] = useMutation(SEND_INVITATION, {
+        refetchQueries: [{ query: GET_INVITATIONS }],
+    })
 
     const [profileForm, setProfileForm] = useState<CompanyProfileInput>({
         companyName: "",
@@ -103,9 +115,51 @@ export default function CompanyPage() {
 
     const [showJobForm, setShowJobForm] = useState(false)
     const [editingJob, setEditingJob] = useState<Job | null>(null)
+    const [viewingJob, setViewingJob] = useState<Job | null>(null)
     const [skillsInput, setSkillsInput] = useState("")
-    const [selectedStudent, setSelectedStudent] = useState<StudentProfile | null>(null)
     const [studentSearch, setStudentSearch] = useState("")
+    const profileInitialized = useRef(false)
+    const [autoSaveStatus, setAutoSaveStatus] = useState<"idle" | "saving" | "saved">("idle")
+    const latestProfileForm = useRef(profileForm)
+    latestProfileForm.current = profileForm
+
+    // Auto-save function
+    const doAutoSave = async (data: CompanyProfileInput) => {
+        if (!profileInitialized.current) return
+        if (!data.companyName?.trim()) return
+        setAutoSaveStatus("saving")
+        try {
+            if (profileData?.getCompanyProfile) {
+                await updateProfile({ variables: { input: data } })
+            } else {
+                await createProfile({ variables: { input: data } })
+            }
+            refetchProfile()
+            setAutoSaveStatus("saved")
+            setTimeout(() => setAutoSaveStatus("idle"), 2000)
+        } catch {
+            setAutoSaveStatus("idle")
+        }
+    }
+
+    // Save on tab change
+    const handleTabChange = (tab: typeof activeTab) => {
+        if (activeTab === "profile" && profileInitialized.current) {
+            doAutoSave(latestProfileForm.current)
+        }
+        setActiveTab(tab)
+    }
+
+    // Save on page unload
+    useEffect(() => {
+        const handleBeforeUnload = () => {
+            if (profileInitialized.current) {
+                doAutoSave(latestProfileForm.current)
+            }
+        }
+        window.addEventListener("beforeunload", handleBeforeUnload)
+        return () => window.removeEventListener("beforeunload", handleBeforeUnload)
+    }, [])
 
     useEffect(() => {
         if (profileData?.getCompanyProfile) {
@@ -121,14 +175,17 @@ export default function CompanyPage() {
                 employeeCount: profile.employeeCount,
                 slogan: profile.slogan || ""
             })
+            setTimeout(() => { profileInitialized.current = true }, 100)
+        } else if (!profileLoading && userData?.me) {
+            setTimeout(() => { profileInitialized.current = true }, 100)
         }
-    }, [profileData])
+    }, [profileData, profileLoading, userData])
 
     const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0]
         if (!file) return
 
-        // Validate file size (max 10MB)
+
         if (file.size > 10 * 1024 * 1024) {
             toast.error("Логоны хэмжээ 10MB-аас бага байх ёстой")
             return
@@ -177,33 +234,7 @@ export default function CompanyPage() {
 
     const handleUpdateProfile = async (e: React.FormEvent) => {
         e.preventDefault()
-
-        if (!profileForm.companyName.trim()) {
-            toast.error("Компаний нэр оруулна уу")
-            return
-        }
-
-        try {
-            if (profileData?.getCompanyProfile) {
-                await updateProfile({
-                    variables: {
-                        input: profileForm
-                    }
-                })
-                toast.success("Профайл амжилттай шинэчлэгдлээ!")
-            } else {
-                await createProfile({
-                    variables: {
-                        input: profileForm
-                    }
-                })
-                toast.success("Компанийн бүртгэл амжилттай хийгдлээ!")
-            }
-            refetchProfile()
-        } catch (err) {
-            console.error(err)
-            toast.error("Алдаа гарлаа. Дахин оролдоно уу.")
-        }
+        doAutoSave(profileForm)
     }
 
     const handleCreateJob = async (e: React.FormEvent) => {
@@ -295,6 +326,24 @@ export default function CompanyPage() {
         }
     }
 
+    const handleSendInvitation = async (studentProfileId: string, e: React.MouseEvent) => {
+        e.stopPropagation()
+        try {
+            await sendInvitation({
+                variables: { studentProfileId },
+            })
+            toast.success("Урилга амжилттай илгээгдлээ!")
+        } catch (err: any) {
+            toast.error(err.message || "Урилга илгээхэд алдаа гарлаа")
+        }
+    }
+
+    const getInvitationStatus = (studentId: string) => {
+        return invitationsData?.getInvitations?.find(
+            (inv) => inv.studentProfileId === studentId
+        )
+    }
+
     const handleStatusUpdate = async (appId: string, status: ApplicationStatus) => {
         try {
             await updateAppStatus({
@@ -341,7 +390,7 @@ export default function CompanyPage() {
                             isActive ? "bg-primary/10 text-primary hover:bg-primary/20" : "hover:bg-secondary/50 text-muted-foreground hover:text-foreground"
                         )}
                         onClick={() => {
-                            setActiveTab(item.id as any)
+                            handleTabChange(item.id as any)
                             setIsMenuOpen(false)
                         }}
                     >
@@ -609,13 +658,17 @@ export default function CompanyPage() {
                                                     className="h-10 rounded-xl bg-secondary/10 border-border/40 focus:bg-background transition-all"
                                                 />
                                             </div>
-                                            <Button type="submit" disabled={updatingProfile || creatingProfile} className="h-10 px-8 rounded-xl font-bold shadow-lg shadow-primary/20">
-                                                {(updatingProfile || creatingProfile) ? (
-                                                    <><Loader2 className="animate-spin mr-2 h-4 w-4" />Шинэчилж байна...</>
-                                                ) : (
-                                                    profileData?.getCompanyProfile ? "Мэдээлэл хадгалах" : "Бүртгэл үүсгэх"
+                                            <div className="flex items-center gap-2 text-sm text-muted-foreground h-10">
+                                                {autoSaveStatus === "saving" && (
+                                                    <><Loader2 className="animate-spin h-4 w-4" /><span>Хадгалж байна...</span></>
                                                 )}
-                                            </Button>
+                                                {autoSaveStatus === "saved" && (
+                                                    <><CheckCircle2 className="h-4 w-4 text-emerald-500" /><span className="text-emerald-500">Хадгалагдлаа</span></>
+                                                )}
+                                                {autoSaveStatus === "idle" && profileInitialized.current && (
+                                                    <span className="text-muted-foreground/60">Өөрчлөлт автоматаар хадгалагдана</span>
+                                                )}
+                                            </div>
                                         </form>
                                     </CardContent>
                                 </Card>
@@ -758,92 +811,216 @@ export default function CompanyPage() {
                                             {[1, 2, 3].map(i => <div key={i} className="h-16 rounded-xl bg-secondary/20 animate-pulse" />)}
                                         </div>
                                     ) : (
-                                        <div className="grid gap-3">
-                                            {myJobsData?.getAllJobs?.map((job) => (
-                                                <Card key={job.id} className="hover:border-primary/40 transition-all border-border/60 bg-background rounded-xl shadow-none">
-                                                    <CardContent className="p-4 font-medium">
-                                                        {/* Top row: logo + title + actions */}
-                                                        <div className="flex items-start gap-3">
-                                                            <div className="w-10 h-10 bg-secondary/30 rounded-xl flex items-center justify-center border border-border/40 overflow-hidden shrink-0">
-                                                                {profileData?.getCompanyProfile?.logoUrl ? (
-                                                                    <Image
-                                                                        src={profileData.getCompanyProfile.logoUrl}
-                                                                        alt={profileData.getCompanyProfile.companyName}
-                                                                        width={40}
-                                                                        height={40}
-                                                                        className="object-cover w-full h-full"
-                                                                    />
-                                                                ) : (
-                                                                    <span className="text-sm font-black text-primary/50 uppercase">
-                                                                        {profileData?.getCompanyProfile?.companyName?.[0] || <Building2 className="w-4 h-4 text-muted-foreground" />}
-                                                                    </span>
-                                                                )}
-                                                            </div>
-                                                            <h3 className="font-bold text-sm truncate flex-1 min-w-0 pt-2">{job.title}</h3>
-                                                            {/* Desktop: edit/delete in top row */}
-                                                            <div className="hidden md:flex items-center gap-1 shrink-0 ml-auto">
-                                                                <Button
-                                                                    variant="ghost"
-                                                                    size="sm"
-                                                                    className="h-8 w-8 p-0 rounded-lg hover:bg-primary/10 hover:text-primary"
-                                                                    onClick={() => handleEditJob(job)}
-                                                                >
-                                                                    <Pencil className="w-3.5 h-3.5" />
-                                                                </Button>
-                                                                <Button
-                                                                    variant="ghost"
-                                                                    size="sm"
-                                                                    className="h-8 w-8 p-0 rounded-lg hover:bg-red-50 hover:text-red-600"
-                                                                    onClick={() => handleDeleteJob(job.id, job.title)}
-                                                                    disabled={deletingJob}
-                                                                >
-                                                                    <Trash2 className="w-3.5 h-3.5" />
-                                                                </Button>
-                                                            </div>
-                                                        </div>
+                                        viewingJob ? (
+                                            <Card className="border-border/60 bg-background rounded-xl shadow-none">
+                                                <CardContent className="p-5 sm:p-6">
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="sm"
+                                                        className="mb-4 gap-2 text-muted-foreground"
+                                                        onClick={() => setViewingJob(null)}
+                                                    >
+                                                        <ArrowLeft className="w-4 h-4" />
+                                                        Буцах
+                                                    </Button>
 
-                                                        {/* Bottom row: metadata tags */}
-                                                        <div className="flex items-center gap-2 sm:gap-3 flex-wrap mt-2 sm:ml-[52px] text-[10px] text-muted-foreground uppercase font-bold tracking-wider">
-                                                            <span className="flex items-center gap-1"><Search className="w-3 h-3" />{job.location}</span>
-                                                            <span className="flex items-center gap-1"><Clock className="w-3 h-3" />{job.salaryRange || "Уян хатан"}</span>
-                                                            <span className="flex items-center gap-1">
-                                                                <Users2 className="w-3 h-3" />
-                                                                {job.applicationCount}{job.maxParticipants ? `/${job.maxParticipants}` : ""}
-                                                            </span>
-                                                            {job.deadline && (
-                                                                <span className={cn(
-                                                                    "flex items-center gap-1",
-                                                                    new Date(job.deadline).getTime() - new Date().getTime() < 86400000 ? "text-red-500" : "text-amber-500"
-                                                                )}>
-                                                                    <AlertCircle className="w-3 h-3" />
-                                                                    {getTimeRemaining(job.deadline)}
+                                                    <div className="flex items-start gap-3 mb-5">
+                                                        <div className="w-12 h-12 bg-secondary/30 rounded-xl flex items-center justify-center border border-border/40 overflow-hidden shrink-0">
+                                                            {profileData?.getCompanyProfile?.logoUrl ? (
+                                                                <Image
+                                                                    src={profileData.getCompanyProfile.logoUrl}
+                                                                    alt={profileData.getCompanyProfile.companyName}
+                                                                    width={48}
+                                                                    height={48}
+                                                                    className="object-cover w-full h-full"
+                                                                />
+                                                            ) : (
+                                                                <span className="text-lg font-black text-primary/50 uppercase">
+                                                                    {profileData?.getCompanyProfile?.companyName?.[0] || <Building2 className="w-5 h-5 text-muted-foreground" />}
                                                                 </span>
                                                             )}
-                                                            {/* Mobile: edit/delete after metadata */}
-                                                            <div className="flex md:hidden items-center gap-1 shrink-0 ml-auto">
-                                                                <Button
-                                                                    variant="ghost"
-                                                                    size="sm"
-                                                                    className="h-7 w-7 p-0 rounded-lg hover:bg-primary/10 hover:text-primary"
-                                                                    onClick={() => handleEditJob(job)}
-                                                                >
-                                                                    <Pencil className="w-3 h-3" />
-                                                                </Button>
-                                                                <Button
-                                                                    variant="ghost"
-                                                                    size="sm"
-                                                                    className="h-7 w-7 p-0 rounded-lg hover:bg-red-50 hover:text-red-600"
-                                                                    onClick={() => handleDeleteJob(job.id, job.title)}
-                                                                    disabled={deletingJob}
-                                                                >
-                                                                    <Trash2 className="w-3 h-3" />
-                                                                </Button>
+                                                        </div>
+                                                        <div className="flex-1 min-w-0">
+                                                            <h2 className="font-bold text-lg">{viewingJob.title}</h2>
+                                                            <p className="text-sm text-muted-foreground">{profileData?.getCompanyProfile?.companyName}</p>
+                                                        </div>
+                                                        <div className="flex items-center gap-1 shrink-0">
+                                                            <Button
+                                                                variant="ghost"
+                                                                size="sm"
+                                                                className="h-8 w-8 p-0 rounded-lg hover:bg-primary/10 hover:text-primary"
+                                                                onClick={() => { handleEditJob(viewingJob); setViewingJob(null); }}
+                                                            >
+                                                                <Pencil className="w-3.5 h-3.5" />
+                                                            </Button>
+                                                            <Button
+                                                                variant="ghost"
+                                                                size="sm"
+                                                                className="h-8 w-8 p-0 rounded-lg hover:bg-red-50 hover:text-red-600"
+                                                                onClick={() => { handleDeleteJob(viewingJob.id, viewingJob.title); setViewingJob(null); }}
+                                                                disabled={deletingJob}
+                                                            >
+                                                                <Trash2 className="w-3.5 h-3.5" />
+                                                            </Button>
+                                                        </div>
+                                                    </div>
+
+                                                    <div className="flex items-center gap-3 flex-wrap mb-5 text-xs text-muted-foreground font-medium">
+                                                        {viewingJob.location && (
+                                                            <span className="flex items-center gap-1.5 bg-secondary/30 px-2.5 py-1 rounded-lg">
+                                                                <MapPin className="w-3.5 h-3.5" />{viewingJob.location}
+                                                            </span>
+                                                        )}
+                                                        <span className="flex items-center gap-1.5 bg-secondary/30 px-2.5 py-1 rounded-lg">
+                                                            <DollarSign className="w-3.5 h-3.5" />{viewingJob.salaryRange || "Уян хатан"}
+                                                        </span>
+                                                        <span className="flex items-center gap-1.5 bg-secondary/30 px-2.5 py-1 rounded-lg">
+                                                            <Users2 className="w-3.5 h-3.5" />
+                                                            {viewingJob.applicationCount}{viewingJob.maxParticipants ? `/${viewingJob.maxParticipants}` : ""} өргөдөл
+                                                        </span>
+                                                        {viewingJob.deadline && (
+                                                            <span className="flex items-center gap-1.5 bg-secondary/30 px-2.5 py-1 rounded-lg">
+                                                                <Calendar className="w-3.5 h-3.5" />
+                                                                {new Date(viewingJob.deadline).toLocaleDateString("mn-MN")}
+                                                            </span>
+                                                        )}
+                                                    </div>
+
+                                                    {viewingJob.requiredSkills?.length > 0 && (
+                                                        <div className="mb-5">
+                                                            <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-2">Шаардлагатай ур чадвар</h4>
+                                                            <div className="flex flex-wrap gap-1.5">
+                                                                {viewingJob.requiredSkills.map((skill, i) => (
+                                                                    <span key={i} className="bg-primary/10 text-primary text-xs font-medium px-2.5 py-1 rounded-lg">{skill}</span>
+                                                                ))}
                                                             </div>
                                                         </div>
-                                                    </CardContent>
-                                                </Card>
-                                            ))}
-                                        </div>
+                                                    )}
+
+                                                    {viewingJob.description && (
+                                                        <div className="mb-4">
+                                                            <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-2">Тайлбар</h4>
+                                                            <p className="text-sm leading-relaxed whitespace-pre-wrap">{viewingJob.description}</p>
+                                                        </div>
+                                                    )}
+
+                                                    {viewingJob.responsibilities && (
+                                                        <div className="mb-4">
+                                                            <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-2">Хариуцлага</h4>
+                                                            <p className="text-sm leading-relaxed whitespace-pre-wrap">{viewingJob.responsibilities}</p>
+                                                        </div>
+                                                    )}
+
+                                                    {viewingJob.requirements && (
+                                                        <div className="mb-4">
+                                                            <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-2">Шаардлага</h4>
+                                                            <p className="text-sm leading-relaxed whitespace-pre-wrap">{viewingJob.requirements}</p>
+                                                        </div>
+                                                    )}
+
+                                                    {viewingJob.additionalInfo && (
+                                                        <div className="mb-4">
+                                                            <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-2">Нэмэлт мэдээлэл</h4>
+                                                            <p className="text-sm leading-relaxed whitespace-pre-wrap">{viewingJob.additionalInfo}</p>
+                                                        </div>
+                                                    )}
+                                                </CardContent>
+                                            </Card>
+                                        ) : (
+                                            <div className="grid gap-3">
+                                                {myJobsData?.getAllJobs?.map((job) => {
+                                                    const isExpired = job.deadline ? new Date(job.deadline).getTime() < Date.now() : false;
+                                                    return (
+                                                    <Card
+                                                        key={job.id}
+                                                        className={cn("transition-all border-border/60 bg-background rounded-xl shadow-none cursor-pointer", isExpired ? "opacity-50" : "hover:border-primary/40")}
+                                                        onClick={() => setViewingJob(job)}
+                                                    >
+                                                        <CardContent className="p-4 font-medium">
+                                                            {/* Top row: logo + title + actions */}
+                                                            <div className="flex items-start gap-3">
+                                                                <div className="w-10 h-10 bg-secondary/30 rounded-xl flex items-center justify-center border border-border/40 overflow-hidden shrink-0">
+                                                                    {profileData?.getCompanyProfile?.logoUrl ? (
+                                                                        <Image
+                                                                            src={profileData.getCompanyProfile.logoUrl}
+                                                                            alt={profileData.getCompanyProfile.companyName}
+                                                                            width={40}
+                                                                            height={40}
+                                                                            className="object-cover w-full h-full"
+                                                                        />
+                                                                    ) : (
+                                                                        <span className="text-sm font-black text-primary/50 uppercase">
+                                                                            {profileData?.getCompanyProfile?.companyName?.[0] || <Building2 className="w-4 h-4 text-muted-foreground" />}
+                                                                        </span>
+                                                                    )}
+                                                                </div>
+                                                                <h3 className="font-bold text-sm truncate flex-1 min-w-0 pt-2">{job.title}</h3>
+                                                                {/* Desktop: edit/delete in top row */}
+                                                                <div className="hidden md:flex items-center gap-1 shrink-0 ml-auto">
+                                                                    <Button
+                                                                        variant="ghost"
+                                                                        size="sm"
+                                                                        className="h-8 w-8 p-0 rounded-lg hover:bg-primary/10 hover:text-primary"
+                                                                        onClick={(e) => { e.stopPropagation(); handleEditJob(job); }}
+                                                                    >
+                                                                        <Pencil className="w-3.5 h-3.5" />
+                                                                    </Button>
+                                                                    <Button
+                                                                        variant="ghost"
+                                                                        size="sm"
+                                                                        className="h-8 w-8 p-0 rounded-lg hover:bg-red-50 hover:text-red-600"
+                                                                        onClick={(e) => { e.stopPropagation(); handleDeleteJob(job.id, job.title); }}
+                                                                        disabled={deletingJob}
+                                                                    >
+                                                                        <Trash2 className="w-3.5 h-3.5" />
+                                                                    </Button>
+                                                                </div>
+                                                            </div>
+
+                                                            {/* Bottom row: metadata tags */}
+                                                            <div className="flex items-center gap-2 sm:gap-3 flex-wrap mt-2 sm:ml-[52px] text-[10px] text-muted-foreground uppercase font-bold tracking-wider">
+                                                                <span className="flex items-center gap-1"><Search className="w-3 h-3" />{job.location}</span>
+                                                                <span className="flex items-center gap-1"><Clock className="w-3 h-3" />{job.salaryRange || "Уян хатан"}</span>
+                                                                <span className="flex items-center gap-1">
+                                                                    <Users2 className="w-3 h-3" />
+                                                                    {job.applicationCount}{job.maxParticipants ? `/${job.maxParticipants}` : ""}
+                                                                </span>
+                                                                {job.deadline && (
+                                                                    <span className={cn(
+                                                                        "flex items-center gap-1",
+                                                                        new Date(job.deadline).getTime() - new Date().getTime() < 86400000 ? "text-red-500" : "text-amber-500"
+                                                                    )}>
+                                                                        <AlertCircle className="w-3 h-3" />
+                                                                        {getTimeRemaining(job.deadline)}
+                                                                    </span>
+                                                                )}
+                                                                {/* Mobile: edit/delete after metadata */}
+                                                                <div className="flex md:hidden items-center gap-1 shrink-0 ml-auto">
+                                                                    <Button
+                                                                        variant="ghost"
+                                                                        size="sm"
+                                                                        className="h-7 w-7 p-0 rounded-lg hover:bg-primary/10 hover:text-primary"
+                                                                        onClick={(e) => { e.stopPropagation(); handleEditJob(job); }}
+                                                                    >
+                                                                        <Pencil className="w-3 h-3" />
+                                                                    </Button>
+                                                                    <Button
+                                                                        variant="ghost"
+                                                                        size="sm"
+                                                                        className="h-7 w-7 p-0 rounded-lg hover:bg-red-50 hover:text-red-600"
+                                                                        onClick={(e) => { e.stopPropagation(); handleDeleteJob(job.id, job.title); }}
+                                                                        disabled={deletingJob}
+                                                                    >
+                                                                        <Trash2 className="w-3 h-3" />
+                                                                    </Button>
+                                                                </div>
+                                                            </div>
+                                                        </CardContent>
+                                                    </Card>
+                                                    )
+                                                })}
+                                            </div>
+                                        )
                                     )}
                                 </div>
                             )}
@@ -867,7 +1044,7 @@ export default function CompanyPage() {
                                                 <Card key={app.id} className="border-border/60 bg-background rounded-2xl overflow-hidden hover:shadow-md transition-shadow">
                                                     <CardContent className="p-5 flex flex-col md:flex-row md:items-center justify-between gap-5 font-medium">
                                                         <div className="flex-1 space-y-2">
-                                                            <div className="flex items-center gap-3">
+                                                            <Link href={`/students/${app.student?.id}`} className="flex items-center gap-3 hover:opacity-80 transition-opacity">
                                                                 <div className="w-10 h-10 bg-secondary/50 rounded-xl flex items-center justify-center font-bold text-primary border border-border/20 overflow-hidden shrink-0">
                                                                     {app.student?.profilePictureUrl ? (
                                                                         <Image
@@ -884,12 +1061,12 @@ export default function CompanyPage() {
                                                                     )}
                                                                 </div>
                                                                 <div>
-                                                                    <h3 className="font-bold text-base leading-none mb-1">{app.student?.firstName} {app.student?.lastName}</h3>
+                                                                    <h3 className="font-bold text-base leading-none mb-1 hover:text-primary transition-colors">{app.student?.firstName} {app.student?.lastName}</h3>
                                                                     <p className="text-xs font-bold text-primary flex items-center gap-1 leading-none uppercase tracking-tighter opacity-80">
                                                                         {app.job?.title}
                                                                     </p>
                                                                 </div>
-                                                            </div>
+                                                            </Link>
                                                             <div className="flex items-center gap-4 text-[10px] font-bold text-muted-foreground/70 uppercase tracking-widest pt-1">
                                                                 <span className="bg-secondary/40 px-2 py-0.5 rounded text-primary">MATCH: {Math.round(app.matchScore)}%</span>
                                                                 <span className="flex items-center gap-1.5"><Clock className="w-3.5 h-3.5" />{new Date(app.appliedAt).toLocaleDateString()}</span>
@@ -946,6 +1123,84 @@ export default function CompanyPage() {
                                             )}
                                         </div>
                                     )}
+
+                                    {/* Sent Invitations */}
+                                    <div className="border-t border-border/40 pt-6 mt-6">
+                                        <div className="flex items-center justify-between pb-5 mb-2">
+                                            <div className="space-y-1">
+                                                <h2 className="text-xl font-bold tracking-tight">Илгээсэн урилгууд</h2>
+                                                <p className="text-xs text-muted-foreground font-medium">Нийт {invitationsData?.getInvitations?.length || 0} урилга</p>
+                                            </div>
+                                        </div>
+
+                                        <div className="grid gap-4">
+                                            {invitationsData?.getInvitations?.map((inv) => (
+                                                <Card key={inv.id} className="border-border/60 bg-background rounded-2xl overflow-hidden hover:shadow-md transition-shadow">
+                                                    <CardContent className="p-5 flex flex-col md:flex-row md:items-center justify-between gap-5 font-medium">
+                                                        <div className="flex-1 space-y-2">
+                                                            <Link href={`/students/${inv.student?.id}`} className="flex items-center gap-3 hover:opacity-80 transition-opacity">
+                                                                <div className="w-10 h-10 bg-secondary/50 rounded-xl flex items-center justify-center font-bold text-primary border border-border/20 overflow-hidden shrink-0">
+                                                                    {inv.student?.profilePictureUrl ? (
+                                                                        <Image
+                                                                            src={inv.student.profilePictureUrl}
+                                                                            alt={inv.student.firstName || ""}
+                                                                            width={40}
+                                                                            height={40}
+                                                                            className="object-cover w-full h-full"
+                                                                        />
+                                                                    ) : (
+                                                                        <span className="text-sm font-bold text-primary uppercase">
+                                                                            {inv.student?.firstName?.[0]}{inv.student?.lastName?.[0]}
+                                                                        </span>
+                                                                    )}
+                                                                </div>
+                                                                <div>
+                                                                    <h3 className="font-bold text-base leading-none mb-1 hover:text-primary transition-colors">
+                                                                        {inv.student?.firstName} {inv.student?.lastName}
+                                                                    </h3>
+                                                                    <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
+                                                                        {inv.student?.experienceLevel}
+                                                                    </p>
+                                                                </div>
+                                                            </Link>
+                                                            <div className="flex items-center gap-4 text-[10px] font-bold text-muted-foreground/70 uppercase tracking-widest pt-1">
+                                                                <span className="flex items-center gap-1.5">
+                                                                    <Send className="w-3 h-3" />
+                                                                    Илгээсэн: {new Date(inv.sentAt).toLocaleDateString()}
+                                                                </span>
+                                                                {inv.respondedAt && (
+                                                                    <span className="flex items-center gap-1.5">
+                                                                        <Clock className="w-3 h-3" />
+                                                                        Хариулсан: {new Date(inv.respondedAt).toLocaleDateString()}
+                                                                    </span>
+                                                                )}
+                                                            </div>
+                                                            {inv.message && (
+                                                                <p className="text-xs text-muted-foreground/60 italic pt-1 line-clamp-1">
+                                                                    &ldquo;{inv.message}&rdquo;
+                                                                </p>
+                                                            )}
+                                                        </div>
+
+                                                        <span className={cn(
+                                                            "text-[9px] font-black px-2.5 py-1 rounded-md uppercase tracking-widest border shrink-0",
+                                                            inv.status === 'accepted' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' :
+                                                                inv.status === 'rejected' ? 'bg-red-50 text-red-600 border-red-100' : 'bg-amber-50 text-amber-600 border-amber-100'
+                                                        )}>
+                                                            {inv.status === 'accepted' ? 'Зөвшөөрсөн' :
+                                                                inv.status === 'rejected' ? 'Татгалзсан' : 'Хүлээгдэж байна'}
+                                                        </span>
+                                                    </CardContent>
+                                                </Card>
+                                            ))}
+                                            {(!invitationsData?.getInvitations || invitationsData.getInvitations.length === 0) && (
+                                                <div className="py-16 text-center space-y-3 bg-secondary/10 rounded-2xl border-2 border-dashed border-border/40">
+                                                    <Send className="w-10 h-10 text-muted-foreground/30 mx-auto" />
+                                                    <p className="text-sm font-bold text-muted-foreground">Одоогоор урилга илгээгээгүй байна.</p>
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
                                 </div>
                             )}
 
@@ -954,7 +1209,7 @@ export default function CompanyPage() {
                                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border/40 pb-5 mb-2">
                                         <div className="space-y-1">
                                             <h2 className="text-xl font-bold tracking-tight">Оюутны жагсаалт</h2>
-                                            <p className="text-xs text-muted-foreground font-medium">Нийт {studentsData?.getAllStudentProfiles?.length || 0} оюутан бүртгэлтэй байна</p>
+                                            <p className="text-xs text-muted-foreground font-medium">Нийт {studentsData?.getAllStudentProfiles?.filter(s => s.isActivelyLooking !== false).length || 0} оюутан идэвхтэй хайж байна</p>
                                         </div>
                                         <div className="relative w-full sm:w-64">
                                             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
@@ -974,13 +1229,14 @@ export default function CompanyPage() {
                                     ) : (
                                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                                             {studentsData?.getAllStudentProfiles?.filter(s =>
-                                                `${s.firstName} ${s.lastName}`.toLowerCase().includes(studentSearch.toLowerCase()) ||
-                                                s.skills.some(skill => skill.toLowerCase().includes(studentSearch.toLowerCase()))
+                                                s.isActivelyLooking !== false &&
+                                                (`${s.firstName} ${s.lastName}`.toLowerCase().includes(studentSearch.toLowerCase()) ||
+                                                s.skills.some(skill => skill.toLowerCase().includes(studentSearch.toLowerCase())))
                                             ).map((student) => (
                                                 <Card
                                                     key={student.id}
                                                     className="group hover:border-primary/40 transition-all border-border/60 bg-background rounded-2xl overflow-hidden cursor-pointer flex flex-col"
-                                                    onClick={() => setSelectedStudent(student)}
+                                                    onClick={() => router.push(`/students/${student.id}`)}
                                                 >
                                                     <CardContent className="p-5 space-y-4 flex-1">
                                                         <div className="flex items-center gap-3">
@@ -1026,7 +1282,45 @@ export default function CompanyPage() {
                                                     </CardContent>
                                                     <div className="px-5 py-3 border-t border-border/40 bg-secondary/5 group-hover:bg-primary/5 transition-colors flex items-center justify-between">
                                                         <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Профайл харах</span>
-                                                        <ChevronRight className="w-3 h-3 text-muted-foreground group-hover:translate-x-1 transition-transform" />
+                                                        <div className="flex items-center gap-2">
+                                                            {(() => {
+                                                                const inv = getInvitationStatus(student.id)
+                                                                if (inv?.status === "pending") {
+                                                                    return (
+                                                                        <span className="text-[9px] font-bold text-amber-600 bg-amber-50 px-2 py-0.5 rounded-md border border-amber-200">
+                                                                            Урилга илгээсэн
+                                                                        </span>
+                                                                    )
+                                                                }
+                                                                if (inv?.status === "accepted") {
+                                                                    return (
+                                                                        <span className="text-[9px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200">
+                                                                            Зөвшөөрсөн
+                                                                        </span>
+                                                                    )
+                                                                }
+                                                                if (inv?.status === "rejected") {
+                                                                    return (
+                                                                        <span className="text-[9px] font-bold text-red-600 bg-red-50 px-2 py-0.5 rounded-md border border-red-200">
+                                                                            Татгалзсан
+                                                                        </span>
+                                                                    )
+                                                                }
+                                                                return (
+                                                                    <Button
+                                                                        size="sm"
+                                                                        variant="outline"
+                                                                        className="h-7 px-3 rounded-lg text-[10px] font-bold gap-1 border-primary/20 text-primary hover:bg-primary hover:text-primary-foreground"
+                                                                        onClick={(e) => handleSendInvitation(student.id, e)}
+                                                                        disabled={sendingInvitation}
+                                                                    >
+                                                                        <Send className="w-3 h-3" />
+                                                                        Урих
+                                                                    </Button>
+                                                                )
+                                                            })()}
+                                                            <ChevronRight className="w-3 h-3 text-muted-foreground group-hover:translate-x-1 transition-transform" />
+                                                        </div>
                                                     </div>
                                                 </Card>
                                             ))}
@@ -1038,116 +1332,6 @@ export default function CompanyPage() {
                     </div>
                 </div>
             </main>
-
-            <Sheet open={!!selectedStudent} onOpenChange={() => setSelectedStudent(null)}>
-                <SheetContent className="w-full sm:max-w-xl overflow-y-auto p-0 border-l border-border/40">
-                    {selectedStudent && (
-                        <div className="flex flex-col h-full bg-background dark:bg-[#09090B]">
-                            {/* Profile Header Background */}
-                            <div className="h-32 bg-linear-to-r from-primary/10 via-primary/5 to-transparent relative">
-                                <div className="absolute -bottom-12 left-8">
-                                    <div className="w-24 h-24 rounded-4xl bg-background border-4 border-background shadow-xl overflow-hidden flex items-center justify-center">
-                                        {selectedStudent.profilePictureUrl ? (
-                                            <Image
-                                                src={selectedStudent.profilePictureUrl}
-                                                alt={selectedStudent.firstName || ""}
-                                                width={96}
-                                                height={96}
-                                                className="object-cover w-full h-full"
-                                            />
-                                        ) : (
-                                            <UserCircle className="w-12 h-12 text-muted-foreground/30" />
-                                        )}
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div className="px-8 pt-16 pb-8 space-y-8 flex-1 overflow-y-auto">
-                                <div className="space-y-4">
-                                    <div className="flex flex-wrap items-center justify-between gap-4">
-                                        <div>
-                                            <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-primary/10 text-primary text-[10px] font-black uppercase tracking-widest mb-3">
-                                                <Zap className="w-3 h-3" />
-                                                Оюутан
-                                            </div>
-                                            <SheetTitle className="text-3xl font-black tracking-tight leading-none mb-1">
-                                                {selectedStudent.firstName} {selectedStudent.lastName}
-                                            </SheetTitle>
-                                            <p className="text-sm font-bold text-muted-foreground uppercase tracking-widest opacity-60">
-                                                {selectedStudent.experienceLevel}
-                                            </p>
-                                        </div>
-                                        <div className="flex flex-col gap-2">
-                                            <Button className="rounded-xl h-10 px-6 font-bold shadow-lg shadow-primary/20">
-                                                Холбоо барих
-                                            </Button>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                    <div className="p-4 rounded-2xl bg-secondary/30 border border-border/40 space-y-1">
-                                        <div className="flex items-center gap-2 text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
-                                            <Briefcase className="w-3 h-3" />
-                                            Төрөл
-                                        </div>
-                                        <p className="text-lg font-black capitalize">{selectedStudent.experienceLevel}</p>
-                                    </div>
-                                    <div className="p-4 rounded-2xl bg-secondary/30 border border-border/40 space-y-1">
-                                        <div className="flex items-center gap-2 text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
-                                            <Clock className="w-3 h-3" />
-                                            Сүүлд шинэчилсэн
-                                        </div>
-                                        <p className="text-lg font-black">{new Date(selectedStudent.updatedAt).toLocaleDateString()}</p>
-                                    </div>
-                                </div>
-
-                                <div className="space-y-3">
-                                    <h3 className="text-sm font-black uppercase tracking-widest text-primary flex items-center gap-2">
-                                        Миний тухай
-                                        <div className="h-px flex-1 bg-primary/10" />
-                                    </h3>
-                                    <p className="text-sm leading-relaxed text-foreground/80 font-medium whitespace-pre-wrap">
-                                        {selectedStudent.bio || "Танилцуулга оруулаагүй байна."}
-                                    </p>
-                                </div>
-
-                                <div className="space-y-3">
-                                    <h3 className="text-sm font-black uppercase tracking-widest text-primary flex items-center gap-2">
-                                        Ур чадварууд
-                                        <div className="h-px flex-1 bg-primary/10" />
-                                    </h3>
-                                    <div className="flex flex-wrap gap-2 pt-1">
-                                        {selectedStudent.skills.map((skill, idx) => (
-                                            <span key={idx} className="px-3 py-1.5 rounded-xl bg-primary/5 text-primary text-xs font-bold border border-primary/10">
-                                                {skill}
-                                            </span>
-                                        ))}
-                                    </div>
-                                </div>
-
-                                {selectedStudent.education && selectedStudent.education.length > 0 && (
-                                    <div className="space-y-4">
-                                        <h3 className="text-sm font-black uppercase tracking-widest text-primary flex items-center gap-2">
-                                            Боловсрол
-                                            <div className="h-px flex-1 bg-primary/10" />
-                                        </h3>
-                                        <div className="space-y-4 pt-1">
-                                            {selectedStudent.education.map((edu, idx) => (
-                                                <div key={idx} className="relative pl-6 before:absolute before:left-0 before:top-1.5 before:w-2 before:h-2 before:bg-primary before:rounded-full before:shadow-[0_0_10px_rgba(var(--primary),0.5)]">
-                                                    <h4 className="font-bold text-sm leading-none mb-1.5">{edu.school}</h4>
-                                                    <p className="text-xs text-muted-foreground font-medium mb-1">{edu.degree}</p>
-                                                    <span className="text-[10px] font-black text-primary/60 uppercase tracking-widest">{edu.year} он</span>
-                                                </div>
-                                            ))}
-                                        </div>
-                                    </div>
-                                )}
-                            </div>
-                        </div>
-                    )}
-                </SheetContent>
-            </Sheet>
         </div>
     )
 }
