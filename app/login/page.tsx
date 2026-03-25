@@ -340,10 +340,10 @@ export default function LoginPage() {
                         </div>
 
                         <div className="grid grid-cols-2 gap-4">
-                            <Button 
+                            <Button
                                 type="button"
-                                variant="outline" 
-                                className="h-11 rounded-xl font-medium border-border/60 hover:bg-muted/50 transition-colors"
+                                variant="outline"
+                                className="h-11 rounded-xl font-medium border-border hover:bg-primary/5 hover:border-primary/30 hover:text-primary transition-colors"
                                 onClick={() => handleSocialLogin('google')}
                                 disabled={socialLoading}
                             >
@@ -368,10 +368,10 @@ export default function LoginPage() {
                                 </svg>
                                 Google
                             </Button>
-                            <Button 
+                            <Button
                                 type="button"
-                                variant="outline" 
-                                className="h-11 rounded-xl font-medium border-border/60 hover:bg-muted/50 transition-colors"
+                                variant="outline"
+                                className="h-11 rounded-xl font-medium border-border hover:bg-primary/5 hover:border-primary/30 hover:text-primary transition-colors"
                                 onClick={() => handleSocialLogin('github')}
                                 disabled={socialLoading}
                             >

@@ -266,48 +266,6 @@ export default function LandingPage() {
 
       </main>
 
-      {/* Footer */}
-      <footer className="border-t border-border py-16 bg-muted/20">
-        <div className="container mx-auto px-6 lg:px-24">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
-            <div className="col-span-2 space-y-6">
-              <div className="flex items-center gap-2">
-                <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center shadow-lg shadow-primary/20">
-                  <Briefcase className="w-6 h-6 text-primary-foreground" />
-                </div>
-                <span className="font-bold text-2xl text-foreground">InternMatch</span>
-              </div>
-              <p className="text-muted-foreground max-w-sm leading-relaxed">
-                Бид Монголын залуу үеийнхнийг дадлагын боломжоор хангаж, ирээдүйн чадварлаг боловсон хүчнийг бэлтгэх гүүр нь байх болно.
-              </p>
-            </div>
-            <div>
-              <h4 className="font-bold text-foreground mb-6 text-lg">Холбоос</h4>
-              <ul className="space-y-4 text-muted-foreground">
-                <li><Link href="#" className="hover:text-primary transition-colors">Бидний тухай</Link></li>
-                <li><Link href="#" className="hover:text-primary transition-colors">Дадлага хайх</Link></li>
-                <li><Link href="#" className="hover:text-primary transition-colors">Зар байршуулах</Link></li>
-                <li><Link href="#" className="hover:text-primary transition-colors">Тусламж</Link></li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="font-bold text-foreground mb-6 text-lg">Холбогдох</h4>
-              <ul className="space-y-4 text-muted-foreground">
-                <li>support@internmatch.mn</li>
-                <li>+976 8800-0000</li>
-                <li>Улаанбаатар хот, Монгол Улс</li>
-              </ul>
-            </div>
-          </div>
-          <div className="pt-8 border-t border-border/50 flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-muted-foreground">
-            <div>2026 InternMatch. Бүх эрх хуулиар хамгаалагдсан.</div>
-            <div className="flex gap-6">
-              <Link href="#" className="hover:text-primary transition-colors">Үйлчилгээний нөхцөл</Link>
-              <Link href="#" className="hover:text-primary transition-colors">Нууцлалын бодлого</Link>
-            </div>
-          </div>
-        </div>
-      </footer>
     </div>
   )
 }

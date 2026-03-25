@@ -21,6 +21,7 @@ import {
     Mail,
     Phone,
 } from "lucide-react"
+import { Footer } from "@/components/layout/Footer"
 
 export default function StudentDetailPage() {
     const params = useParams()
@@ -115,10 +116,10 @@ export default function StudentDetailPage() {
                     <Button
                         variant="ghost"
                         size="sm"
-                        className="h-8 px-3 rounded-xl text-xs font-bold text-muted-foreground hover:text-foreground hover:bg-white/60 dark:hover:bg-white/10 transition-all gap-1.5"
+                        className="rounded-xl font-medium"
                         onClick={() => router.back()}
                     >
-                        <ArrowLeft className="w-3.5 h-3.5" />
+                        <ArrowLeft className="w-4 h-4 mr-2" />
                         Буцах
                     </Button>
                 </div>
@@ -327,6 +328,7 @@ export default function StudentDetailPage() {
                     </div>
                 )}
             </div>
+            <Footer />
         </div>
     )
 }

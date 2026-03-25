@@ -39,6 +39,7 @@ import { ME, GET_STUDENT_PROFILE, UPDATE_STUDENT_PROFILE, CREATE_STUDENT_PROFILE
 import { User as UserType, StudentProfile, Job, Application, StudentProfileInput, JobStatus, Invitation } from "@/lib/type"
 import { ThemeToggle } from "@/components/theme-toggle"
 import { toast } from "sonner"
+import { Footer } from "@/components/layout/Footer"
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -918,6 +919,7 @@ export default function StudentPage() {
                     </div>
                 </div>
             </main>
+            <Footer compact />
         </div>
     )
 }

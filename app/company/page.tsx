@@ -44,6 +44,7 @@ import Link from "next/link"
 import Image from "next/image"
 import { ThemeToggle } from "@/components/theme-toggle"
 import { toast } from "sonner"
+import { Footer } from "@/components/layout/Footer"
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -1332,6 +1333,7 @@ export default function CompanyPage() {
                     </div>
                 </div>
             </main>
+            <Footer compact />
         </div>
     )
 }

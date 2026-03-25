@@ -1,8 +1,9 @@
 "use client"
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useMemo } from "react";
 import { useQuery, useMutation } from "@apollo/client/react";
 import { gql } from "@apollo/client";
+import { useRouter } from "next/navigation";
 import {
     Users,
     Search,
@@ -20,6 +21,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { toast } from "sonner"
+import Link from "next/link"
 
 const GET_ALL_USERS = gql`
   query GetAllUsers {
@@ -28,6 +30,24 @@ const GET_ALL_USERS = gql`
       email
       role
       createdAt
+    }
+  }
+`
+
+const GET_ALL_STUDENT_PROFILES = gql`
+  query GetAllStudentProfiles {
+    getAllStudentProfiles {
+      id
+      userId
+    }
+  }
+`
+
+const GET_ALL_COMPANIES = gql`
+  query GetAllCompanies {
+    getAllCompanyProfiles {
+      id
+      userId
     }
   }
 `
@@ -59,9 +79,19 @@ interface DeleteUserVars {
 
 export default function UsersManagementPage() {
     const { data, loading, error, refetch } = useQuery<GetAllUsersData>(GET_ALL_USERS)
+    const { data: studentData } = useQuery<{ getAllStudentProfiles: { id: string; userId: string }[] }>(GET_ALL_STUDENT_PROFILES)
+    const { data: companyData } = useQuery<{ getAllCompanyProfiles: { id: string; userId: string }[] }>(GET_ALL_COMPANIES)
     const [deleteUser] = useMutation<DeleteUserData, DeleteUserVars>(DELETE_USER)
+    const router = useRouter()
     const [searchTerm, setSearchTerm] = useState("")
     const [roleFilter, setRoleFilter] = useState("all")
+
+    const profileMap = useMemo(() => {
+        const map: Record<string, string> = {}
+        studentData?.getAllStudentProfiles?.forEach(p => { map[p.userId] = `/students/${p.id}` })
+        companyData?.getAllCompanyProfiles?.forEach(p => { map[p.userId] = `/admin/companies/${p.id}` })
+        return map
+    }, [studentData, companyData])
 
     const filteredUsers = (data?.getAllUsers || []).filter(user => {
         const matchesSearch = user.email.toLowerCase().includes(searchTerm.toLowerCase())
@@ -164,7 +194,7 @@ export default function UsersManagementPage() {
                                 </tr>
                             ) : (
                                 filteredUsers.map((user) => (
-                                    <tr key={user.id} className="hover:bg-secondary/10 transition-colors group">
+                                    <tr key={user.id} className="hover:bg-primary/5 transition-colors group cursor-pointer" onClick={() => { const href = profileMap[user.id]; if (href) router.push(href) }}>
                                         <td className="px-6 py-4">
                                             <div className="flex items-center gap-3">
                                                 <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-xs font-bold text-primary">
@@ -188,10 +218,14 @@ export default function UsersManagementPage() {
                                             </span>
                                         </td>
                                         <td className="px-6 py-4 text-right">
-                                            <div className="flex items-center justify-end gap-1">
-                                                <Button variant="ghost" size="icon" className="h-8 w-8">
-                                                    <Eye className="w-4 h-4" />
-                                                </Button>
+                                            <div className="flex items-center justify-end gap-1" onClick={(e) => e.stopPropagation()}>
+                                                {profileMap[user.id] && (
+                                                    <Button variant="ghost" size="icon" className="h-8 w-8" asChild>
+                                                        <Link href={profileMap[user.id]}>
+                                                            <Eye className="w-4 h-4" />
+                                                        </Link>
+                                                    </Button>
+                                                )}
                                                 <Button
                                                     variant="ghost"
                                                     size="icon"
