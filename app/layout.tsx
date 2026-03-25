@@ -15,6 +15,7 @@ const _geistMono = Geist_Mono({ subsets: ["latin"] });
 import { ThemeProvider } from "@/components/theme-provider"
 import { Toaster } from "sonner"
 import { Navbar } from "@/components/layout/Navbar"
+import { Footer } from "@/components/layout/Footer"
 import { usePathname } from "next/navigation"
 import { GoogleOAuthProvider } from '@react-oauth/google'
 
@@ -42,6 +43,7 @@ export default function RootLayout({
             >
               {!shouldHideNavbar && <Navbar />}
               {children}
+              {!shouldHideNavbar && <Footer />}
               <Analytics />
               <Toaster />
             </ThemeProvider>

@@ -3,6 +3,7 @@
 import React, { useState, useMemo } from "react"
 import { useQuery } from "@apollo/client/react"
 import { gql } from "@apollo/client"
+import { useRouter } from "next/navigation"
 import {
     History,
     Search,
@@ -31,10 +32,47 @@ const GET_LOGS = gql`
   }
 `
 
+const GET_ALL_USERS = gql`
+  query GetAllUsers {
+    getAllUsers { id email role }
+  }
+`
+
+const GET_ALL_STUDENT_PROFILES = gql`
+  query GetAllStudentProfiles {
+    getAllStudentProfiles { id userId }
+  }
+`
+
+const GET_ALL_COMPANIES = gql`
+  query GetAllCompanies {
+    getAllCompanyProfiles { id userId }
+  }
+`
+
 export default function LogsPage() {
     const { data, loading } = useQuery<{ adminStats: { recentActivities: any[] } }>(GET_LOGS, {
         pollInterval: 10000
     })
+    const { data: usersData } = useQuery<{ getAllUsers: { id: string; email: string; role: string }[] }>(GET_ALL_USERS)
+    const { data: studentData } = useQuery<{ getAllStudentProfiles: { id: string; userId: string }[] }>(GET_ALL_STUDENT_PROFILES)
+    const { data: companyData } = useQuery<{ getAllCompanyProfiles: { id: string; userId: string }[] }>(GET_ALL_COMPANIES)
+    const router = useRouter()
+
+    const emailToUrl = useMemo(() => {
+        const userMap: Record<string, { id: string; role: string }> = {}
+        usersData?.getAllUsers?.forEach(u => { userMap[u.email] = { id: u.id, role: u.role } })
+
+        const profileMap: Record<string, string> = {}
+        studentData?.getAllStudentProfiles?.forEach(p => { profileMap[p.userId] = `/students/${p.id}` })
+        companyData?.getAllCompanyProfiles?.forEach(p => { profileMap[p.userId] = `/admin/companies/${p.id}` })
+
+        const result: Record<string, string> = {}
+        Object.entries(userMap).forEach(([email, { id }]) => {
+            if (profileMap[id]) result[email] = profileMap[id]
+        })
+        return result
+    }, [usersData, studentData, companyData])
 
     const getActivityIcon = (type: string) => {
         switch (type) {
@@ -103,7 +141,7 @@ export default function LogsPage() {
                                 filteredActivities.map((log: any) => {
                                     const Icon = getActivityIcon(log.type)
                                     return (
-                                        <tr key={log.id} className="hover:bg-secondary/10 transition-colors">
+                                        <tr key={log.id} className={`hover:bg-primary/5 transition-colors ${emailToUrl[log.user] ? 'cursor-pointer' : ''}`} onClick={() => { const url = emailToUrl[log.user]; if (url) router.push(url) }}>
                                             <td className="px-6 py-4">
                                                 <div className="w-8 h-8 rounded-lg bg-secondary flex items-center justify-center text-primary">
                                                     <Icon className="w-4 h-4" />
@@ -117,8 +155,14 @@ export default function LogsPage() {
                                             </td>
                                             <td className="px-6 py-4 text-right">
                                                 <div className="flex flex-col items-end text-xs">
-                                                    <span className="font-bold">{new Date(log.timestamp).toLocaleDateString()}</span>
-                                                    <span className="text-muted-foreground">{new Date(log.timestamp).toLocaleTimeString()}</span>
+                                                    {(() => {
+                                                        const d = new Date(isNaN(Number(log.timestamp)) ? log.timestamp : Number(log.timestamp));
+                                                        const valid = !isNaN(d.getTime());
+                                                        return <>
+                                                            <span className="font-bold">{valid ? d.toLocaleDateString() : "Тодорхойгүй"}</span>
+                                                            {valid && <span className="text-muted-foreground">{d.toLocaleTimeString()}</span>}
+                                                        </>
+                                                    })()}
                                                 </div>
                                             </td>
                                         </tr>

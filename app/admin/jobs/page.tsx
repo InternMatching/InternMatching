@@ -18,6 +18,8 @@ import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { toast } from "sonner"
+import Link from "next/link"
+import { useRouter } from "next/navigation"
 
 const GET_ALL_JOBS = gql`
   query GetAllJobs {
@@ -60,6 +62,7 @@ interface Job {
 export default function JobsManagementPage() {
     const { data, loading, error, refetch } = useQuery<{ getAllJobs: Job[] }>(GET_ALL_JOBS)
     const [deleteJob] = useMutation(DELETE_JOB)
+    const router = useRouter()
     const [searchTerm, setSearchTerm] = useState("")
     const [statusFilter, setStatusFilter] = useState("all")
 
@@ -143,7 +146,7 @@ export default function JobsManagementPage() {
                                 </tr>
                             ) : (
                                 filteredJobs.map((job) => (
-                                    <tr key={job.id} className="hover:bg-secondary/10 transition-colors group">
+                                    <tr key={job.id} className="hover:bg-primary/5 transition-colors group cursor-pointer" onClick={() => router.push(`/admin/jobs/${job.id}`)}>
                                         <td className="px-6 py-4">
                                             <div className="flex flex-col">
                                                 <span className="text-sm font-medium">{job.title}</span>
@@ -165,9 +168,11 @@ export default function JobsManagementPage() {
                                             </span>
                                         </td>
                                         <td className="px-6 py-4 text-right">
-                                            <div className="flex items-center justify-end gap-1">
-                                                <Button variant="ghost" size="icon" className="h-8 w-8">
-                                                    <Eye className="w-4 h-4" />
+                                            <div className="flex items-center justify-end gap-1" onClick={(e) => e.stopPropagation()}>
+                                                <Button variant="ghost" size="icon" className="h-8 w-8" asChild>
+                                                    <Link href={`/admin/jobs/${job.id}`}>
+                                                        <Eye className="w-4 h-4" />
+                                                    </Link>
                                                 </Button>
                                                 <Button
                                                     variant="ghost"

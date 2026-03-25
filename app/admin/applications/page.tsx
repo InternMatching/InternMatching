@@ -17,6 +17,8 @@ import {
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import Link from "next/link"
+import { useRouter } from "next/navigation"
 
 const GET_ALL_APPLICATIONS = gql`
   query GetAllApplications {
@@ -26,12 +28,14 @@ const GET_ALL_APPLICATIONS = gql`
       appliedAt
       matchScore
       job {
+        id
         title
         company {
           companyName
         }
       }
       student {
+        id
         firstName
         lastName
       }
@@ -45,12 +49,14 @@ interface Application {
     appliedAt: string;
     matchScore: number;
     job: {
+        id: string;
         title: string;
         company: {
             companyName: string;
         }
     };
     student: {
+        id?: string;
         firstName?: string;
         lastName?: string;
     };
@@ -58,6 +64,7 @@ interface Application {
 
 export default function ApplicationsManagementPage() {
     const { data, loading, error } = useQuery<{ getAllApplications: Application[] }>(GET_ALL_APPLICATIONS)
+    const router = useRouter()
     const [searchTerm, setSearchTerm] = useState("")
     const [statusFilter, setStatusFilter] = useState("all")
 
@@ -140,16 +147,23 @@ export default function ApplicationsManagementPage() {
                                 filteredApps.map((app) => (
                                     <tr key={app.id} className="hover:bg-secondary/10 transition-colors group">
                                         <td className="px-6 py-4">
-                                            <div className="flex items-center gap-2">
-                                                <UserCircle className="w-5 h-5 text-muted-foreground" />
-                                                <span className="text-sm font-medium">{app.student?.firstName} {app.student?.lastName}</span>
-                                            </div>
+                                            {app.student?.id ? (
+                                                <Link href={`/students/${app.student.id}`} className="flex items-center gap-2 hover:text-primary transition-colors">
+                                                    <UserCircle className="w-5 h-5 text-muted-foreground" />
+                                                    <span className="text-sm font-medium">{app.student?.firstName} {app.student?.lastName}</span>
+                                                </Link>
+                                            ) : (
+                                                <div className="flex items-center gap-2">
+                                                    <UserCircle className="w-5 h-5 text-muted-foreground" />
+                                                    <span className="text-sm font-medium">{app.student?.firstName} {app.student?.lastName}</span>
+                                                </div>
+                                            )}
                                         </td>
                                         <td className="px-6 py-4">
-                                            <div className="flex flex-col">
+                                            <Link href={`/admin/jobs/${app.job.id}`} className="flex flex-col hover:text-primary transition-colors">
                                                 <span className="text-sm font-medium">{app.job.title}</span>
                                                 <span className="text-[11px] text-muted-foreground">{app.job.company.companyName}</span>
-                                            </div>
+                                            </Link>
                                         </td>
                                         <td className="px-6 py-4">
                                             <div className="flex items-center gap-2">
@@ -168,8 +182,10 @@ export default function ApplicationsManagementPage() {
                                             </span>
                                         </td>
                                         <td className="px-6 py-4 text-right">
-                                            <Button variant="ghost" size="icon" className="h-8 w-8">
-                                                <Eye className="w-4 h-4" />
+                                            <Button variant="ghost" size="icon" className="h-8 w-8" asChild>
+                                                <Link href={`/admin/jobs/${app.job.id}`}>
+                                                    <Eye className="w-4 h-4" />
+                                                </Link>
                                             </Button>
                                         </td>
                                     </tr>

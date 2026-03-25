@@ -27,6 +27,7 @@ import { useParams, useRouter } from "next/navigation"
 import Image from "next/image"
 import { cn } from "@/lib/utils"
 import { toast } from "sonner"
+import { Footer } from "@/components/layout/Footer"
 
 export default function JobDetailPage() {
     const params = useParams()
@@ -160,10 +161,11 @@ export default function JobDetailPage() {
                 {/* Back button */}
                 <Button
                     variant="ghost"
-                    className="mb-4 -ml-2 h-9 rounded-xl text-sm font-medium text-muted-foreground hover:text-foreground"
+                    size="sm"
+                    className="mb-4 rounded-xl font-medium"
                     onClick={() => router.back()}
                 >
-                    <ArrowLeft className="w-4 h-4 mr-1.5" />
+                    <ArrowLeft className="w-4 h-4 mr-2" />
                     Буцах
                 </Button>
 
@@ -382,6 +384,7 @@ export default function JobDetailPage() {
 
                 </div>
             </div>
+            <Footer />
         </div>
     )
 }

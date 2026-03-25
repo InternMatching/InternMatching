@@ -41,6 +41,7 @@ import {
     SheetTrigger,
 } from "@/components/ui/sheet"
 import { cn } from "@/lib/utils"
+import { Footer } from "@/components/layout/Footer"
 
 const navItems = [
     { name: 'Хянах самбар', href: '/admin', icon: LayoutDashboard },
@@ -111,7 +112,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     )
 
     return (
-        <div className="min-h-screen bg-[#FAFAFA] dark:bg-[#09090B]">
+        <div className="min-h-screen flex flex-col bg-[#FAFAFA] dark:bg-[#09090B]">
             {/* Header */}
             <header className="bg-background/60 backdrop-blur-xl border-b border-border/40 sticky top-0 z-40">
                 <div className="container mx-auto px-4 h-14 flex items-center justify-between">
@@ -153,7 +154,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                         <span className="h-6 w-px bg-border/40 hidden sm:block" />
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                                <Button variant="ghost" className="h-9 px-2.5 rounded-xl gap-2 hover:bg-secondary">
+                                <Button variant="ghost" className="h-9 px-2.5 rounded-xl gap-2">
                                     <div className="w-6.5 h-6.5 rounded-lg bg-primary/5 flex items-center justify-center border border-primary/10">
                                         <UserCircle className="h-4 w-4 text-primary" />
                                     </div>
@@ -194,7 +195,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 </div>
             </header>
 
-            <div className="container mx-auto px-4 py-8">
+            <div className="container mx-auto px-4 py-8 flex-1">
                 <div className="flex flex-col lg:flex-row gap-8">
                     {/* Desktop Sidebar */}
                     <aside className="hidden lg:block w-60 shrink-0">
@@ -211,6 +212,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                     </main>
                 </div>
             </div>
+            <Footer compact />
         </div>
     )
 }
