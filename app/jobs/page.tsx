@@ -1,8 +1,8 @@
 "use client"
 
 import React, { useState, useMemo, useEffect, useRef, Suspense } from "react"
-import { useQuery } from "@apollo/client/react"
-import { GET_ALL_JOBS } from "../graphql/mutations"
+import { useQuery, useLazyQuery } from "@apollo/client/react"
+import { GET_JOBS_LIST, GET_JOB_DETAIL } from "../graphql/mutations"
 import { Job, JobStatus } from "@/lib/type"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -68,9 +68,14 @@ function JobsContent() {
         return () => { if (debounceRef.current) clearTimeout(debounceRef.current) }
     }, [searchQuery, selectedLevels, pathname, router])
 
-    const { data, loading, error } = useQuery<{ getAllJobs: Job[] }>(GET_ALL_JOBS, {
+    const { data, loading, error } = useQuery<{ getAllJobs: Job[] }>(GET_JOBS_LIST, {
         variables: { status: "open" as JobStatus },
-        fetchPolicy: "network-only"
+        fetchPolicy: "cache-and-network"
+    })
+
+    // Lazy query for full job detail (only fetches on click)
+    const [fetchJobDetail, { data: detailData }] = useLazyQuery<{ getJob: Job }>(GET_JOB_DETAIL, {
+        fetchPolicy: "cache-first",
     })
 
     const filteredJobs = useMemo(() => {
@@ -87,12 +92,22 @@ function JobsContent() {
         })
     }, [data, searchQuery, selectedLevels])
 
-    // Auto-select first job
+    // Merge detail data into selected job when it arrives
+    const selectedJobFull = useMemo(() => {
+        if (!selectedJob) return null
+        if (detailData?.getJob && detailData.getJob.id === selectedJob.id) {
+            return { ...selectedJob, ...detailData.getJob }
+        }
+        return selectedJob
+    }, [selectedJob, detailData])
+
+    // Auto-select first job and fetch its detail
     useEffect(() => {
         if (filteredJobs.length > 0 && !selectedJob) {
             setSelectedJob(filteredJobs[0])
+            fetchJobDetail({ variables: { id: filteredJobs[0].id } })
         }
-    }, [filteredJobs, selectedJob])
+    }, [filteredJobs, selectedJob, fetchJobDetail])
 
     const clearFilters = () => { setSearchQuery(""); setSelectedLevels([]) }
 
@@ -411,7 +426,7 @@ function JobsContent() {
                                             "flex items-start gap-3.5 p-4 cursor-pointer transition-all hover:bg-secondary/30",
                                             selectedJob?.id === job.id && "bg-primary/5 border-l-2 border-l-primary"
                                         )}
-                                        onClick={() => { setSelectedJob(job); if (window.innerWidth < 1024) router.push(`/jobs/${job.id}`) }}
+                                        onClick={() => { setSelectedJob(job); fetchJobDetail({ variables: { id: job.id } }); if (window.innerWidth < 1024) router.push(`/jobs/${job.id}`) }}
                                     >
                                         <div className="w-11 h-11 rounded-xl bg-secondary/40 flex items-center justify-center border border-border/30 overflow-hidden shrink-0 mt-0.5">
                                             {job.company?.logoUrl ? (
@@ -449,9 +464,9 @@ function JobsContent() {
 
                     {/* RIGHT: Job detail (desktop) */}
                     <div className="hidden lg:block flex-1">
-                        {selectedJob ? (
+                        {selectedJobFull ? (
                             <div className="p-8 max-w-3xl">
-                                <DetailPanel job={selectedJob} />
+                                <DetailPanel job={selectedJobFull} />
                             </div>
                         ) : (
                             <div className="flex items-center justify-center h-full text-muted-foreground">
