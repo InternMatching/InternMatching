@@ -138,8 +138,8 @@ export default function CompanyPage() {
                 location: data.location || "",
                 logoUrl: data.logoUrl || "",
                 website: data.website || "",
-                foundedYear: data.foundedYear || null,
-                employeeCount: data.employeeCount || null,
+                foundedYear: data.foundedYear || undefined,
+                employeeCount: data.employeeCount || undefined,
                 slogan: data.slogan || "",
             }
             await updateProfile({ variables: { input: cleanInput } })
