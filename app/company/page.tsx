@@ -160,6 +160,13 @@ export default function CompanyPage() {
         setActiveTab(tab)
     }
 
+    // Redirect to login on auth error
+    useEffect(() => {
+        if (userError) {
+            router.push("/login")
+        }
+    }, [userError, router])
+
     // Save on page unload
     useEffect(() => {
         const handleBeforeUnload = () => {
@@ -394,10 +401,7 @@ export default function CompanyPage() {
         )
     }
 
-    if (userError) {
-        router.push("/login")
-        return null
-    }
+    if (userError) return null
 
     const navItems = [
         { id: 'profile', name: 'Компаний мэдээлэл', icon: Building },

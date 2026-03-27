@@ -72,7 +72,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             toast.error("Зөвхөн админ нэвтрэх боломжтой.")
             router.push('/')
         }
-    }, [userData, userLoading, router])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [userData, userLoading])
 
     const client = useApolloClient()
 

@@ -132,6 +132,13 @@ export default function StudentPage() {
         setActiveTab(tab)
     }
 
+    // Redirect to login on auth error
+    useEffect(() => {
+        if (userError) {
+            router.push("/login")
+        }
+    }, [userError, router])
+
     // Save on page unload
     useEffect(() => {
         const handleBeforeUnload = () => {
@@ -273,10 +280,7 @@ export default function StudentPage() {
         )
     }
 
-    if (userError) {
-        router.push("/login")
-        return null
-    }
+    if (userError) return null
 
     const navItems = [
         { id: 'profile', name: 'Профайл', icon: User },
