@@ -182,17 +182,24 @@ export default function CompanyPage() {
         }
     }, [profileData, profileLoading, userData])
 
-    // Auto-save on profile form changes (debounced)
+    // Auto-save on profile form changes (debounced 3s)
+    const autoSaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
     useEffect(() => {
         if (!profileInitialized.current) return
         if (!profileForm.companyName?.trim()) return
 
-        const timer = setTimeout(() => {
+        if (autoSaveTimer.current) clearTimeout(autoSaveTimer.current)
+        autoSaveTimer.current = setTimeout(() => {
             doAutoSave(profileForm)
-        }, 1000)
+        }, 3000)
 
-        return () => clearTimeout(timer)
+        return () => { if (autoSaveTimer.current) clearTimeout(autoSaveTimer.current) }
     }, [profileForm])
+
+    const handleManualSave = () => {
+        if (autoSaveTimer.current) clearTimeout(autoSaveTimer.current)
+        doAutoSave(profileForm)
+    }
 
     const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0]
@@ -671,16 +678,28 @@ export default function CompanyPage() {
                                                     className="h-10 rounded-xl bg-secondary/10 border-border/40 focus:bg-background transition-all"
                                                 />
                                             </div>
-                                            <div className="flex items-center gap-2 text-sm text-muted-foreground h-10">
-                                                {autoSaveStatus === "saving" && (
-                                                    <><Loader2 className="animate-spin h-4 w-4" /><span>Хадгалж байна...</span></>
-                                                )}
-                                                {autoSaveStatus === "saved" && (
-                                                    <><CheckCircle2 className="h-4 w-4 text-emerald-500" /><span className="text-emerald-500">Хадгалагдлаа</span></>
-                                                )}
-                                                {autoSaveStatus === "idle" && profileInitialized.current && (
-                                                    <span className="text-muted-foreground/60">Өөрчлөлт автоматаар хадгалагдана</span>
-                                                )}
+                                            <div className="flex items-center justify-between h-10">
+                                                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                                                    {autoSaveStatus === "saving" && (
+                                                        <><Loader2 className="animate-spin h-4 w-4" /><span>Хадгалж байна...</span></>
+                                                    )}
+                                                    {autoSaveStatus === "saved" && (
+                                                        <><CheckCircle2 className="h-4 w-4 text-emerald-500" /><span className="text-emerald-500">Хадгалагдлаа</span></>
+                                                    )}
+                                                    {autoSaveStatus === "idle" && profileInitialized.current && (
+                                                        <span className="text-muted-foreground/60">Өөрчлөлт автоматаар хадгалагдана</span>
+                                                    )}
+                                                </div>
+                                                <Button
+                                                    type="button"
+                                                    onClick={handleManualSave}
+                                                    disabled={autoSaveStatus === "saving"}
+                                                    className="h-9 rounded-xl font-bold text-xs px-6"
+                                                >
+                                                    {autoSaveStatus === "saving" ? (
+                                                        <><Loader2 className="animate-spin h-3.5 w-3.5 mr-2" />Хадгалж байна</>
+                                                    ) : "Хадгалах"}
+                                                </Button>
                                             </div>
                                         </form>
                                     </CardContent>
