@@ -164,6 +164,18 @@ export default function StudentPage() {
         }
     }, [profileData, profileLoading, userData])
 
+    // Auto-save on form changes (debounced)
+    useEffect(() => {
+        if (!profileInitialized.current) return
+        if (!formData.firstName?.trim() || !formData.lastName?.trim()) return
+
+        const timer = setTimeout(() => {
+            doAutoSave(formData)
+        }, 1000)
+
+        return () => clearTimeout(timer)
+    }, [formData])
+
     const client = useApolloClient()
 
     const handleLogout = async () => {
