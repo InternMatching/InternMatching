@@ -124,21 +124,18 @@ export default function CompanyPage() {
     const latestProfileForm = useRef(profileForm)
     latestProfileForm.current = profileForm
 
-    // Auto-save function
+    // Auto-save function (updateCompanyProfile has upsert:true, so it handles both create and update)
     const doAutoSave = async (data: CompanyProfileInput) => {
         if (!profileInitialized.current) return
         if (!data.companyName?.trim()) return
         setAutoSaveStatus("saving")
         try {
-            if (profileData?.getCompanyProfile) {
-                await updateProfile({ variables: { input: data } })
-            } else {
-                await createProfile({ variables: { input: data } })
-            }
+            await updateProfile({ variables: { input: data } })
             refetchProfile()
             setAutoSaveStatus("saved")
             setTimeout(() => setAutoSaveStatus("idle"), 2000)
-        } catch {
+        } catch (err) {
+            console.error("Auto-save error:", err)
             setAutoSaveStatus("idle")
         }
     }
