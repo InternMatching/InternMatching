@@ -182,6 +182,18 @@ export default function CompanyPage() {
         }
     }, [profileData, profileLoading, userData])
 
+    // Auto-save on profile form changes (debounced)
+    useEffect(() => {
+        if (!profileInitialized.current) return
+        if (!profileForm.companyName?.trim()) return
+
+        const timer = setTimeout(() => {
+            doAutoSave(profileForm)
+        }, 1000)
+
+        return () => clearTimeout(timer)
+    }, [profileForm])
+
     const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0]
         if (!file) return
