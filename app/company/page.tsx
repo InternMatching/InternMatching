@@ -130,7 +130,19 @@ export default function CompanyPage() {
         if (!data.companyName?.trim()) return
         setAutoSaveStatus("saving")
         try {
-            await updateProfile({ variables: { input: data } })
+            // Send only schema-valid fields (strip any extra properties like __typename)
+            const cleanInput = {
+                companyName: data.companyName,
+                description: data.description || "",
+                industry: data.industry || "",
+                location: data.location || "",
+                logoUrl: data.logoUrl || "",
+                website: data.website || "",
+                foundedYear: data.foundedYear || undefined,
+                employeeCount: data.employeeCount || undefined,
+                slogan: data.slogan || "",
+            }
+            await updateProfile({ variables: { input: cleanInput } })
             refetchProfile()
             setAutoSaveStatus("saved")
             setTimeout(() => setAutoSaveStatus("idle"), 2000)
@@ -960,92 +972,92 @@ export default function CompanyPage() {
                                                 {myJobsData?.getAllJobs?.map((job) => {
                                                     const isExpired = job.deadline ? new Date(job.deadline).getTime() < Date.now() : false;
                                                     return (
-                                                    <Card
-                                                        key={job.id}
-                                                        className={cn("transition-all border-border/60 bg-background rounded-xl shadow-none cursor-pointer", isExpired ? "opacity-50" : "hover:border-primary/40")}
-                                                        onClick={() => setViewingJob(job)}
-                                                    >
-                                                        <CardContent className="p-4 font-medium">
-                                                            {/* Top row: logo + title + actions */}
-                                                            <div className="flex items-start gap-3">
-                                                                <div className="w-10 h-10 bg-secondary/30 rounded-xl flex items-center justify-center border border-border/40 overflow-hidden shrink-0">
-                                                                    {profileData?.getCompanyProfile?.logoUrl ? (
-                                                                        <Image
-                                                                            src={profileData.getCompanyProfile.logoUrl}
-                                                                            alt={profileData.getCompanyProfile.companyName}
-                                                                            width={40}
-                                                                            height={40}
-                                                                            className="object-cover w-full h-full"
-                                                                        />
-                                                                    ) : (
-                                                                        <span className="text-sm font-black text-primary/50 uppercase">
-                                                                            {profileData?.getCompanyProfile?.companyName?.[0] || <Building2 className="w-4 h-4 text-muted-foreground" />}
+                                                        <Card
+                                                            key={job.id}
+                                                            className={cn("transition-all border-border/60 bg-background rounded-xl shadow-none cursor-pointer", isExpired ? "opacity-50" : "hover:border-primary/40")}
+                                                            onClick={() => setViewingJob(job)}
+                                                        >
+                                                            <CardContent className="p-4 font-medium">
+                                                                {/* Top row: logo + title + actions */}
+                                                                <div className="flex items-start gap-3">
+                                                                    <div className="w-10 h-10 bg-secondary/30 rounded-xl flex items-center justify-center border border-border/40 overflow-hidden shrink-0">
+                                                                        {profileData?.getCompanyProfile?.logoUrl ? (
+                                                                            <Image
+                                                                                src={profileData.getCompanyProfile.logoUrl}
+                                                                                alt={profileData.getCompanyProfile.companyName}
+                                                                                width={40}
+                                                                                height={40}
+                                                                                className="object-cover w-full h-full"
+                                                                            />
+                                                                        ) : (
+                                                                            <span className="text-sm font-black text-primary/50 uppercase">
+                                                                                {profileData?.getCompanyProfile?.companyName?.[0] || <Building2 className="w-4 h-4 text-muted-foreground" />}
+                                                                            </span>
+                                                                        )}
+                                                                    </div>
+                                                                    <h3 className="font-bold text-sm truncate flex-1 min-w-0 pt-2">{job.title}</h3>
+                                                                    {/* Desktop: edit/delete in top row */}
+                                                                    <div className="hidden md:flex items-center gap-1 shrink-0 ml-auto">
+                                                                        <Button
+                                                                            variant="ghost"
+                                                                            size="sm"
+                                                                            className="h-8 w-8 p-0 rounded-lg hover:bg-primary/10 hover:text-primary"
+                                                                            onClick={(e) => { e.stopPropagation(); handleEditJob(job); }}
+                                                                        >
+                                                                            <Pencil className="w-3.5 h-3.5" />
+                                                                        </Button>
+                                                                        <Button
+                                                                            variant="ghost"
+                                                                            size="sm"
+                                                                            className="h-8 w-8 p-0 rounded-lg hover:bg-red-50 hover:text-red-600"
+                                                                            onClick={(e) => { e.stopPropagation(); handleDeleteJob(job.id, job.title); }}
+                                                                            disabled={deletingJob}
+                                                                        >
+                                                                            <Trash2 className="w-3.5 h-3.5" />
+                                                                        </Button>
+                                                                    </div>
+                                                                </div>
+
+                                                                {/* Bottom row: metadata tags */}
+                                                                <div className="flex items-center gap-2 sm:gap-3 flex-wrap mt-2 sm:ml-[52px] text-[10px] text-muted-foreground uppercase font-bold tracking-wider">
+                                                                    <span className="flex items-center gap-1"><Search className="w-3 h-3" />{job.location}</span>
+                                                                    <span className="flex items-center gap-1"><Clock className="w-3 h-3" />{job.salaryRange || "Уян хатан"}</span>
+                                                                    <span className="flex items-center gap-1">
+                                                                        <Users2 className="w-3 h-3" />
+                                                                        {job.applicationCount}{job.maxParticipants ? `/${job.maxParticipants}` : ""}
+                                                                    </span>
+                                                                    {job.deadline && (
+                                                                        <span className={cn(
+                                                                            "flex items-center gap-1",
+                                                                            new Date(job.deadline).getTime() - new Date().getTime() < 86400000 ? "text-red-500" : "text-amber-500"
+                                                                        )}>
+                                                                            <AlertCircle className="w-3 h-3" />
+                                                                            {getTimeRemaining(job.deadline)}
                                                                         </span>
                                                                     )}
+                                                                    {/* Mobile: edit/delete after metadata */}
+                                                                    <div className="flex md:hidden items-center gap-1 shrink-0 ml-auto">
+                                                                        <Button
+                                                                            variant="ghost"
+                                                                            size="sm"
+                                                                            className="h-7 w-7 p-0 rounded-lg hover:bg-primary/10 hover:text-primary"
+                                                                            onClick={(e) => { e.stopPropagation(); handleEditJob(job); }}
+                                                                        >
+                                                                            <Pencil className="w-3 h-3" />
+                                                                        </Button>
+                                                                        <Button
+                                                                            variant="ghost"
+                                                                            size="sm"
+                                                                            className="h-7 w-7 p-0 rounded-lg hover:bg-red-50 hover:text-red-600"
+                                                                            onClick={(e) => { e.stopPropagation(); handleDeleteJob(job.id, job.title); }}
+                                                                            disabled={deletingJob}
+                                                                        >
+                                                                            <Trash2 className="w-3 h-3" />
+                                                                        </Button>
+                                                                    </div>
                                                                 </div>
-                                                                <h3 className="font-bold text-sm truncate flex-1 min-w-0 pt-2">{job.title}</h3>
-                                                                {/* Desktop: edit/delete in top row */}
-                                                                <div className="hidden md:flex items-center gap-1 shrink-0 ml-auto">
-                                                                    <Button
-                                                                        variant="ghost"
-                                                                        size="sm"
-                                                                        className="h-8 w-8 p-0 rounded-lg hover:bg-primary/10 hover:text-primary"
-                                                                        onClick={(e) => { e.stopPropagation(); handleEditJob(job); }}
-                                                                    >
-                                                                        <Pencil className="w-3.5 h-3.5" />
-                                                                    </Button>
-                                                                    <Button
-                                                                        variant="ghost"
-                                                                        size="sm"
-                                                                        className="h-8 w-8 p-0 rounded-lg hover:bg-red-50 hover:text-red-600"
-                                                                        onClick={(e) => { e.stopPropagation(); handleDeleteJob(job.id, job.title); }}
-                                                                        disabled={deletingJob}
-                                                                    >
-                                                                        <Trash2 className="w-3.5 h-3.5" />
-                                                                    </Button>
-                                                                </div>
-                                                            </div>
-
-                                                            {/* Bottom row: metadata tags */}
-                                                            <div className="flex items-center gap-2 sm:gap-3 flex-wrap mt-2 sm:ml-[52px] text-[10px] text-muted-foreground uppercase font-bold tracking-wider">
-                                                                <span className="flex items-center gap-1"><Search className="w-3 h-3" />{job.location}</span>
-                                                                <span className="flex items-center gap-1"><Clock className="w-3 h-3" />{job.salaryRange || "Уян хатан"}</span>
-                                                                <span className="flex items-center gap-1">
-                                                                    <Users2 className="w-3 h-3" />
-                                                                    {job.applicationCount}{job.maxParticipants ? `/${job.maxParticipants}` : ""}
-                                                                </span>
-                                                                {job.deadline && (
-                                                                    <span className={cn(
-                                                                        "flex items-center gap-1",
-                                                                        new Date(job.deadline).getTime() - new Date().getTime() < 86400000 ? "text-red-500" : "text-amber-500"
-                                                                    )}>
-                                                                        <AlertCircle className="w-3 h-3" />
-                                                                        {getTimeRemaining(job.deadline)}
-                                                                    </span>
-                                                                )}
-                                                                {/* Mobile: edit/delete after metadata */}
-                                                                <div className="flex md:hidden items-center gap-1 shrink-0 ml-auto">
-                                                                    <Button
-                                                                        variant="ghost"
-                                                                        size="sm"
-                                                                        className="h-7 w-7 p-0 rounded-lg hover:bg-primary/10 hover:text-primary"
-                                                                        onClick={(e) => { e.stopPropagation(); handleEditJob(job); }}
-                                                                    >
-                                                                        <Pencil className="w-3 h-3" />
-                                                                    </Button>
-                                                                    <Button
-                                                                        variant="ghost"
-                                                                        size="sm"
-                                                                        className="h-7 w-7 p-0 rounded-lg hover:bg-red-50 hover:text-red-600"
-                                                                        onClick={(e) => { e.stopPropagation(); handleDeleteJob(job.id, job.title); }}
-                                                                        disabled={deletingJob}
-                                                                    >
-                                                                        <Trash2 className="w-3 h-3" />
-                                                                    </Button>
-                                                                </div>
-                                                            </div>
-                                                        </CardContent>
-                                                    </Card>
+                                                            </CardContent>
+                                                        </Card>
                                                     )
                                                 })}
                                             </div>
@@ -1260,7 +1272,7 @@ export default function CompanyPage() {
                                             {studentsData?.getAllStudentProfiles?.filter(s =>
                                                 s.isActivelyLooking !== false &&
                                                 (`${s.firstName} ${s.lastName}`.toLowerCase().includes(studentSearch.toLowerCase()) ||
-                                                s.skills.some(skill => skill.toLowerCase().includes(studentSearch.toLowerCase())))
+                                                    s.skills.some(skill => skill.toLowerCase().includes(studentSearch.toLowerCase())))
                                             ).map((student) => (
                                                 <Card
                                                     key={student.id}

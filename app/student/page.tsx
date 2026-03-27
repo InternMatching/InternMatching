@@ -96,21 +96,30 @@ export default function StudentPage() {
     const latestFormData = useRef(formData)
     latestFormData.current = formData
 
-    // Auto-save function
+    // Auto-save function (updateStudentProfile has upsert:true, handles both create and update)
     const doAutoSave = async (data: StudentProfileInput) => {
         if (!profileInitialized.current) return
         if (!data.firstName?.trim() || !data.lastName?.trim()) return
         setAutoSaveStatus("saving")
         try {
-            if (profileData?.getStudentProfile) {
-                await updateProfile({ variables: { input: data } })
-            } else {
-                await createProfile({ variables: { input: data } })
+            // Strip __typename from education entries (Apollo cache adds it, GraphQL rejects it)
+            const cleanInput = {
+                firstName: data.firstName,
+                lastName: data.lastName,
+                bio: data.bio,
+                skills: data.skills,
+                experienceLevel: data.experienceLevel,
+                isActivelyLooking: data.isActivelyLooking,
+                education: (data.education || []).map(({ school, degree, year, status }) => ({
+                    school, degree, year, ...(status ? { status } : {})
+                })),
             }
+            await updateProfile({ variables: { input: cleanInput } })
             refetchProfile()
             setAutoSaveStatus("saved")
             setTimeout(() => setAutoSaveStatus("idle"), 2000)
-        } catch {
+        } catch (err) {
+            console.error("Auto-save error:", err)
             setAutoSaveStatus("idle")
         }
     }
