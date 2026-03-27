@@ -130,7 +130,19 @@ export default function CompanyPage() {
         if (!data.companyName?.trim()) return
         setAutoSaveStatus("saving")
         try {
-            await updateProfile({ variables: { input: data } })
+            // Send only schema-valid fields (strip any extra properties like __typename)
+            const cleanInput = {
+                companyName: data.companyName,
+                description: data.description || "",
+                industry: data.industry || "",
+                location: data.location || "",
+                logoUrl: data.logoUrl || "",
+                website: data.website || "",
+                foundedYear: data.foundedYear || null,
+                employeeCount: data.employeeCount || null,
+                slogan: data.slogan || "",
+            }
+            await updateProfile({ variables: { input: cleanInput } })
             refetchProfile()
             setAutoSaveStatus("saved")
             setTimeout(() => setAutoSaveStatus("idle"), 2000)
