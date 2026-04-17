@@ -18,6 +18,7 @@ import { Navbar } from "@/components/layout/Navbar"
 import { Footer } from "@/components/layout/Footer"
 import { usePathname } from "next/navigation"
 import { GoogleOAuthProvider } from '@react-oauth/google'
+import { AuthProvider } from "@/lib/auth-context"
 
 export default function RootLayout({
   children,
@@ -34,20 +35,22 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <body className={`font-sans antialiased`} suppressHydrationWarning>
         <ApolloProvider client={client}>
-          <GoogleOAuthProvider clientId={process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || ""}>
-            <ThemeProvider
-              attribute="class"
-              defaultTheme="light"
-              enableSystem
-              disableTransitionOnChange
-            >
-              {!shouldHideNavbar && <Navbar />}
-              {children}
-              {!shouldHideNavbar && <Footer />}
-              <Analytics />
-              <Toaster />
-            </ThemeProvider>
-          </GoogleOAuthProvider>
+          <AuthProvider>
+            <GoogleOAuthProvider clientId={process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || ""}>
+              <ThemeProvider
+                attribute="class"
+                defaultTheme="light"
+                enableSystem
+                disableTransitionOnChange
+              >
+                {!shouldHideNavbar && <Navbar />}
+                {children}
+                {!shouldHideNavbar && <Footer />}
+                <Analytics />
+                <Toaster />
+              </ThemeProvider>
+            </GoogleOAuthProvider>
+          </AuthProvider>
         </ApolloProvider>
       </body>
     </html>
