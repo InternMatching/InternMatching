@@ -21,9 +21,7 @@ import {
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { toast } from "sonner"
-import { useQuery, useApolloClient } from "@apollo/client/react"
-import { ME } from "../graphql/mutations"
-import { User } from "@/lib/type"
+import { useAuth } from "@/lib/auth-context"
 import { ThemeToggle } from "@/components/theme-toggle"
 import {
     DropdownMenu,
@@ -58,7 +56,7 @@ const navItems = [
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
     const pathname = usePathname()
     const router = useRouter()
-    const { data: userData, loading: userLoading } = useQuery<{ me: User }>(ME)
+    const { user, loading: userLoading, logout } = useAuth()
     const [open, setOpen] = useState(false)
 
     useEffect(() => {
@@ -68,27 +66,13 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             return
         }
 
-        if (!userLoading && userData?.me && userData.me.role !== 'admin') {
+        if (!userLoading && user && user.role !== 'admin') {
             toast.error("Зөвхөн админ нэвтрэх боломжтой.")
             router.push('/')
         }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [userData, userLoading])
+    }, [user, userLoading, router])
 
-    const client = useApolloClient()
-
-    const handleLogout = async () => {
-        localStorage.removeItem("token")
-        await client.clearStore()
-        toast.success("Амжилттай гарлаа")
-        router.push('/login')
-    }
-
-    if (userLoading) return (
-        <div className="min-h-screen flex items-center justify-center bg-background">
-            <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin" />
-        </div>
-    )
+    const handleLogout = () => logout()
 
     const SidebarContent = () => (
         <div className="flex flex-col gap-1 py-4">
@@ -172,7 +156,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                                             Админ
                                         </p>
                                         <p className="text-[11px] text-muted-foreground truncate leading-tight mt-0.5">
-                                            {userData?.me?.email}
+                                            {user?.email}
                                         </p>
                                     </div>
                                 </div>
@@ -207,9 +191,17 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
                     {/* Main Content Area */}
                     <main className="flex-1 min-w-0">
-                        <div className="animate-in fade-in slide-in-from-bottom-3 duration-500">
-                            {children}
-                        </div>
+                        {userLoading && !user ? (
+                            <div className="space-y-4">
+                                <div className="h-8 w-48 bg-muted/50 rounded-lg animate-pulse" />
+                                <div className="h-32 w-full bg-muted/40 rounded-xl animate-pulse" />
+                                <div className="h-32 w-full bg-muted/40 rounded-xl animate-pulse" />
+                            </div>
+                        ) : (
+                            <div className="animate-in fade-in slide-in-from-bottom-3 duration-500">
+                                {children}
+                            </div>
+                        )}
                     </main>
                 </div>
             </div>

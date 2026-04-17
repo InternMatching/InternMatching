@@ -2,7 +2,6 @@
 
 import React, { useState } from "react"
 import Link from "next/link"
-import { usePathname, useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import {
     Briefcase,
@@ -36,10 +35,7 @@ import {
     DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu"
 import { cn } from "@/lib/utils"
-import { useQuery, useApolloClient } from "@apollo/client/react"
-import { ME } from "@/app/graphql/mutations"
-import { User } from "@/lib/type"
-import { toast } from "sonner"
+import { useAuth } from "@/lib/auth-context"
 
 export function Navbar() {
     const [isOpen, setIsOpen] = useState(false)
@@ -47,18 +43,11 @@ export function Navbar() {
     const [studentsOpen, setStudentsOpen] = useState(false)
     const jobsTimeout = React.useRef<NodeJS.Timeout | null>(null)
     const studentsTimeout = React.useRef<NodeJS.Timeout | null>(null)
-    const pathname = usePathname()
-    const router = useRouter()
-    const client = useApolloClient()
-
-    const { data: userData } = useQuery<{ me: User }>(ME)
-    const isLoggedIn = !!userData?.me
+    const { user, logout } = useAuth()
+    const isLoggedIn = !!user
 
     const handleLogout = async () => {
-        localStorage.removeItem("token")
-        await client.clearStore()
-        toast.success("Амжилттай гарлаа")
-        router.push("/login")
+        await logout()
         setIsOpen(false)
     }
 
@@ -97,7 +86,6 @@ export function Navbar() {
     )
 
     const UserProfileDropdown = ({ mobile = false }: { mobile?: boolean }) => {
-        const user = userData?.me
         if (!user) return null
 
         const dashboardHref = user.role.toLowerCase() === 'admin' ? '/admin' : (user.role.toLowerCase() === 'company' ? '/company' : '/student')
