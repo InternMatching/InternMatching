@@ -4,7 +4,7 @@ import React, { createContext, useCallback, useContext, useMemo } from "react"
 import { useRouter } from "next/navigation"
 import { useQuery, useApolloClient } from "@apollo/client/react"
 import { toast } from "sonner"
-import { ME } from "@/app/graphql/mutations"
+import { ME } from "@/features/auth/graphql/auth.queries"
 import { User } from "@/lib/type"
 
 type AuthContextValue = {

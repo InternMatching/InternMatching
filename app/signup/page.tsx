@@ -8,18 +8,16 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import {
-    Briefcase,
     Loader2,
     GraduationCap,
     Building2,
     CheckCircle2,
-    ArrowRight,
     Eye,
     EyeOff,
     Info
 } from "lucide-react"
 import { useMutation } from "@apollo/client/react"
-import { SIGNUP } from "../graphql/mutations"
+import { SIGNUP } from "@/features/auth/graphql/auth.mutations"
 import { SignupInput, UserRole as AppUserRole, AuthPayload } from "@/lib/type"
 import { cn } from "@/lib/utils"
 import { toast } from "sonner"
@@ -42,9 +40,11 @@ function SignupContent() {
     useEffect(() => {
         const roleParam = searchParams.get("role")
         if (roleParam === "company" && selectedRole !== "company") {
-            setSelectedRole("company")
+            const timeoutId = setTimeout(() => setSelectedRole("company"), 0)
+            return () => clearTimeout(timeoutId)
         } else if (roleParam === "student" && selectedRole !== "student") {
-            setSelectedRole("student")
+            const timeoutId = setTimeout(() => setSelectedRole("student"), 0)
+            return () => clearTimeout(timeoutId)
         }
     }, [searchParams, selectedRole])
 
@@ -83,9 +83,9 @@ function SignupContent() {
                     router.push("/student?onboarding=true")
                 }
             }
-        } catch (err: any) {
+        } catch (err) {
             console.error("Signup error:", err)
-            toast.error(err.message || "Бүртгэл үүсгэхэд алдаа гарлаа. Дахин оролдоно уу.")
+            toast.error(err instanceof Error ? err.message : "Бүртгэл үүсгэхэд алдаа гарлаа. Дахин оролдоно уу.")
         }
     }
 

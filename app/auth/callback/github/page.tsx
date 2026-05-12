@@ -1,9 +1,9 @@
 "use client"
 
-import { useEffect, Suspense } from "react"
+import { useEffect, Suspense, useCallback } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { useMutation, useApolloClient } from "@apollo/client/react"
-import { GITHUB_LOGIN } from "@/app/graphql/mutations"
+import { GITHUB_LOGIN } from "@/features/auth/graphql/auth.mutations"
 import { AuthPayload } from "@/lib/type"
 import { toast } from "sonner"
 import { Loader2 } from "lucide-react"
@@ -13,6 +13,38 @@ function GitHubCallbackContent() {
     const searchParams = useSearchParams()
     const client = useApolloClient()
     const [githubLogin] = useMutation<{ githubLogin: AuthPayload }>(GITHUB_LOGIN)
+
+    const handleLogin = useCallback(async (code: string, role: string) => {
+        try {
+            const { data } = await githubLogin({
+                variables: {
+                    code,
+                    role: role as "student" | "company"
+                }
+            })
+
+            if (data?.githubLogin?.token) {
+                localStorage.setItem("token", data.githubLogin.token)
+                localStorage.removeItem("pending_role")
+                await client.resetStore()
+
+                const userRole = data.githubLogin.user.role
+                toast.success("GitHub-ээр амжилттай нэвтэрлээ!")
+
+                if (userRole === "COMPANY" || userRole.toLowerCase() === "company") {
+                    router.push("/company")
+                } else if (userRole === "ADMIN" || userRole.toLowerCase() === "admin") {
+                    router.push("/admin")
+                } else {
+                    router.push("/student")
+                }
+            }
+        } catch (err) {
+            console.error("GitHub login error:", err)
+            toast.error(err instanceof Error ? `GitHub нэвтрэлт амжилтгүй: ${err.message}` : "GitHub нэвтрэлт амжилтгүй")
+            router.push("/login")
+        }
+    }, [githubLogin, client, router])
 
     useEffect(() => {
         const code = searchParams.get("code")
@@ -24,39 +56,7 @@ function GitHubCallbackContent() {
             toast.error("GitHub-ээс код хүлээн авч чадсангүй.")
             router.push("/login")
         }
-    }, [searchParams])
-
-    const handleLogin = async (code: string, role: string) => {
-        try {
-            const { data } = await githubLogin({
-                variables: {
-                    code,
-                    role: role as any
-                }
-            })
-
-            if (data?.githubLogin?.token) {
-                localStorage.setItem("token", data.githubLogin.token)
-                localStorage.removeItem("pending_role")
-                await client.resetStore()
-
-                const userRole = data.githubLogin.user.role
-                toast.success("GitHub-ээр амжилттай нэвтэрлээ!")
-                
-                if (userRole === "COMPANY" || userRole.toLowerCase() === "company") {
-                    router.push("/company")
-                } else if (userRole === "ADMIN" || userRole.toLowerCase() === "admin") {
-                    router.push("/admin")
-                } else {
-                    router.push("/student")
-                }
-            }
-        } catch (err: any) {
-            console.error("GitHub login error:", err)
-            toast.error(`GitHub нэвтрэлт амжилтгүй: ${err.message}`)
-            router.push("/login")
-        }
-    }
+    }, [searchParams, handleLogin, router])
 
     return (
         <div className="min-h-screen flex flex-col items-center justify-center bg-background p-4 text-center">

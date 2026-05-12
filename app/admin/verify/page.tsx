@@ -1,27 +1,23 @@
 "use client"
 
-import React, { useState, useEffect } from "react"
+import React, { useState } from "react"
+import Image from "next/image"
 import { useQuery, useMutation } from "@apollo/client/react"
 import { gql } from "@apollo/client"
 import {
     Building2,
     CheckCircle2,
-    XCircle,
     Globe,
     MapPin,
     Clock,
-    ShieldCheck,
-    ExternalLink,
     Loader2,
     ChevronRight,
-    SearchX,
-    Users,
     Calendar,
     Quote,
-    X,
-    Briefcase
+    Briefcase,
+    Users
 } from "lucide-react"
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { toast } from "sonner"
 import { cn } from "@/lib/utils"
@@ -81,8 +77,8 @@ export default function VerificationWorkflowPage() {
             await verifyCompany({ variables: { companyProfileId: id } })
             toast.success(`${name} амжилттай баталгаажлаа`)
             refetch()
-        } catch (err: any) {
-            toast.error(err.message || "Алдаа гарлаа")
+        } catch (err) {
+            toast.error(err instanceof Error ? err.message : "Алдаа гарлаа")
         }
     }
 
@@ -140,7 +136,7 @@ export default function VerificationWorkflowPage() {
                             <CardHeader className="p-6 pb-4 flex flex-row items-center gap-4">
                                 <div className="w-14 h-14 rounded-xl bg-secondary/50 flex items-center justify-center text-muted-foreground overflow-hidden border border-border/40 shadow-sm group-hover:border-primary/20 transition-all shrink-0">
                                     {company.logoUrl ? (
-                                        <img src={company.logoUrl} alt="" className="w-full h-full object-cover" />
+                                        <Image src={company.logoUrl} alt="" className="w-full h-full object-cover" width={56} height={56} />
                                     ) : (
                                         <Building2 className="w-7 h-7 text-muted-foreground/50" />
                                     )}

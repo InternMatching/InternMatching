@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label"
 import { Loader2, CheckCircle, User, Camera } from "lucide-react"
 import { StudentProfile, StudentProfileInput } from "@/lib/type"
 import { cn } from "@/lib/utils"
-import { EducationEditor } from "@/components/student/EducationEditor"
+import { EducationEditor } from "@/features/student/components/EducationEditor"
 
 type Props = {
     profile?: StudentProfile | null

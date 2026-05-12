@@ -3,7 +3,10 @@
 import React, { useState } from "react"
 import { useParams, useRouter } from "next/navigation"
 import { useQuery, useMutation } from "@apollo/client/react"
-import { GET_ALL_STUDENT_PROFILES, ME, SEND_INVITATION, GET_INVITATIONS } from "../../graphql/mutations"
+import { GET_ALL_STUDENT_PROFILES } from "@/features/student/graphql/student.queries"
+import { ME } from "@/features/auth/graphql/auth.queries"
+import { GET_INVITATIONS } from "@/features/invitations/graphql/invitations.queries"
+import { SEND_INVITATION } from "@/features/invitations/graphql/invitations.mutations"
 import { StudentProfile, User, Invitation } from "@/lib/type"
 import { Button } from "@/components/ui/button"
 import Image from "next/image"
@@ -65,8 +68,8 @@ export default function StudentDetailPage() {
             toast.success("Урилга амжилттай илгээгдлээ!")
             setShowMessageInput(false)
             setInviteMessage("")
-        } catch (err: any) {
-            toast.error(err.message || "Урилга илгээхэд алдаа гарлаа")
+        } catch (err) {
+            toast.error(err instanceof Error ? err.message : "Урилга илгээхэд алдаа гарлаа")
         }
     }
 

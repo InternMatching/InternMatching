@@ -2,9 +2,10 @@
 
 import React, { useState, useMemo, useEffect, Suspense } from "react"
 import { useQuery } from "@apollo/client/react"
-import { GET_ALL_STUDENT_PROFILES, ME } from "../graphql/mutations"
+import { GET_ALL_STUDENT_PROFILES } from "@/features/student/graphql/student.queries"
+import { ME } from "@/features/auth/graphql/auth.queries"
 import { StudentProfile, User } from "@/lib/type"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Skeleton } from "@/components/ui/skeleton"
@@ -13,13 +14,10 @@ import {
     Lock,
     Search,
     ArrowLeft,
-    ArrowRight,
     ShieldCheck,
     Filter,
     X,
-    UserCircle,
     CheckCircle2,
-    Briefcase,
     ChevronRight
 } from "lucide-react"
 import { useSearchParams, useRouter, usePathname } from "next/navigation"
@@ -32,6 +30,33 @@ import {
     SheetTitle,
     SheetTrigger,
 } from "@/components/ui/sheet"
+
+function StudentSkeleton() {
+    return (
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3">
+            {[1, 2, 3, 4, 5, 6].map((i) => (
+                <Card key={i} className="rounded-2xl border-border/40 overflow-hidden bg-background shadow-sm">
+                    <CardContent className="p-5 space-y-4">
+                        <div className="flex items-start justify-between">
+                            <Skeleton className="w-12 h-12 rounded-xl" />
+                            <Skeleton className="h-5 w-16 rounded-full" />
+                        </div>
+                        <div className="space-y-2">
+                            <Skeleton className="h-6 w-3/4 rounded-md" />
+                            <Skeleton className="h-3 w-full rounded-md" />
+                            <Skeleton className="h-3 w-4/5 rounded-md" />
+                        </div>
+                        <div className="flex gap-1.5">
+                            <Skeleton className="h-6 w-16 rounded-md" />
+                            <Skeleton className="h-6 w-16 rounded-md" />
+                        </div>
+                        <Skeleton className="h-9 w-full rounded-lg" />
+                    </CardContent>
+                </Card>
+            ))}
+        </div>
+    )
+}
 
 function StudentsContent() {
     const searchParams = useSearchParams()
@@ -83,31 +108,6 @@ function StudentsContent() {
         setSearchQuery("")
         setSkillQuery("")
     }
-
-    const StudentSkeleton = () => (
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3">
-            {[1, 2, 3, 4, 5, 6].map((i) => (
-                <Card key={i} className="rounded-2xl border-border/40 overflow-hidden bg-background shadow-sm">
-                    <CardContent className="p-5 space-y-4">
-                        <div className="flex items-start justify-between">
-                            <Skeleton className="w-12 h-12 rounded-xl" />
-                            <Skeleton className="h-5 w-16 rounded-full" />
-                        </div>
-                        <div className="space-y-2">
-                            <Skeleton className="h-6 w-3/4 rounded-md" />
-                            <Skeleton className="h-3 w-full rounded-md" />
-                            <Skeleton className="h-3 w-4/5 rounded-md" />
-                        </div>
-                        <div className="flex gap-1.5">
-                            <Skeleton className="h-6 w-16 rounded-md" />
-                            <Skeleton className="h-6 w-16 rounded-md" />
-                        </div>
-                        <Skeleton className="h-9 w-full rounded-lg" />
-                    </CardContent>
-                </Card>
-            ))}
-        </div>
-    )
 
     // Inline JSX variable (not a component) — prevents <Input> unmounting on every render
     const filterPanel = (

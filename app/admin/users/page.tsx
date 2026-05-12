@@ -5,19 +5,13 @@ import { useQuery, useMutation } from "@apollo/client/react";
 import { gql } from "@apollo/client";
 import { useRouter } from "next/navigation";
 import {
-    Users,
     Search,
     Trash2,
     Eye,
-    Mail,
     UserPlus,
-    ShieldCheck,
-    UserRound,
-    Building2,
-    ShieldAlert,
     Loader2
 } from "lucide-react"
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
+import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { toast } from "sonner"
@@ -110,8 +104,8 @@ export default function UsersManagementPage() {
                             toast.success("Хэрэглэгчийг амжилттай устгалаа")
                             refetch()
                         }
-                    } catch (err: any) {
-                        toast.error(err.message || "Хэрэглэгчийг устгахад алдаа гарлаа")
+                    } catch (err) {
+                        toast.error(err instanceof Error ? err.message : "Хэрэглэгчийг устгахад алдаа гарлаа")
                     }
                 },
             },

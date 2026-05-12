@@ -1,15 +1,13 @@
 "use client"
 
-import React, { useState, useEffect } from "react"
+import React, { useState, useEffect, useRef } from "react"
 import { useQuery, useMutation } from "@apollo/client/react"
 import { gql } from "@apollo/client"
 import {
-    Settings,
     User as UserIcon,
     Mail,
     Smartphone,
     Save,
-    Key,
     Loader2
 } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
@@ -43,9 +41,10 @@ const UPDATE_SETTINGS = gql`
 `
 
 export default function SettingsPage() {
-    const { data, loading } = useQuery<{ me: any }>(GET_ME)
+    const { data, loading } = useQuery<{ me: { id: string; email: string; phoneNumber?: string; themeColor?: string; emailNotifications?: boolean } }>(GET_ME)
     const [updateSettings] = useMutation(UPDATE_SETTINGS)
     const { setTheme } = useTheme()
+    const initRef = useRef(false)
     const [adminData, setAdminData] = useState({
         email: "",
         phoneNumber: "",
@@ -54,13 +53,17 @@ export default function SettingsPage() {
     })
 
     useEffect(() => {
-        if (data?.me) {
-            setAdminData({
-                email: data.me.email || "",
-                phoneNumber: data.me.phoneNumber || "",
-                themeColor: data.me.themeColor || "light",
-                emailNotifications: data.me.emailNotifications !== false
-            })
+        if (data?.me && !initRef.current) {
+            const timeoutId = setTimeout(() => {
+                initRef.current = true
+                setAdminData({
+                    email: data.me.email || "",
+                    phoneNumber: data.me.phoneNumber || "",
+                    themeColor: data.me.themeColor || "light",
+                    emailNotifications: data.me.emailNotifications !== false
+                })
+            }, 0)
+            return () => clearTimeout(timeoutId)
         }
     }, [data])
 
@@ -78,8 +81,8 @@ export default function SettingsPage() {
             })
             setTheme(adminData.themeColor)
             toast.success("Тохиргоо амжилттай хадгалагдлаа")
-        } catch (err: any) {
-            toast.error(err.message || "Алдаа гарлаа")
+        } catch (err) {
+            toast.error(err instanceof Error ? err.message : "Алдаа гарлаа")
         }
     }
 

@@ -4,10 +4,8 @@ import React, { useState } from "react"
 import { useQuery, useMutation } from "@apollo/client/react"
 import { gql } from "@apollo/client"
 import {
-    Briefcase,
     Search,
     MapPin,
-    Clock,
     Trash2,
     Eye,
     Plus,
@@ -80,8 +78,8 @@ export default function JobsManagementPage() {
             await deleteJob({ variables: { id } })
             toast.success("Дадлагын байр амжилттай устлаа")
             refetch()
-        } catch (err: any) {
-            toast.error(err.message || "Устгахад алдаа гарлаа")
+        } catch (err) {
+            toast.error(err instanceof Error ? err.message : "Устгахад алдаа гарлаа")
         }
     }
 

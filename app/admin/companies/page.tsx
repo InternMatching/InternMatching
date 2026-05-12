@@ -1,6 +1,7 @@
 "use client"
 
 import React, { useState } from "react"
+import Image from "next/image"
 import { useQuery, useMutation } from "@apollo/client/react"
 import { gql } from "@apollo/client"
 import {
@@ -92,8 +93,8 @@ export default function CompaniesManagementPage() {
             await verifyCompany({ variables: { companyProfileId: id } })
             toast.success("Компани амжилттай баталгаажлаа")
             refetch()
-        } catch (err: any) {
-            toast.error(err.message || "Алдаа гарлаа")
+        } catch (err) {
+            toast.error(err instanceof Error ? err.message : "Алдаа гарлаа")
         }
     }
 
@@ -170,10 +171,12 @@ export default function CompaniesManagementPage() {
                                     <div className="flex items-center gap-3">
                                         <div className="w-10 h-10 rounded-lg bg-secondary flex items-center justify-center overflow-hidden border">
                                             {company.logoUrl ? (
-                                                <img
+                                                <Image
                                                     src={company.logoUrl}
-                                                    alt=""
+                                                    alt={company.companyName}
                                                     className="w-full h-full object-cover"
+                                                    width={40}
+                                                    height={40}
                                                 />
                                             ) : (
                                                 <Building2 className="w-5 h-5 text-muted-foreground" />

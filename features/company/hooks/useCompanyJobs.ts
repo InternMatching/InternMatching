@@ -3,7 +3,7 @@
 import { useState } from "react"
 import { useMutation } from "@apollo/client/react"
 import { toast } from "sonner"
-import { CREATE_JOB, UPDATE_JOB, DELETE_JOB } from "@/app/graphql/mutations"
+import { CREATE_JOB, UPDATE_JOB, DELETE_JOB } from "@/features/jobs/graphql/jobs.mutations"
 import { Job, JobInput, CompanyProfile } from "@/lib/type"
 
 const EMPTY_JOB: JobInput = {

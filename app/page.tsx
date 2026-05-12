@@ -9,23 +9,19 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import {
   GraduationCap,
   Building2,
-  Briefcase,
   ArrowRight,
   Star,
   Users,
   Layout,
-  Zap,
   CheckCircle2,
-  MapPin,
-  Search
 } from "lucide-react"
 import Lenis from 'lenis'
-import { ME } from "./graphql/mutations"
+import { ME } from "@/features/auth/graphql/auth.queries"
 import { User } from "@/lib/type"
 
 export default function LandingPage() {
   const router = useRouter()
-  const { data: userData, loading: userLoading } = useQuery<{ me: User }>(ME)
+  const { data: userData } = useQuery<{ me: User }>(ME)
 
   useEffect(() => {
     if (userData?.me) {

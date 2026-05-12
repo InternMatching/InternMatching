@@ -16,8 +16,7 @@ import {
     ClipboardList,
     History,
     Briefcase as LogoIcon,
-    UserCircle,
-    ChevronRight
+    UserCircle
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { toast } from "sonner"
@@ -27,7 +26,6 @@ import {
     DropdownMenu,
     DropdownMenuContent,
     DropdownMenuItem,
-    DropdownMenuLabel,
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
@@ -53,28 +51,8 @@ const navItems = [
     { name: 'Тохиргоо', href: '/admin/settings', icon: Settings },
 ]
 
-export default function AdminLayout({ children }: { children: React.ReactNode }) {
-    const pathname = usePathname()
-    const router = useRouter()
-    const { user, loading: userLoading, logout } = useAuth()
-    const [open, setOpen] = useState(false)
-
-    useEffect(() => {
-        const token = localStorage.getItem("token")
-        if (!token) {
-            router.push('/login')
-            return
-        }
-
-        if (!userLoading && user && user.role !== 'admin') {
-            toast.error("Зөвхөн админ нэвтрэх боломжтой.")
-            router.push('/')
-        }
-    }, [user, userLoading, router])
-
-    const handleLogout = () => logout()
-
-    const SidebarContent = () => (
+function SidebarContent({ pathname, setOpen }: { pathname: string; setOpen: (open: boolean) => void }) {
+    return (
         <div className="flex flex-col gap-1 py-4">
             {navItems.map((item) => {
                 const isActive = pathname === item.href
@@ -95,6 +73,28 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             })}
         </div>
     )
+}
+
+export default function AdminLayout({ children }: { children: React.ReactNode }) {
+    const pathname = usePathname()
+    const router = useRouter()
+    const { user, loading: userLoading, logout } = useAuth()
+    const [open, setOpen] = useState(false)
+
+    useEffect(() => {
+        const token = localStorage.getItem("token")
+        if (!token) {
+            router.push('/login')
+            return
+        }
+
+        if (!userLoading && user && user.role !== 'admin') {
+            toast.error("Зөвхөн админ нэвтрэх боломжтой.")
+            router.push('/')
+        }
+    }, [user, userLoading, router])
+
+    const handleLogout = () => logout()
 
     return (
         <div className="min-h-screen flex flex-col bg-[#FAFAFA] dark:bg-[#09090B]">
@@ -118,7 +118,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                                     </div>
                                 </SheetHeader>
                                 <div className="p-3">
-                                    <SidebarContent />
+                                    <SidebarContent pathname={pathname} setOpen={setOpen} />
                                 </div>
                             </SheetContent>
                         </Sheet>
@@ -185,7 +185,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                     {/* Desktop Sidebar */}
                     <aside className="hidden lg:block w-60 shrink-0">
                         <div className="sticky top-24">
-                            <SidebarContent />
+                            <SidebarContent pathname={pathname} setOpen={setOpen} />
                         </div>
                     </aside>
 
