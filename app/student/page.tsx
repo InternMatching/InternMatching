@@ -1,24 +1,26 @@
 "use client"
 
-import React, { useState, useEffect, useRef } from "react"
+import React, { useState, useEffect, useRef, useCallback } from "react"
 import { useRouter } from "next/navigation"
 import { useQuery, useMutation } from "@apollo/client/react"
 import { useAuth } from "@/lib/auth-context"
 import { Clock } from "lucide-react"
-import {
-    GET_STUDENT_PROFILE, UPDATE_STUDENT_PROFILE,
-    GET_ALL_JOBS, CREATE_APPLICATION, GET_APPLICATIONS,
-    UPLOAD_STUDENT_PROFILE_PICTURE, GET_INVITATIONS, RESPOND_TO_INVITATION,
-} from "../graphql/mutations"
+import { GET_STUDENT_PROFILE } from "@/features/student/graphql/student.queries"
+import { UPDATE_STUDENT_PROFILE, UPLOAD_STUDENT_PROFILE_PICTURE } from "@/features/student/graphql/student.mutations"
+import { GET_ALL_JOBS } from "@/features/jobs/graphql/jobs.queries"
+import { GET_APPLICATIONS } from "@/features/applications/graphql/applications.queries"
+import { CREATE_APPLICATION } from "@/features/applications/graphql/applications.mutations"
+import { GET_INVITATIONS } from "@/features/invitations/graphql/invitations.queries"
+import { RESPOND_TO_INVITATION } from "@/features/invitations/graphql/invitations.mutations"
 import { StudentProfile, Job, Application, StudentProfileInput, JobStatus, Invitation } from "@/lib/type"
 import { toast } from "sonner"
 import { Footer } from "@/components/layout/Footer"
-import { StudentHeader } from "@/components/student/StudentHeader"
-import { StudentSidebar, StudentTabId } from "@/components/student/StudentSidebar"
-import { StudentProfileTab } from "@/components/student/tabs/ProfileTab"
-import { StudentJobsTab } from "@/components/student/tabs/JobsTab"
-import { StudentApplicationsTab } from "@/components/student/tabs/ApplicationsTab"
-import { StudentInvitationsTab } from "@/components/student/tabs/InvitationsTab"
+import { StudentHeader } from "@/features/student/components/StudentHeader"
+import { StudentSidebar, StudentTabId } from "@/features/student/components/StudentSidebar"
+import { StudentProfileTab } from "@/features/student/components/tabs/ProfileTab"
+import { StudentJobsTab } from "@/features/student/components/tabs/JobsTab"
+import { StudentApplicationsTab } from "@/features/student/components/tabs/ApplicationsTab"
+import { StudentInvitationsTab } from "@/features/student/components/tabs/InvitationsTab"
 
 export default function StudentPage() {
     const router = useRouter()
@@ -51,7 +53,7 @@ export default function StudentPage() {
     const latestFormData = useRef(formData)
     latestFormData.current = formData
 
-    const doAutoSave = async (data: StudentProfileInput) => {
+    const doAutoSave = useCallback(async (data: StudentProfileInput) => {
         if (!profileInitialized.current) return
         if (!data.firstName?.trim() || !data.lastName?.trim()) return
         setAutoSaveStatus("saving")
@@ -72,7 +74,7 @@ export default function StudentPage() {
             console.error("Auto-save error:", err)
             setAutoSaveStatus("idle")
         }
-    }
+    }, [updateProfile, refetchProfile])
 
     const handleTabChange = (tab: StudentTabId) => {
         if (activeTab === "profile" && profileInitialized.current) {
@@ -87,6 +89,7 @@ export default function StudentPage() {
     }, [userError, router])
 
     useEffect(() => {
+        if (profileInitialized.current) return
         if (profileData?.getStudentProfile) {
             const profile = profileData.getStudentProfile
             setFormData({
@@ -110,7 +113,7 @@ export default function StudentPage() {
         if (autoSaveTimer.current) clearTimeout(autoSaveTimer.current)
         autoSaveTimer.current = setTimeout(() => { doAutoSave(formData) }, 3000)
         return () => { if (autoSaveTimer.current) clearTimeout(autoSaveTimer.current) }
-    }, [formData])
+    }, [formData, doAutoSave])
 
     const handleManualSave = () => {
         if (autoSaveTimer.current) clearTimeout(autoSaveTimer.current)

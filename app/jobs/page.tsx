@@ -2,16 +2,16 @@
 
 import React, { useState, useMemo, useEffect, useRef, Suspense } from "react"
 import { useQuery, useLazyQuery } from "@apollo/client/react"
-import { GET_JOBS_LIST, GET_JOB_DETAIL } from "../graphql/mutations"
+import { GET_JOBS_LIST, GET_JOB_DETAIL } from "@/features/jobs/graphql/jobs.queries"
 import { Job, JobStatus } from "@/lib/type"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Skeleton } from "@/components/ui/skeleton"
 import {
-    Briefcase,
     Search,
     Filter,
     X,
+    Briefcase,
     SearchX,
 } from "lucide-react"
 import { useSearchParams, useRouter, usePathname } from "next/navigation"
@@ -23,10 +23,10 @@ import {
     SheetTitle,
     SheetTrigger,
 } from "@/components/ui/sheet"
-import { JobListCard } from "@/components/jobs/JobListCard"
-import { JobDetailPanel } from "@/components/jobs/JobDetailPanel"
-import { JobShareDialog } from "@/components/jobs/JobShareDialog"
-import { JobsPageSkeleton } from "@/components/jobs/JobsPageSkeleton"
+import { JobListCard } from "@/features/jobs/components/JobListCard"
+import { JobDetailPanel } from "@/features/jobs/components/JobDetailPanel"
+import { JobShareDialog } from "@/features/jobs/components/JobShareDialog"
+import { JobsPageSkeleton } from "@/features/jobs/components/JobsPageSkeleton"
 
 function JobsContent() {
     const searchParams = useSearchParams()
@@ -40,6 +40,7 @@ function JobsContent() {
     const [selectedJob, setSelectedJob] = useState<Job | null>(null)
     const [shareJob, setShareJob] = useState<Job | null>(null)
 
+    const autoSelectedRef = useRef(false)
     const debounceRef = useRef<number | null>(null)
     useEffect(() => {
         if (debounceRef.current) clearTimeout(debounceRef.current)
@@ -87,9 +88,13 @@ function JobsContent() {
     }, [selectedJob, detailData])
 
     useEffect(() => {
-        if (filteredJobs.length > 0 && !selectedJob) {
-            setSelectedJob(filteredJobs[0])
-            fetchJobDetail({ variables: { id: filteredJobs[0].id } })
+        if (filteredJobs.length > 0 && !selectedJob && !autoSelectedRef.current) {
+            const timeoutId = setTimeout(() => {
+                autoSelectedRef.current = true
+                setSelectedJob(filteredJobs[0])
+                fetchJobDetail({ variables: { id: filteredJobs[0].id } })
+            }, 0)
+            return () => clearTimeout(timeoutId)
         }
     }, [filteredJobs, selectedJob, fetchJobDetail])
 

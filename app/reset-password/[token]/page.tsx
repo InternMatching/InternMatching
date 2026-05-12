@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Briefcase, Loader2, CheckCircle2 } from "lucide-react"
 import { useMutation } from "@apollo/client/react"
-import { RESET_PASSWORD } from "../../graphql/mutations"
+import { RESET_PASSWORD } from "@/features/auth/graphql/auth.mutations"
 import { ResetPasswordData, ResetPasswordInput } from "@/lib/type"
 
 export default function ResetPasswordPage() {

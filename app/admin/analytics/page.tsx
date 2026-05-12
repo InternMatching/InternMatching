@@ -2,7 +2,7 @@
 
 import React, { useState } from "react"
 import { useQuery } from "@apollo/client/react"
-import { ADMIN_STATS } from "../../graphql/mutations"
+import { ADMIN_STATS } from "@/features/admin/graphql/admin.queries"
 import { AdminStats, StatsPeriod } from "@/lib/type"
 import {
     Users,

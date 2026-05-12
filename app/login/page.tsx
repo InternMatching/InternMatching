@@ -19,7 +19,7 @@ import {
     Building2
 } from "lucide-react"
 import { toast } from "sonner"
-import { LOGIN, SOCIAL_LOGIN } from "../graphql/mutations"
+import { LOGIN, SOCIAL_LOGIN } from "@/features/auth/graphql/auth.mutations"
 import { useMutation, useApolloClient } from "@apollo/client/react"
 import { AuthPayload, LoginInput, SocialLoginInput } from "@/lib/type"
 import { cn } from "@/lib/utils"

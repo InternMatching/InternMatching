@@ -1,27 +1,25 @@
 "use client"
 
 import React, { useMemo } from "react"
+import Image from "next/image"
 import { useParams, useRouter } from "next/navigation"
 import { useQuery, useMutation } from "@apollo/client/react"
 import { gql } from "@apollo/client"
 import {
     ArrowLeft,
     Briefcase,
-    Building2,
     MapPin,
     Clock,
     Calendar,
     Users2,
-    Globe,
     Loader2,
     Trash2,
     DollarSign,
-    FileText
+    Globe
 } from "lucide-react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { toast } from "sonner"
-import Link from "next/link"
 
 const GET_ALL_JOBS = gql`
   query GetAllJobs {
@@ -106,8 +104,8 @@ export default function AdminJobDetailPage() {
             await deleteJob({ variables: { id: jobId } })
             toast.success("Дадлагын байр амжилттай устлаа")
             router.push("/admin/jobs")
-        } catch (err: any) {
-            toast.error(err.message || "Устгахад алдаа гарлаа")
+        } catch (err) {
+            toast.error(err instanceof Error ? err.message : "Устгахад алдаа гарлаа")
         }
     }
 
@@ -159,7 +157,7 @@ export default function AdminJobDetailPage() {
                     <div className="flex items-start gap-4">
                         <div className="w-14 h-14 rounded-2xl bg-secondary flex items-center justify-center border overflow-hidden shrink-0">
                             {job.company.logoUrl ? (
-                                <img src={job.company.logoUrl} alt="" className="w-full h-full object-cover" />
+                                <Image src={job.company.logoUrl} alt={job.company.companyName} className="w-full h-full object-cover" width={56} height={56} />
                             ) : (
                                 <Briefcase className="w-6 h-6 text-primary/40" />
                             )}

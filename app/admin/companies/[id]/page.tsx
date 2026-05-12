@@ -1,6 +1,7 @@
 "use client"
 
 import React, { useMemo } from "react"
+import Image from "next/image"
 import { useParams, useRouter } from "next/navigation"
 import { useQuery, useMutation } from "@apollo/client/react"
 import { gql } from "@apollo/client"
@@ -83,8 +84,8 @@ export default function AdminCompanyDetailPage() {
             await verifyCompany({ variables: { companyProfileId: companyId } })
             toast.success("Компани амжилттай баталгаажлаа")
             refetch()
-        } catch (err: any) {
-            toast.error(err.message || "Алдаа гарлаа")
+        } catch (err) {
+            toast.error(err instanceof Error ? err.message : "Алдаа гарлаа")
         }
     }
 
@@ -136,7 +137,7 @@ export default function AdminCompanyDetailPage() {
                     <div className="flex items-start gap-4">
                         <div className="w-16 h-16 rounded-2xl bg-secondary flex items-center justify-center border-2 border-primary/10 overflow-hidden shadow-inner shrink-0">
                             {company.logoUrl ? (
-                                <img src={company.logoUrl} alt="" className="w-full h-full object-cover" />
+                                <Image src={company.logoUrl} alt={company.companyName} className="w-full h-full object-cover" width={64} height={64} />
                             ) : (
                                 <Building2 className="w-8 h-8 text-primary/40" />
                             )}

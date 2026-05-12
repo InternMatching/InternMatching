@@ -4,21 +4,15 @@ import React, { useState } from "react"
 import { useQuery } from "@apollo/client/react"
 import { gql } from "@apollo/client"
 import {
-    ClipboardList,
     Search,
-    Building2,
     Eye,
-    CheckCircle2,
-    XCircle,
-    Timer,
     Loader2,
     UserCircle
 } from "lucide-react"
-import { Card, CardContent } from "@/components/ui/card"
+import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import Link from "next/link"
-import { useRouter } from "next/navigation"
 
 const GET_ALL_APPLICATIONS = gql`
   query GetAllApplications {
@@ -64,7 +58,6 @@ interface Application {
 
 export default function ApplicationsManagementPage() {
     const { data, loading, error } = useQuery<{ getAllApplications: Application[] }>(GET_ALL_APPLICATIONS)
-    const router = useRouter()
     const [searchTerm, setSearchTerm] = useState("")
     const [statusFilter, setStatusFilter] = useState("all")
 

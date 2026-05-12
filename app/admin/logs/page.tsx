@@ -50,8 +50,16 @@ const GET_ALL_COMPANIES = gql`
   }
 `
 
+interface Activity {
+    id: string
+    user: string
+    action: string
+    timestamp: string
+    type: string
+}
+
 export default function LogsPage() {
-    const { data, loading } = useQuery<{ adminStats: { recentActivities: any[] } }>(GET_LOGS, {
+    const { data, loading } = useQuery<{ adminStats: { recentActivities: Activity[] } }>(GET_LOGS, {
         pollInterval: 10000
     })
     const { data: usersData } = useQuery<{ getAllUsers: { id: string; email: string; role: string }[] }>(GET_ALL_USERS)
@@ -93,17 +101,17 @@ export default function LogsPage() {
     };
 
     const [searchQuery, setSearchQuery] = useState("")
-    const activities = data?.adminStats?.recentActivities || []
 
     const filteredActivities = useMemo(() => {
+        const activities = data?.adminStats?.recentActivities || []
         if (!searchQuery.trim()) return activities
         const q = searchQuery.toLowerCase()
-        return activities.filter((log: any) =>
+        return activities.filter((log: Activity) =>
             log.user?.toLowerCase().includes(q) ||
             log.action?.toLowerCase().includes(q) ||
             log.type?.toLowerCase().includes(q)
         )
-    }, [activities, searchQuery])
+    }, [data, searchQuery])
 
     if (loading) return <div className="flex justify-center p-12"><Loader2 className="animate-spin" /></div>
 
@@ -138,7 +146,7 @@ export default function LogsPage() {
                                     </td>
                                 </tr>
                             ) : (
-                                filteredActivities.map((log: any) => {
+                                filteredActivities.map((log: Activity) => {
                                     const Icon = getActivityIcon(log.type)
                                     return (
                                         <tr key={log.id} className={`hover:bg-primary/5 transition-colors ${emailToUrl[log.user] ? 'cursor-pointer' : ''}`} onClick={() => { const url = emailToUrl[log.user]; if (url) router.push(url) }}>

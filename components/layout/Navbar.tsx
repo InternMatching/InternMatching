@@ -12,7 +12,6 @@ import {
     Zap,
     Users,
     UserCircle,
-    Settings,
     LayoutDashboard,
     LogIn,
     GraduationCap,
@@ -36,6 +35,115 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { cn } from "@/lib/utils"
 import { useAuth } from "@/lib/auth-context"
+import { User } from "@/lib/type"
+
+function AuthButtons({ className, mobile = false, onNavigate }: { className?: string; mobile?: boolean; onNavigate: () => void }) {
+    return (
+        <div className={cn("flex items-center gap-3", className)}>
+            <Button variant="ghost" size={mobile ? "lg" : "sm"} className="rounded-xl font-medium" asChild onClick={onNavigate}>
+                <Link href="/login">
+                    <LogIn className="w-4 h-4 mr-2 md:hidden " />
+                    Нэвтрэх
+                </Link>
+            </Button>
+            <Button size={mobile ? "lg" : "sm"} className="bg-primary hover:bg-primary/90 text-primary-foreground rounded-xl font-semibold shadow-md shadow-primary/10 transition-all hover:-translate-y-0.5" asChild onClick={onNavigate}>
+                <Link href="/signup">
+                    <UserPlus className="w-4 h-4 mr-2 md:hidden" />
+                    Бүртгүүлэх
+                </Link>
+            </Button>
+        </div>
+    )
+}
+
+function RoleButtons({ className, onNavigate }: { className?: string; onNavigate: () => void }) {
+    return (
+        <div className={cn("flex flex-col gap-3 w-full", className)}>
+            <Button size="lg" className="w-full h-12 rounded-xl font-bold text-sm bg-foreground text-background hover:bg-foreground/90" asChild onClick={onNavigate}>
+                <Link href="/signup?role=student">
+                    <GraduationCap className="w-5 h-5 mr-2" />
+                    Оюутан
+                </Link>
+            </Button>
+            <Button variant="outline" size="lg" className="w-full h-12 rounded-xl font-bold text-sm border-border" asChild onClick={onNavigate}>
+                <Link href="/signup?role=company">
+                    <Building2 className="w-5 h-5 mr-2" />
+                    Компани
+                </Link>
+            </Button>
+        </div>
+    )
+}
+
+function UserProfileDropdown({ user, mobile = false, onLogout, onNavigate }: { user: User; mobile?: boolean; onLogout: () => void; onNavigate: () => void }) {
+    if (!user) return null
+
+    const dashboardHref = user.role.toLowerCase() === 'admin' ? '/admin' : (user.role.toLowerCase() === 'company' ? '/company' : '/student')
+
+    if (mobile) {
+        return (
+            <div className="space-y-4 px-2">
+                <div className="flex items-center gap-3 p-3 bg-secondary/20 rounded-2xl">
+                    <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                        <UserCircle className="w-6 h-6 text-primary" />
+                    </div>
+                    <div className="flex flex-col overflow-hidden">
+                        <span className="text-sm font-bold truncate">{user.email}</span>
+                        <span className="text-[10px] uppercase tracking-wider text-muted-foreground">{user.role}</span>
+                    </div>
+                </div>
+                <div className="grid gap-1">
+                    <Button variant="ghost" className="w-full justify-start h-12 rounded-xl" asChild onClick={onNavigate}>
+                        <Link href={dashboardHref}>
+                            <LayoutDashboard className="w-5 h-5 mr-3 text-muted-foreground" />
+                            Хянах самбар
+                        </Link>
+                    </Button>
+                    <Button variant="ghost" className="w-full justify-start h-12 rounded-xl text-destructive hover:bg-destructive/10 hover:text-destructive" onClick={onLogout}>
+                        <LogOut className="w-5 h-5 mr-3" />
+                        Гарах
+                    </Button>
+                </div>
+            </div>
+        )
+    }
+
+    return (
+        <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon" className="h-9 w-9 rounded-full ring-offset-background transition-all duration-300 ease-in-out">
+                    <div className="w-7 h-7 rounded-full bg-primary/10 flex items-center justify-center">
+                        <UserCircle className="h-5 w-5 text-primary" />
+                    </div>
+                </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" sideOffset={8} className="w-56 p-2 rounded-2xl shadow-lg border-border/40 animate-in fade-in slide-in-from-top-2 duration-200">
+                <DropdownMenuLabel className="font-normal p-3">
+                    <div className="flex flex-col space-y-1">
+                        <p className="text-sm font-bold leading-none truncate">{user.email}</p>
+                        <p className="text-[10px] uppercase tracking-widest leading-none text-muted-foreground">
+                            {user.role}
+                        </p>
+                    </div>
+                </DropdownMenuLabel>
+                <DropdownMenuSeparator className="bg-border/40" />
+                <DropdownMenuItem asChild className="rounded-xl p-2.5 transition-all duration-300 ease-in-out cursor-pointer">
+                    <Link href={dashboardHref} className="flex items-center">
+                        <LayoutDashboard className="mr-3 h-4 w-4 text-muted-foreground" />
+                        <span>Хянах самбар</span>
+                    </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                    onClick={onLogout}
+                    className="rounded-xl p-2.5 transition-all duration-300 ease-in-out cursor-pointer text-destructive focus:bg-destructive/10 focus:text-destructive"
+                >
+                    <LogOut className="mr-3 h-4 w-4" />
+                    <span>Гарах</span>
+                </DropdownMenuItem>
+            </DropdownMenuContent>
+        </DropdownMenu>
+    )
+}
 
 export function Navbar() {
     const [isOpen, setIsOpen] = useState(false)
@@ -49,110 +157,6 @@ export function Navbar() {
     const handleLogout = async () => {
         await logout()
         setIsOpen(false)
-    }
-
-    const AuthButtons = ({ className, mobile = false }: { className?: string, mobile?: boolean }) => (
-        <div className={cn("flex items-center gap-3", className)}>
-            <Button variant="ghost" size={mobile ? "lg" : "sm"} className="rounded-xl font-medium" asChild onClick={() => setIsOpen(false)}>
-                <Link href="/login">
-                    <LogIn className="w-4 h-4 mr-2 md:hidden " />
-                    Нэвтрэх
-                </Link>
-            </Button>
-            <Button size={mobile ? "lg" : "sm"} className="bg-primary hover:bg-primary/90 text-primary-foreground rounded-xl font-semibold shadow-md shadow-primary/10 transition-all hover:-translate-y-0.5" asChild onClick={() => setIsOpen(false)}>
-                <Link href="/signup">
-                    <UserPlus className="w-4 h-4 mr-2 md:hidden" />
-                    Бүртгүүлэх
-                </Link>
-            </Button>
-        </div>
-    )
-
-    const RoleButtons = ({ className }: { className?: string }) => (
-        <div className={cn("flex flex-col gap-3 w-full", className)}>
-            <Button size="lg" className="w-full h-12 rounded-xl font-bold text-sm bg-foreground text-background hover:bg-foreground/90" asChild onClick={() => setIsOpen(false)}>
-                <Link href="/signup?role=student">
-                    <GraduationCap className="w-5 h-5 mr-2" />
-                    Оюутан
-                </Link>
-            </Button>
-            <Button variant="outline" size="lg" className="w-full h-12 rounded-xl font-bold text-sm border-border" asChild onClick={() => setIsOpen(false)}>
-                <Link href="/signup?role=company">
-                    <Building2 className="w-5 h-5 mr-2" />
-                    Компани
-                </Link>
-            </Button>
-        </div>
-    )
-
-    const UserProfileDropdown = ({ mobile = false }: { mobile?: boolean }) => {
-        if (!user) return null
-
-        const dashboardHref = user.role.toLowerCase() === 'admin' ? '/admin' : (user.role.toLowerCase() === 'company' ? '/company' : '/student')
-
-        if (mobile) {
-            return (
-                <div className="space-y-4 px-2">
-                    <div className="flex items-center gap-3 p-3 bg-secondary/20 rounded-2xl">
-                        <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-                            <UserCircle className="w-6 h-6 text-primary" />
-                        </div>
-                        <div className="flex flex-col overflow-hidden">
-                            <span className="text-sm font-bold truncate">{user.email}</span>
-                            <span className="text-[10px] uppercase tracking-wider text-muted-foreground">{user.role}</span>
-                        </div>
-                    </div>
-                    <div className="grid gap-1">
-                        <Button variant="ghost" className="w-full justify-start h-12 rounded-xl" asChild onClick={() => setIsOpen(false)}>
-                            <Link href={dashboardHref}>
-                                <LayoutDashboard className="w-5 h-5 mr-3 text-muted-foreground" />
-                                Хянах самбар
-                            </Link>
-                        </Button>
-                        <Button variant="ghost" className="w-full justify-start h-12 rounded-xl text-destructive hover:bg-destructive/10 hover:text-destructive" onClick={handleLogout}>
-                            <LogOut className="w-5 h-5 mr-3" />
-                            Гарах
-                        </Button>
-                    </div>
-                </div>
-            )
-        }
-
-        return (
-            <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="icon" className="h-9 w-9 rounded-full ring-offset-background transition-all duration-300 ease-in-out">
-                        <div className="w-7 h-7 rounded-full bg-primary/10 flex items-center justify-center">
-                            <UserCircle className="h-5 w-5 text-primary" />
-                        </div>
-                    </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" sideOffset={8} className="w-56 p-2 rounded-2xl shadow-lg border-border/40 animate-in fade-in slide-in-from-top-2 duration-200">
-                    <DropdownMenuLabel className="font-normal p-3">
-                        <div className="flex flex-col space-y-1">
-                            <p className="text-sm font-bold leading-none truncate">{user.email}</p>
-                            <p className="text-[10px] uppercase tracking-widest leading-none text-muted-foreground">
-                                {user.role}
-                            </p>
-                        </div>
-                    </DropdownMenuLabel>
-                    <DropdownMenuSeparator className="bg-border/40" />
-                    <DropdownMenuItem asChild className="rounded-xl p-2.5 transition-all duration-300 ease-in-out cursor-pointer">
-                        <Link href={dashboardHref} className="flex items-center">
-                            <LayoutDashboard className="mr-3 h-4 w-4 text-muted-foreground" />
-                            <span>Хянах самбар</span>
-                        </Link>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem
-                        onClick={handleLogout}
-                        className="rounded-xl p-2.5 transition-all duration-300 ease-in-out cursor-pointer text-destructive focus:bg-destructive/10 focus:text-destructive"
-                    >
-                        <LogOut className="mr-3 h-4 w-4" />
-                        <span>Гарах</span>
-                    </DropdownMenuItem>
-                </DropdownMenuContent>
-            </DropdownMenu>
-        )
     }
 
     return (
@@ -236,12 +240,12 @@ export function Navbar() {
 
                 <div className="flex items-center gap-2">
                     {/* Auth Status */}
-                    {isLoggedIn ? (
+                    {isLoggedIn && user ? (
                         <div className="hidden md:flex items-center gap-2">
-                            <UserProfileDropdown />
+                            <UserProfileDropdown user={user} onLogout={handleLogout} onNavigate={() => {}} />
                         </div>
                     ) : (
-                        <AuthButtons className="hidden md:flex" />
+                        <AuthButtons className="hidden md:flex" onNavigate={() => setIsOpen(false)} />
                     )}
 
                     <div className="h-6 w-px bg-border/40 mx-2 hidden md:block" />
@@ -290,10 +294,10 @@ export function Navbar() {
                                 </div>
 
                                 <div className="mt-4 border-t border-border/40 pt-6">
-                                    {isLoggedIn ? (
-                                        <UserProfileDropdown mobile />
+                                    {isLoggedIn && user ? (
+                                        <UserProfileDropdown user={user} mobile onLogout={handleLogout} onNavigate={() => setIsOpen(false)} />
                                     ) : (
-                                        <RoleButtons />
+                                        <RoleButtons onNavigate={() => setIsOpen(false)} />
                                     )}
                                 </div>
                             </div>

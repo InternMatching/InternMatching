@@ -1,28 +1,31 @@
 "use client"
 
-import React, { useState, useEffect, useRef } from "react"
+import React, { useState, useEffect, useRef, useCallback } from "react"
 import { useRouter } from "next/navigation"
 import { useQuery, useMutation } from "@apollo/client/react"
 import { useAuth } from "@/lib/auth-context"
 import { CheckCircle2 } from "lucide-react"
-import {
-    GET_COMPANY_PROFILE, UPDATE_COMPANY_PROFILE, GET_ALL_JOBS,
-    GET_APPLICATIONS, UPDATE_APPLICATION_STATUS, UPLOAD_COMPANY_LOGO,
-    GET_ALL_STUDENT_PROFILES, SEND_INVITATION, GET_INVITATIONS,
-} from "../graphql/mutations"
+import { GET_COMPANY_PROFILE } from "@/features/company/graphql/company.queries"
+import { UPDATE_COMPANY_PROFILE, UPLOAD_COMPANY_LOGO } from "@/features/company/graphql/company.mutations"
+import { GET_ALL_JOBS } from "@/features/jobs/graphql/jobs.queries"
+import { GET_APPLICATIONS } from "@/features/applications/graphql/applications.queries"
+import { UPDATE_APPLICATION_STATUS } from "@/features/applications/graphql/applications.mutations"
+import { GET_ALL_STUDENT_PROFILES } from "@/features/student/graphql/student.queries"
+import { GET_INVITATIONS } from "@/features/invitations/graphql/invitations.queries"
+import { SEND_INVITATION } from "@/features/invitations/graphql/invitations.mutations"
 import {
     CompanyProfile, Job, Application, CompanyProfileInput,
     ApplicationStatus, StudentProfile, Invitation,
 } from "@/lib/type"
 import { toast } from "sonner"
 import { Footer } from "@/components/layout/Footer"
-import { CompanyHeader } from "@/components/company/CompanyHeader"
-import { CompanySidebar, CompanyTabId } from "@/components/company/CompanySidebar"
-import { CompanyProfileTab } from "@/components/company/tabs/ProfileTab"
-import { CompanyJobsTab } from "@/components/company/tabs/JobsTab"
-import { CompanyApplicantsTab } from "@/components/company/tabs/ApplicantsTab"
-import { CompanyStudentsTab } from "@/components/company/tabs/StudentsTab"
-import { useCompanyJobs } from "@/components/company/useCompanyJobs"
+import { CompanyHeader } from "@/features/company/components/CompanyHeader"
+import { CompanySidebar, CompanyTabId } from "@/features/company/components/CompanySidebar"
+import { CompanyProfileTab } from "@/features/company/components/tabs/ProfileTab"
+import { CompanyJobsTab } from "@/features/company/components/tabs/JobsTab"
+import { CompanyApplicantsTab } from "@/features/company/components/tabs/ApplicantsTab"
+import { CompanyStudentsTab } from "@/features/company/components/tabs/StudentsTab"
+import { useCompanyJobs } from "@/features/company/hooks/useCompanyJobs"
 
 export default function CompanyPage() {
     const router = useRouter()
@@ -57,7 +60,7 @@ export default function CompanyPage() {
     const profile = profileData?.getCompanyProfile
     const jobs = useCompanyJobs(profile, refetchJobs)
 
-    const doAutoSave = async (data: CompanyProfileInput) => {
+    const doAutoSave = useCallback(async (data: CompanyProfileInput) => {
         if (!profileInitialized.current) return
         if (!data.companyName?.trim()) return
         setAutoSaveStatus("saving")
@@ -81,7 +84,7 @@ export default function CompanyPage() {
             console.error("Auto-save error:", err)
             setAutoSaveStatus("idle")
         }
-    }
+    }, [updateProfile, refetchProfile])
 
     const handleTabChange = (tab: CompanyTabId) => {
         if (activeTab === "profile" && profileInitialized.current) {
@@ -94,6 +97,7 @@ export default function CompanyPage() {
     useEffect(() => { if (userError) router.push("/login") }, [userError, router])
 
     useEffect(() => {
+        if (profileInitialized.current) return
         if (profileData?.getCompanyProfile) {
             const p = profileData.getCompanyProfile
             setProfileForm({
@@ -115,7 +119,7 @@ export default function CompanyPage() {
         if (autoSaveTimer.current) clearTimeout(autoSaveTimer.current)
         autoSaveTimer.current = setTimeout(() => { doAutoSave(profileForm) }, 3000)
         return () => { if (autoSaveTimer.current) clearTimeout(autoSaveTimer.current) }
-    }, [profileForm])
+    }, [profileForm, doAutoSave])
 
     const handleManualSave = () => {
         if (autoSaveTimer.current) clearTimeout(autoSaveTimer.current)

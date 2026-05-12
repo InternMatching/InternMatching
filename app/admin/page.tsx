@@ -1,8 +1,8 @@
 "use client"
 
-import React, { useEffect, useState } from "react"
+import React, { useState } from "react"
 import { useQuery } from "@apollo/client/react"
-import { ADMIN_STATS } from "../graphql/mutations"
+import { ADMIN_STATS } from "@/features/admin/graphql/admin.queries"
 import {
     Users,
     UserRound,
@@ -16,7 +16,7 @@ import {
     ChevronDown,
     ArrowUpRight
 } from "lucide-react"
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import {
     AreaChart,
     Area,

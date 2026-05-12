@@ -45,10 +45,13 @@ export function StudentJobsTab({ jobs, applications, loading, applyingJobId, onA
                 </div>
             ) : (
                 <div className="grid gap-4">
-                    {jobs?.map((job) => {
-                        const isApplied = applications?.some(app => app.jobId === job.id) ||
-                            applications?.some(app => app.job?.id === job.id)
-                        const isExpired = job.deadline ? new Date(job.deadline).getTime() < Date.now() : false
+                    {(() => {
+                        // eslint-disable-next-line react-hooks/purity
+                        const now = Date.now()
+                        return jobs?.map((job) => {
+                            const isApplied = applications?.some(app => app.jobId === job.id) ||
+                                applications?.some(app => app.job?.id === job.id)
+                            const isExpired = job.deadline ? new Date(job.deadline).getTime() < now : false
 
                         return (
                             <Card key={job.id} className={cn("group transition-all border-border/60 shadow-sm rounded-2xl overflow-hidden bg-background", isExpired ? "opacity-50 pointer-events-none" : "hover:border-primary/40")}>
@@ -79,7 +82,7 @@ export function StudentJobsTab({ jobs, applications, loading, applyingJobId, onA
                                             {job.deadline && (
                                                 <span className={cn(
                                                     "flex items-center gap-1.5 px-2 py-0.5 rounded-md text-[10px] uppercase font-black",
-                                                    new Date(job.deadline).getTime() - new Date().getTime() < 86400000 ? "bg-red-50 text-red-600" : "bg-amber-50 text-amber-600"
+                                                    new Date(job.deadline).getTime() - now < 86400000 ? "bg-red-50 text-red-600" : "bg-amber-50 text-amber-600"
                                                 )}>
                                                     <AlertCircle className="w-3 h-3" />
                                                     {getTimeRemaining(job.deadline)}
@@ -108,7 +111,8 @@ export function StudentJobsTab({ jobs, applications, loading, applyingJobId, onA
                                 </CardContent>
                             </Card>
                         )
-                    })}
+                        }) || []
+                    })()}
                     {jobs?.length === 0 && (
                         <div className="py-20 text-center space-y-3 bg-secondary/10 rounded-2xl border-2 border-dashed border-border/40">
                             <Search className="w-10 h-10 text-muted-foreground/30 mx-auto" />

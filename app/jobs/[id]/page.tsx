@@ -2,7 +2,10 @@
 
 import React, { useMemo } from "react"
 import { useQuery, useMutation } from "@apollo/client/react"
-import { GET_ALL_JOBS, ME, GET_APPLICATIONS, CREATE_APPLICATION } from "../../graphql/mutations"
+import { GET_ALL_JOBS } from "@/features/jobs/graphql/jobs.queries"
+import { ME } from "@/features/auth/graphql/auth.queries"
+import { GET_APPLICATIONS } from "@/features/applications/graphql/applications.queries"
+import { CREATE_APPLICATION } from "@/features/applications/graphql/applications.mutations"
 import { Job, JobStatus, User, Application } from "@/lib/type"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -80,8 +83,8 @@ export default function JobDetailPage() {
             await createApplication({ variables: { jobId } })
             toast.success("Хүсэлт амжилттай илгээгдлээ!")
             refetchApps()
-        } catch (err: any) {
-            toast.error(err.message || "Хүсэлт илгээхэд алдаа гарлаа")
+        } catch (err) {
+            toast.error(err instanceof Error ? err.message : "Хүсэлт илгээхэд алдаа гарлаа")
         } finally {
             setApplyingJob(false)
         }
