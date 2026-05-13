@@ -152,12 +152,14 @@ export default function LoginPage() {
                 </div>
 
                 <div className="max-w-md space-y-8 relative z-10">
-                    <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary text-sm font-medium border border-primary/20">
-                        <Briefcase className="w-4 h-4" />
-                        <span>InternMatch Platform</span>
+                    <div className="animate-in fade-in slide-in-from-left-4 duration-500" style={{ animationDelay: "100ms", animationFillMode: "both" }}>
+                        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary text-sm font-medium border border-primary/20">
+                            <Briefcase className="w-4 h-4" />
+                            <span>InternMatch Platform</span>
+                        </div>
                     </div>
 
-                    <div className="space-y-4">
+                    <div className="space-y-4 animate-in fade-in slide-in-from-left-4 duration-500" style={{ animationDelay: "200ms", animationFillMode: "both" }}>
                         <h2 className="text-4xl font-bold tracking-tight text-foreground">
                             Ирээдүйн карьераа <span className="text-primary italic">яг одоо</span> төлөвлө.
                         </h2>
@@ -173,14 +175,18 @@ export default function LoginPage() {
                             "Олон улсын жишигт нийцсэн систем",
                             "Хурдан бөгөөд хялбар бүртгэл"
                         ].map((item, i) => (
-                            <li key={i} className="flex items-center gap-3 text-foreground/80">
+                            <li
+                                key={i}
+                                className="flex items-center gap-3 text-foreground/80 animate-in fade-in slide-in-from-left-3 duration-400"
+                                style={{ animationDelay: `${300 + i * 70}ms`, animationFillMode: "both" }}
+                            >
                                 <CheckCircle2 className="w-5 h-5 text-primary" />
                                 <span>{item}</span>
                             </li>
                         ))}
                     </ul>
 
-                    <div className="pt-8">
+                    <div className="pt-8 animate-in fade-in slide-in-from-left-3 duration-400" style={{ animationDelay: "620ms", animationFillMode: "both" }}>
                         <Button variant="outline" className="rounded-full group" asChild>
                             <Link href="/">
                                 Дэлгэрэнгүй үзэх
@@ -194,7 +200,7 @@ export default function LoginPage() {
             {/* Right Side: Login Form */}
             <main className="flex items-center justify-center p-6 sm:p-12 lg:p-24 bg-background">
                 <Card className="w-full max-w-md border-none shadow-none bg-transparent">
-                    <CardHeader className="space-y-2 p-0 mb-8">
+                    <CardHeader className="space-y-2 p-0 mb-8 animate-in fade-in slide-in-from-bottom-3 duration-400" style={{ animationDelay: "50ms", animationFillMode: "both" }}>
                         <CardTitle className="text-3xl font-bold tracking-tight">Тавтай морилно уу!</CardTitle>
                         <CardDescription className="text-base">
                             Өөрийн карьераа эхлүүлэх эсвэл шилдэг залуу боловсон хүчинтэй холбогдоорой.
@@ -209,7 +215,7 @@ export default function LoginPage() {
                         )}
 
                         {/* Role Selection for Social Signup */}
-                        <div className="mb-8 space-y-3">
+                        <div className="mb-8 space-y-3 animate-in fade-in slide-in-from-bottom-3 duration-400" style={{ animationDelay: "150ms", animationFillMode: "both" }}>
                             <Label className="text-sm font-semibold opacity-70">Таны оролцоо (Шинэ хэрэглэгч бол)</Label>
                             <div className="grid grid-cols-2 gap-4">
                                 <button
@@ -265,7 +271,7 @@ export default function LoginPage() {
                             </div>
                         </div>
 
-                        <form onSubmit={handleSubmit} className="space-y-5">
+                        <form onSubmit={handleSubmit} className="space-y-5 animate-in fade-in slide-in-from-bottom-3 duration-400" style={{ animationDelay: "250ms", animationFillMode: "both" }}>
                             <div className="space-y-2">
                                 <Label htmlFor="email" className="text-sm font-medium">И-мэйл хаяг</Label>
                                 <Input
@@ -330,7 +336,7 @@ export default function LoginPage() {
                             </Button>
                         </form>
 
-                        <div className="relative my-8">
+                        <div className="relative my-8 animate-in fade-in duration-400" style={{ animationDelay: "350ms", animationFillMode: "both" }}>
                             <div className="absolute inset-0 flex items-center">
                                 <span className="w-full border-t border-border" />
                             </div>
@@ -339,7 +345,7 @@ export default function LoginPage() {
                             </div>
                         </div>
 
-                        <div className="grid grid-cols-2 gap-4">
+                        <div className="grid grid-cols-2 gap-4 animate-in fade-in slide-in-from-bottom-2 duration-400" style={{ animationDelay: "400ms", animationFillMode: "both" }}>
                             <Button
                                 type="button"
                                 variant="outline"

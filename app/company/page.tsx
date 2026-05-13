@@ -154,7 +154,8 @@ export default function CompanyPage() {
         e.stopPropagation()
         try {
             await sendInvitation({ variables: { studentProfileId } })
-            toast.success("Урилга амжилттай илгээгдлээ!")
+            toast.success("Урилга илгээгдлээ. Тухайн оюутны хүсэлт автоматаар зөвшөөрөгдлөө.")
+            refetchApps()
         } catch (err) {
             toast.error(err instanceof Error ? err.message : "Урилга илгээхэд алдаа гарлаа")
         }
@@ -208,7 +209,7 @@ export default function CompanyPage() {
                     </aside>
 
                     <div className="flex-1 min-w-0">
-                        <div className="animate-in fade-in slide-in-from-bottom-3 duration-500">
+                        <div key={activeTab} className="animate-in fade-in slide-in-from-bottom-2 duration-300">
                             {activeTab === "profile" && (
                                 <CompanyProfileTab
                                     profile={profile} form={profileForm} setForm={setProfileForm}

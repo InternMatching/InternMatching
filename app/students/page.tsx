@@ -62,6 +62,8 @@ function StudentsContent() {
     const searchParams = useSearchParams()
     const router = useRouter()
     const pathname = usePathname()
+    const [isExiting, setIsExiting] = useState(false)
+    const handleBack = () => { setIsExiting(true); setTimeout(() => router.back(), 280) }
 
     const { data: userData } = useQuery<{ me: User }>(ME)
     const isCompany = userData?.me?.role.toLowerCase() === 'company' || userData?.me?.role.toLowerCase() === 'admin'
@@ -153,7 +155,7 @@ function StudentsContent() {
     )
 
     return (
-        <div className="min-h-screen bg-[#FAFAFA] dark:bg-[#09090B] py-6 md:py-10">
+        <div className={cn("min-h-screen bg-[#FAFAFA] dark:bg-[#09090B] py-6 md:py-10", isExiting && "animate-out fade-out slide-out-to-bottom-2 duration-[280ms]")}>
             <div className="container mx-auto px-4 md:px-6 lg:px-12 max-w-7xl text-foreground">
                 {/* Back Button */}
                 <div className="mb-4">
@@ -161,7 +163,7 @@ function StudentsContent() {
                         variant="ghost"
                         size="sm"
                         className="h-8 px-3 rounded-xl text-xs font-bold text-muted-foreground hover:text-foreground hover:bg-secondary/40 transition-all gap-1.5"
-                        onClick={() => router.back()}
+                        onClick={handleBack}
                     >
                         <ArrowLeft className="w-3.5 h-3.5" />
                         Буцах
@@ -263,9 +265,13 @@ function StudentsContent() {
                                     <Button variant="ghost" className="mt-2 text-xs h-8" onClick={() => window.location.reload()}>Дахин ачаалах</Button>
                                 </Card>
                             ) : (
-                                <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-2">
-                                    {filteredStudents.map((student) => (
-                                        <Card key={student.id} className="group hover:border-primary/40 hover:shadow-md transition-all duration-300 border-border/60 bg-background rounded-2xl overflow-hidden flex flex-col">
+                                <div key={searchQuery + skillQuery} className="grid gap-4 md:grid-cols-2 xl:grid-cols-2">
+                                    {filteredStudents.map((student, i) => (
+                                        <Card
+                                            key={student.id}
+                                            className="group hover:border-primary/40 hover:shadow-md transition-all duration-300 border-border/60 bg-background rounded-2xl overflow-hidden flex flex-col animate-in fade-in slide-in-from-bottom-3 duration-300"
+                                            style={{ animationDelay: `${i * 50}ms`, animationFillMode: "both" }}
+                                        >
                                             <CardContent className="p-5 flex flex-col h-full space-y-4 text-sm font-medium">
                                                 <div className="flex items-start justify-between">
                                                     <div className="w-11 h-11 rounded-xl bg-secondary/50 flex items-center justify-center font-bold text-primary group-hover:bg-primary/5 transition-colors uppercase text-sm">

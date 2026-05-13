@@ -212,7 +212,7 @@ export function StudentProfileTab({
                                 autoComplete="off"
                             />
                             {skillFocused && suggestions.length > 0 && (
-                                <div className="absolute z-20 mt-1 w-full rounded-xl border border-border/60 bg-popover shadow-lg overflow-hidden">
+                                <div className="absolute z-20 mt-1 w-full rounded-xl border border-border/60 bg-popover shadow-lg overflow-hidden animate-in fade-in slide-in-from-top-1 duration-150">
                                     {suggestions.map((skill, i) => (
                                         <button
                                             key={skill}
@@ -250,15 +250,17 @@ export function StudentProfileTab({
 
                     <div className="flex items-center justify-between h-10">
                         <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                            {autoSaveStatus === "saving" && (
-                                <><Loader2 className="animate-spin h-4 w-4" /><span>Хадгалж байна...</span></>
-                            )}
-                            {autoSaveStatus === "saved" && (
-                                <><CheckCircle className="h-4 w-4 text-emerald-500" /><span className="text-emerald-500">Хадгалагдлаа</span></>
-                            )}
-                            {autoSaveStatus === "idle" && profileInitialized.current && (
-                                <span className="text-muted-foreground/60">Өөрчлөлт автоматаар хадгалагдана</span>
-                            )}
+                            <span key={autoSaveStatus} className="flex items-center gap-2 animate-in fade-in duration-200">
+                                {autoSaveStatus === "saving" && (
+                                    <><Loader2 className="animate-spin h-4 w-4" /><span>Хадгалж байна...</span></>
+                                )}
+                                {autoSaveStatus === "saved" && (
+                                    <><CheckCircle className="h-4 w-4 text-emerald-500" /><span className="text-emerald-500">Хадгалагдлаа</span></>
+                                )}
+                                {autoSaveStatus === "idle" && profileInitialized.current && (
+                                    <span className="text-muted-foreground/60">Өөрчлөлт автоматаар хадгалагдана</span>
+                                )}
+                            </span>
                         </div>
                         <Button
                             type="button"

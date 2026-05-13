@@ -1,27 +1,19 @@
 "use client"
 
-import React, { useState } from "react"
+import React from "react"
 import Image from "next/image"
-import { useQuery, useMutation } from "@apollo/client/react"
+import { useQuery } from "@apollo/client/react"
 import { gql } from "@apollo/client"
+import { useRouter } from "next/navigation"
 import {
     Building2,
     CheckCircle2,
-    Globe,
     MapPin,
-    Clock,
     Loader2,
     ChevronRight,
-    Calendar,
-    Quote,
-    Briefcase,
-    Users
 } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { toast } from "sonner"
-import { cn } from "@/lib/utils"
-
 const GET_UNVERIFIED_COMPANIES = gql`
   query GetUnverifiedCompanies {
     getAllCompanyProfiles(verifiedOnly: false) {
@@ -41,14 +33,6 @@ const GET_UNVERIFIED_COMPANIES = gql`
   }
 `
 
-const VERIFY_COMPANY = gql`
-  mutation VerifyCompany($companyProfileId: ID!) {
-    verifyCompany(companyProfileId: $companyProfileId) {
-      id
-      isVerified
-    }
-  }
-`
 
 interface CompanyProfile {
     id: string;
@@ -66,21 +50,9 @@ interface CompanyProfile {
 }
 
 export default function VerificationWorkflowPage() {
+    const router = useRouter()
     const { data, loading, error, refetch } = useQuery<{ getAllCompanyProfiles: CompanyProfile[] }>(GET_UNVERIFIED_COMPANIES)
-    const [verifyCompany, { loading: verifying }] = useMutation(VERIFY_COMPANY)
-    const [selectedCompany, setSelectedCompany] = useState<CompanyProfile | null>(null)
-
     const profiles = (data?.getAllCompanyProfiles || []).filter(p => !p.isVerified)
-
-    const handleVerify = async (id: string, name: string) => {
-        try {
-            await verifyCompany({ variables: { companyProfileId: id } })
-            toast.success(`${name} амжилттай баталгаажлаа`)
-            refetch()
-        } catch (err) {
-            toast.error(err instanceof Error ? err.message : "Алдаа гарлаа")
-        }
-    }
 
     if (loading) return (
         <div className="flex flex-col items-center justify-center min-h-[400px] gap-3">
@@ -102,9 +74,9 @@ export default function VerificationWorkflowPage() {
         <div className="space-y-8">
             <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-border/40 pb-6">
                 <div className="space-y-1">
-                    <h1 className="text-2xl font-black tracking-tight flex items-center gap-2">
+                    <h1 className="text-2xl font-medium tracking-tight flex items-center gap-2">
                         Баталгаажуулалт
-                        <span className="text-[10px] bg-primary/10 text-primary px-2 py-0.5 rounded-full uppercase tracking-widest font-black ml-1">
+                        <span className="text-[10px] bg-primary/10 text-primary px-2 py-0.5 rounded-full uppercase tracking-widest font-medium ml-1">
                             {profiles.length} хүсэлт
                         </span>
                     </h1>
@@ -127,11 +99,8 @@ export default function VerificationWorkflowPage() {
                     {profiles.map((company) => (
                         <Card
                             key={company.id}
-                            className={cn(
-                                "group hover:border-primary/40 transition-all border-border/60 shadow-sm rounded-2xl overflow-hidden bg-background cursor-pointer",
-                                selectedCompany?.id === company.id && "border-primary ring-1 ring-primary/20"
-                            )}
-                            onClick={() => setSelectedCompany(selectedCompany?.id === company.id ? null : company)}
+                            className="group hover:border-primary/40 transition-all border-border/60 shadow-sm rounded-2xl overflow-hidden bg-background cursor-pointer"
+                            onClick={() => router.push(`/admin/companies/${company.id}`)}
                         >
                             <CardHeader className="p-6 pb-4 flex flex-row items-center gap-4">
                                 <div className="w-14 h-14 rounded-xl bg-secondary/50 flex items-center justify-center text-muted-foreground overflow-hidden border border-border/40 shadow-sm group-hover:border-primary/20 transition-all shrink-0">
@@ -144,92 +113,22 @@ export default function VerificationWorkflowPage() {
                                 <div className="min-w-0 flex-1">
                                     <CardTitle className="text-base font-bold truncate group-hover:text-primary transition-colors">{company.companyName}</CardTitle>
                                     <div className="flex items-center gap-2 mt-0.5">
-                                        <span className="text-[10px] font-black uppercase tracking-widest text-primary/70">{company.industry || "Салбар"}</span>
+                                        <span className="text-[10px] font-medium uppercase tracking-widest text-primary/70">{company.industry || "Салбар"}</span>
                                         <span className="w-1 h-1 rounded-full bg-border/60" />
-                                        <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground flex items-center gap-1">
+                                        <span className="text-[10px] font-medium uppercase tracking-widest text-muted-foreground flex items-center gap-1">
                                             <MapPin className="w-3 h-3" />
                                             {company.location || "Улаанбаатар"}
                                         </span>
                                     </div>
                                 </div>
-                                <ChevronRight className={cn(
-                                    "w-5 h-5 text-muted-foreground/40 transition-transform shrink-0",
-                                    selectedCompany?.id === company.id && "rotate-90"
-                                )} />
+                                <ChevronRight className="w-5 h-5 text-muted-foreground/40 transition-transform group-hover:translate-x-0.5 shrink-0" />
                             </CardHeader>
 
-                            {selectedCompany?.id === company.id && (
-                                <CardContent className="p-6 pt-0 space-y-5 animate-in slide-in-from-top-2 duration-200" onClick={(e) => e.stopPropagation()}>
-                                    {/* Description */}
-                                    <div className="p-3.5 rounded-xl bg-secondary/20 border border-border/20 text-xs font-medium leading-relaxed text-muted-foreground/80 italic">
-                                        {company.description || "Компаний товч танилцуулга оруулаагүй байна."}
-                                    </div>
-
-                                    {/* Slogan */}
-                                    {company.slogan && (
-                                        <div className="flex items-center gap-2 text-xs font-medium text-muted-foreground">
-                                            <Quote className="w-3.5 h-3.5 text-primary/50 shrink-0" />
-                                            <span className="italic">&ldquo;{company.slogan}&rdquo;</span>
-                                        </div>
-                                    )}
-
-                                    {/* Detail grid */}
-                                    <div className="grid grid-cols-2 gap-3">
-                                        <div className="p-3 rounded-xl bg-secondary/10 border border-border/20 space-y-1">
-                                            <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60 flex items-center gap-1"><Briefcase className="w-3 h-3" />Салбар</p>
-                                            <p className="text-sm font-bold">{company.industry || "—"}</p>
-                                        </div>
-                                        <div className="p-3 rounded-xl bg-secondary/10 border border-border/20 space-y-1">
-                                            <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60 flex items-center gap-1"><MapPin className="w-3 h-3" />Байршил</p>
-                                            <p className="text-sm font-bold">{company.location || "—"}</p>
-                                        </div>
-                                        <div className="p-3 rounded-xl bg-secondary/10 border border-border/20 space-y-1">
-                                            <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60 flex items-center gap-1"><Calendar className="w-3 h-3" />Үүсгэсэн он</p>
-                                            <p className="text-sm font-bold">{company.foundedYear || "—"}</p>
-                                        </div>
-                                        <div className="p-3 rounded-xl bg-secondary/10 border border-border/20 space-y-1">
-                                            <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60 flex items-center gap-1"><Users className="w-3 h-3" />Ажилтнууд</p>
-                                            <p className="text-sm font-bold">{company.employeeCount || "—"}</p>
-                                        </div>
-                                    </div>
-
-                                    {/* Website + Date */}
-                                    <div className="flex items-center justify-between">
-                                        <div className="flex items-center gap-3">
-                                            {company.website && (
-                                                <Button variant="ghost" size="sm" className="h-8 rounded-lg text-[10px] font-black uppercase tracking-widest gap-2 text-primary hover:bg-primary/5 px-2" asChild>
-                                                    <a href={company.website} target="_blank" rel="noreferrer">
-                                                        <Globe className="w-3.5 h-3.5" />
-                                                        Вэбсайт руу
-                                                    </a>
-                                                </Button>
-                                            )}
-                                        </div>
-                                        <span className="text-[10px] font-bold text-muted-foreground/50 flex items-center gap-1">
-                                            <Clock className="w-3 h-3" />
-                                            {new Date(company.updatedAt).toLocaleDateString()}
-                                        </span>
-                                    </div>
-
-                                    {/* Action buttons */}
-                                    <div className="flex gap-2.5 pt-2">
-                                        <Button
-                                            className="flex-1 h-9 rounded-xl font-bold text-xs bg-emerald-600 hover:bg-emerald-700 shadow-md shadow-emerald-600/10"
-                                            onClick={() => handleVerify(company.id, company.companyName)}
-                                            disabled={verifying}
-                                        >
-                                            {verifying ? <><Loader2 className="animate-spin mr-2 h-3.5 w-3.5" />Баталгаажуулж байна...</> : "Баталгаажуулах"}
-                                        </Button>
-                                        <Button variant="outline" className="flex-1 h-9 rounded-xl font-bold text-xs text-destructive hover:bg-red-50 hover:text-red-600 border-border/60">
-                                            Татгалзах
-                                        </Button>
-                                    </div>
-                                </CardContent>
-                            )}
                         </Card>
                     ))}
                 </div>
             )}
+
         </div>
     )
 }

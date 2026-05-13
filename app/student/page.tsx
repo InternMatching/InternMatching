@@ -221,7 +221,7 @@ export default function StudentPage() {
                     </aside>
 
                     <div className="flex-1 min-w-0">
-                        <div className="animate-in fade-in slide-in-from-bottom-3 duration-500">
+                        <div key={activeTab} className="animate-in fade-in slide-in-from-bottom-2 duration-300">
                             {activeTab === "profile" && (
                                 <StudentProfileTab
                                     profile={profile} formData={formData} setFormData={setFormData}

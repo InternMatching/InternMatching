@@ -158,7 +158,7 @@ export default function CompaniesManagementPage() {
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+            <div key={statusFilter + searchTerm} className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 animate-in fade-in duration-200">
                 {filteredCompanies.length === 0 ? (
                     <div className="col-span-full py-20 text-center text-muted-foreground bg-background rounded-lg border border-dashed text-sm">
                         Компани олдсонгүй.

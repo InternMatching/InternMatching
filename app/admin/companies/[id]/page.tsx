@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useMemo } from "react"
+import React, { useMemo, useState } from "react"
 import Image from "next/image"
 import { useParams, useRouter } from "next/navigation"
 import { useQuery, useMutation } from "@apollo/client/react"
@@ -13,11 +13,10 @@ import {
     ShieldCheck,
     Calendar,
     Users2,
-    Quote,
-    Loader2
+    Loader2,
 } from "lucide-react"
-import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
+import { cn } from "@/lib/utils"
 import { toast } from "sonner"
 
 const GET_ALL_COMPANIES = gql`
@@ -66,13 +65,12 @@ interface CompanyProfile {
 export default function AdminCompanyDetailPage() {
     const params = useParams()
     const router = useRouter()
+    const [isExiting, setIsExiting] = useState(false)
+    const handleBack = () => { setIsExiting(true); setTimeout(() => router.back(), 280) }
     const companyId = params.id as string
 
-    const { data, loading, error, refetch } = useQuery<{
-        getAllCompanyProfiles: CompanyProfile[]
-    }>(GET_ALL_COMPANIES)
-
-    const [verifyCompany] = useMutation(VERIFY_COMPANY)
+    const { data, loading, error, refetch } = useQuery<{ getAllCompanyProfiles: CompanyProfile[] }>(GET_ALL_COMPANIES)
+    const [verifyCompany, { loading: verifying }] = useMutation(VERIFY_COMPANY)
 
     const company = useMemo(() => {
         if (!data?.getAllCompanyProfiles) return null
@@ -90,136 +88,138 @@ export default function AdminCompanyDetailPage() {
     }
 
     if (loading) return (
-        <div className="flex justify-center p-12">
-            <Loader2 className="animate-spin" />
+        <div className="space-y-4">
+            <div className="h-8 w-16 bg-secondary/20 animate-pulse rounded-lg" />
+            <div className="h-28 bg-secondary/10 animate-pulse rounded-2xl" />
+            <div className="h-48 bg-secondary/10 animate-pulse rounded-2xl" />
         </div>
     )
 
     if (error) return (
-        <div className="p-4 text-destructive">Алдаа: {error.message}</div>
+        <div className="p-4 text-sm text-destructive">Алдаа: {error.message}</div>
     )
 
     if (!company) return (
         <div className="space-y-4">
-            <Button variant="ghost" size="sm" className="rounded-xl font-medium" onClick={() => router.push("/admin/companies")}>
-                <ArrowLeft className="w-4 h-4 mr-2" />
-                Буцах
+            <Button variant="ghost" size="sm" className="rounded-lg" onClick={handleBack}>
+                <ArrowLeft className="w-4 h-4 mr-2" />Буцах
             </Button>
-            <div className="py-20 text-center text-muted-foreground">
-                Компани олдсонгүй.
-            </div>
+            <p className="py-20 text-center text-sm text-muted-foreground">Компани олдсонгүй.</p>
         </div>
     )
 
     return (
-        <div className="space-y-6">
-            {/* Header */}
-            <div className="flex items-center justify-between">
-                <Button variant="ghost" size="sm" onClick={() => router.push("/admin/companies")}>
-                    <ArrowLeft className="w-4 h-4 mr-2" />
-                    Буцах
+        <div className={cn("space-y-4", isExiting && "animate-out fade-out slide-out-to-bottom-2 duration-[280ms]")}>
+
+            {/* Back */}
+            <div className="animate-in fade-in slide-in-from-left-2 duration-300">
+                <Button variant="ghost" size="sm" className="h-8 px-2 rounded-lg text-muted-foreground hover:text-foreground -ml-2" onClick={handleBack}>
+                    <ArrowLeft className="w-4 h-4 mr-1.5" />Буцах
                 </Button>
-                {!company.isVerified && (
-                    <Button
-                        size="sm"
-                        className="bg-emerald-600 hover:bg-emerald-700"
-                        onClick={handleVerify}
-                    >
-                        <ShieldCheck className="w-4 h-4 mr-2" />
-                        Баталгаажуулах
-                    </Button>
-                )}
             </div>
 
-            <Card>
-                <CardContent className="p-6 space-y-6">
-                    {/* Company Header */}
-                    <div className="flex items-start gap-4">
-                        <div className="w-16 h-16 rounded-2xl bg-secondary flex items-center justify-center border-2 border-primary/10 overflow-hidden shadow-inner shrink-0">
-                            {company.logoUrl ? (
-                                <Image src={company.logoUrl} alt={company.companyName} className="w-full h-full object-cover" width={64} height={64} />
-                            ) : (
-                                <Building2 className="w-8 h-8 text-primary/40" />
-                            )}
-                        </div>
-                        <div className="flex-1 min-w-0">
-                            <div className="flex items-center gap-2">
-                                <h1 className="text-xl font-bold">{company.companyName}</h1>
-                                {company.isVerified && (
-                                    <ShieldCheck className="w-5 h-5 text-emerald-600" />
+            {/* Profile card */}
+            <div className="rounded-2xl border border-border/40 bg-background overflow-hidden animate-in fade-in slide-in-from-bottom-3 duration-300" style={{ animationDelay: "60ms", animationFillMode: "both" }}>
+                <div className="h-0.5 bg-gradient-to-r from-primary/70 via-primary/30 to-transparent" />
+                <div className="p-6">
+                    <div className="flex items-start justify-between gap-4">
+                        <div className="flex items-center gap-4">
+                            <div className="w-14 h-14 rounded-2xl bg-secondary/40 border border-border/40 overflow-hidden flex items-center justify-center shrink-0">
+                                {company.logoUrl ? (
+                                    <Image src={company.logoUrl} alt={company.companyName} width={56} height={56} className="object-cover w-full h-full" />
+                                ) : (
+                                    <Building2 className="w-6 h-6 text-muted-foreground/40" />
                                 )}
                             </div>
-                            <p className="text-primary font-bold uppercase tracking-widest text-[10px]">
-                                {company.industry}
-                            </p>
+                            <div>
+                                <div className="flex items-center gap-2">
+                                    <h1 className="text-lg font-bold leading-tight">{company.companyName}</h1>
+                                    {company.isVerified && (
+                                        <ShieldCheck className="w-4 h-4 text-emerald-500 shrink-0" />
+                                    )}
+                                </div>
+                                {company.industry && (
+                                    <p className="text-xs text-muted-foreground mt-0.5">{company.industry}</p>
+                                )}
+                            </div>
                         </div>
+
+                        {!company.isVerified && (
+                            <Button
+                                size="sm"
+                                className="h-8 rounded-lg text-xs font-bold gap-1.5 bg-emerald-600 hover:bg-emerald-700 shrink-0"
+                                onClick={handleVerify}
+                                disabled={verifying}
+                            >
+                                {verifying
+                                    ? <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                                    : <ShieldCheck className="w-3.5 h-3.5" />
+                                }
+                                Баталгаажуулах
+                            </Button>
+                        )}
                     </div>
 
-                    {/* Slogan */}
                     {company.slogan && (
-                        <div className="flex items-start gap-2 p-4 rounded-xl bg-primary/5 border border-primary/10 italic text-sm text-primary/80">
-                            <Quote className="w-4 h-4 shrink-0 fill-primary/10" />
-                            <p>&quot;{company.slogan}&quot;</p>
-                        </div>
-                    )}
-
-                    {/* Stats */}
-                    <div className="grid grid-cols-2 gap-4">
-                        <div className="p-4 rounded-2xl bg-secondary/30 border border-border/40 space-y-1">
-                            <div className="flex items-center gap-2 text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
-                                <Calendar className="w-3 h-3" />
-                                Байгуулагдсан
-                            </div>
-                            <p className="text-lg font-black">{company.foundedYear || "Тодорхойгүй"}</p>
-                        </div>
-                        <div className="p-4 rounded-2xl bg-secondary/30 border border-border/40 space-y-1">
-                            <div className="flex items-center gap-2 text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
-                                <Users2 className="w-3 h-3" />
-                                Ажилчид
-                            </div>
-                            <p className="text-lg font-black">{company.employeeCount || "Тодорхойгүй"}</p>
-                        </div>
-                    </div>
-
-                    {/* Description */}
-                    <div className="space-y-2">
-                        <h3 className="text-sm font-black uppercase tracking-widest text-muted-foreground flex items-center gap-2">
-                            <div className="h-px flex-1 bg-border/40" />
-                            Танилцуулга
-                            <div className="h-px flex-1 bg-border/40" />
-                        </h3>
-                        <p className="text-sm leading-relaxed text-foreground/80 font-medium">
-                            {company.description || "Танилцуулга байхгүй."}
+                        <p className="mt-4 pt-4 border-t border-border/40 text-sm text-muted-foreground italic">
+                            &ldquo;{company.slogan}&rdquo;
                         </p>
-                    </div>
+                    )}
+                </div>
+            </div>
 
-                    {/* Contact */}
-                    <div className="space-y-2">
-                        <h3 className="text-sm font-black uppercase tracking-widest text-muted-foreground flex items-center gap-2">
-                            <div className="h-px flex-1 bg-border/40" />
-                            Холбоо барих
-                            <div className="h-px flex-1 bg-border/40" />
-                        </h3>
-                        <div className="space-y-3">
-                            <div className="flex items-center gap-3 p-3 rounded-xl bg-background border border-border/40 text-sm font-bold">
-                                <MapPin className="w-4 h-4 text-rose-500" />
-                                {company.location || "Байршил байхгүй"}
-                            </div>
-                            {company.website && (
-                                <a
-                                    href={company.website}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="flex items-center gap-3 p-3 rounded-xl bg-background border border-border/40 text-sm font-bold text-primary hover:bg-primary/5 transition-colors"
-                                >
-                                    <Globe className="w-4 h-4" />
-                                    {company.website}
-                                </a>
-                            )}
-                        </div>
+            {/* Content card */}
+            <div className="rounded-2xl border border-border/40 bg-background divide-y divide-border/40 animate-in fade-in slide-in-from-bottom-2 duration-300" style={{ animationDelay: "140ms", animationFillMode: "both" }}>
+
+                {/* Stats */}
+                <div className="p-6 grid grid-cols-2 gap-4">
+                    <div>
+                        <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1 flex items-center gap-1.5">
+                            <Calendar className="w-3 h-3" />Байгуулагдсан
+                        </p>
+                        <p className="text-sm font-semibold">{company.foundedYear ?? "—"}</p>
                     </div>
-                </CardContent>
-            </Card>
+                    <div>
+                        <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1 flex items-center gap-1.5">
+                            <Users2 className="w-3 h-3" />Ажилчид
+                        </p>
+                        <p className="text-sm font-semibold">{company.employeeCount ?? "—"}</p>
+                    </div>
+                </div>
+
+                {/* Description */}
+                <div className="p-6">
+                    <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-3">Танилцуулга</p>
+                    <p className="text-sm leading-relaxed text-foreground/80">
+                        {company.description || <span className="italic text-muted-foreground/50">Танилцуулга байхгүй.</span>}
+                    </p>
+                </div>
+
+                {/* Location + Website */}
+                <div className="p-6 space-y-3">
+                    <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-3">Холбоо барих</p>
+                    <div className="flex items-center gap-2.5">
+                        <div className="w-7 h-7 rounded-lg bg-secondary/50 flex items-center justify-center shrink-0">
+                            <MapPin className="w-3.5 h-3.5 text-rose-500" />
+                        </div>
+                        <span className="text-sm font-medium">{company.location || "—"}</span>
+                    </div>
+                    {company.website && (
+                        <a
+                            href={company.website}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex items-center gap-2.5 group"
+                        >
+                            <div className="w-7 h-7 rounded-lg bg-secondary/50 flex items-center justify-center shrink-0">
+                                <Globe className="w-3.5 h-3.5 text-primary" />
+                            </div>
+                            <span className="text-sm font-medium text-primary group-hover:underline truncate">{company.website}</span>
+                        </a>
+                    )}
+                </div>
+            </div>
+
         </div>
     )
 }

@@ -38,7 +38,7 @@ export function StudentInvitationsTab({ invitations, loading, responding, onResp
                                             {invitation.company?.logoUrl ? (
                                                 <Image src={invitation.company.logoUrl} alt={invitation.company.companyName || ""} width={44} height={44} className="object-cover w-full h-full" />
                                             ) : (
-                                                <span className="text-sm font-black text-primary/50 uppercase">
+                                                <span className="text-sm font-medium text-primary/50 uppercase">
                                                     {invitation.company?.companyName?.[0] || <Building2 className="w-4 h-4 text-muted-foreground" />}
                                                 </span>
                                             )}
@@ -81,7 +81,7 @@ export function StudentInvitationsTab({ invitations, loading, responding, onResp
                                             </>
                                         ) : (
                                             <span className={cn(
-                                                "text-[9px] font-black px-2.5 py-1 rounded-md uppercase tracking-widest border",
+                                                "text-[9px] font-medium px-2.5 py-1 rounded-md uppercase tracking-widest border",
                                                 invitation.status === "accepted" ? "bg-emerald-50 text-emerald-600 border-emerald-200" : "bg-red-50 text-red-600 border-red-200"
                                             )}>
                                                 {invitation.status === "accepted" ? "Зөвшөөрсөн" : "Татгалзсан"}

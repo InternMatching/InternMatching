@@ -132,7 +132,15 @@
 
   button,
   a,
+  [role="button"],
+  select,
+  label[for],
   .interactive-item {
-    @apply transition-all duration-300 ease-in-out;
+    @apply transition-all duration-300 ease-in-out cursor-pointer;
+  }
+
+  button:disabled,
+  [role="button"][aria-disabled="true"] {
+    @apply cursor-not-allowed;
   }
 }

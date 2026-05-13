@@ -78,7 +78,7 @@ export function CompanyProfileTab({
                         <CardDescription className="text-sm">Таны мэдээлэл оюутнуудад ажлын зарын хамт харагдах болно.</CardDescription>
                     </div>
                     {profile?.isVerified && (
-                        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 text-emerald-600 border border-emerald-100 text-[10px] font-black uppercase tracking-widest shadow-sm">
+                        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 text-emerald-600 border border-emerald-100 text-[10px] font-medium uppercase tracking-widest shadow-sm">
                             <CheckCircle className="w-3 h-3" />
                             Баталгаажсан
                         </div>
@@ -92,7 +92,7 @@ export function CompanyProfileTab({
                             {form.logoUrl ? (
                                 <Image src={form.logoUrl} alt="Company logo" width={80} height={80} className="object-cover w-full h-full" />
                             ) : (
-                                <span className="text-2xl font-black text-primary/40 uppercase">{form.companyName?.[0] || "C"}</span>
+                                <span className="text-2xl font-medium text-primary/40 uppercase">{form.companyName?.[0] || "C"}</span>
                             )}
                         </div>
                         <label htmlFor="logo-upload" className="absolute inset-0 flex items-center justify-center bg-black/40 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer">
@@ -130,7 +130,7 @@ export function CompanyProfileTab({
                                     autoComplete="off"
                                 />
                                 {industryFocused && industrySuggestions.length > 0 && (
-                                    <div className="absolute z-20 mt-1 w-full rounded-xl border border-border/60 bg-popover shadow-lg overflow-hidden">
+                                    <div className="absolute z-20 mt-1 w-full rounded-xl border border-border/60 bg-popover shadow-lg overflow-hidden animate-in fade-in slide-in-from-top-1 duration-150">
                                         {industrySuggestions.map((industry, i) => (
                                             <button
                                                 key={industry}
@@ -177,11 +177,13 @@ export function CompanyProfileTab({
                     </div>
                     <div className="flex items-center justify-between h-10">
                         <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                            {autoSaveStatus === "saving" && (<><Loader2 className="animate-spin h-4 w-4" /><span>Хадгалж байна...</span></>)}
-                            {autoSaveStatus === "saved" && (<><CheckCircle2 className="h-4 w-4 text-emerald-500" /><span className="text-emerald-500">Хадгалагдлаа</span></>)}
-                            {autoSaveStatus === "idle" && profileInitialized.current && (
-                                <span className="text-muted-foreground/60">Өөрчлөлт автоматаар хадгалагдана</span>
-                            )}
+                            <span key={autoSaveStatus} className="flex items-center gap-2 animate-in fade-in duration-200">
+                                {autoSaveStatus === "saving" && (<><Loader2 className="animate-spin h-4 w-4" /><span>Хадгалж байна...</span></>)}
+                                {autoSaveStatus === "saved" && (<><CheckCircle2 className="h-4 w-4 text-emerald-500" /><span className="text-emerald-500">Хадгалагдлаа</span></>)}
+                                {autoSaveStatus === "idle" && profileInitialized.current && (
+                                    <span className="text-muted-foreground/60">Өөрчлөлт автоматаар хадгалагдана</span>
+                                )}
+                            </span>
                         </div>
                         <Button type="button" onClick={onManualSave} disabled={autoSaveStatus === "saving"} className="h-9 rounded-xl font-bold text-xs px-6">
                             {autoSaveStatus === "saving" ? (<><Loader2 className="animate-spin h-3.5 w-3.5 mr-2" />Хадгалж байна</>) : "Хадгалах"}

@@ -175,6 +175,7 @@ export function Navbar() {
                 {/* Desktop Navigation */}
                 <div className="hidden md:flex items-center gap-1">
                     {/* Jobs Dropdown */}
+                    <div className="animate-in fade-in slide-in-from-top-1 duration-300" style={{ animationDelay: "50ms", animationFillMode: "both" }}>
                     <DropdownMenu open={jobsOpen} onOpenChange={setJobsOpen}>
                         <div
                             onMouseEnter={() => { if (jobsTimeout.current) clearTimeout(jobsTimeout.current); setJobsOpen(true) }}
@@ -186,7 +187,7 @@ export function Navbar() {
                                     <ChevronDown className="ml-1.5 w-3.5 h-3.5 transition-transform duration-200 group-data-[state=open]:rotate-180 opacity-60" />
                                 </Button>
                             </DropdownMenuTrigger>
-                            <DropdownMenuContent align="start" sideOffset={8} className="w-48 p-2 rounded-2xl shadow-lg border-border/40">
+                            <DropdownMenuContent align="start" sideOffset={8} className="w-48 p-2 rounded-2xl shadow-lg border-border/40 animate-in fade-in slide-in-from-top-2 duration-200">
                                 <DropdownMenuItem asChild className="rounded-xl p-2.5 cursor-pointer">
                                     <Link href="/jobs?levels=intern" className="flex items-center gap-3">
                                         <Zap className="w-4 h-4 text-muted-foreground" />
@@ -196,8 +197,10 @@ export function Navbar() {
                             </DropdownMenuContent>
                         </div>
                     </DropdownMenu>
+                    </div>
 
                     {/* Students Dropdown */}
+                    <div className="animate-in fade-in slide-in-from-top-1 duration-300" style={{ animationDelay: "100ms", animationFillMode: "both" }}>
                     <DropdownMenu open={studentsOpen} onOpenChange={setStudentsOpen}>
                         <div
                             onMouseEnter={() => { if (studentsTimeout.current) clearTimeout(studentsTimeout.current); setStudentsOpen(true) }}
@@ -212,7 +215,7 @@ export function Navbar() {
                             <DropdownMenuContent
                                 align="start"
                                 sideOffset={8}
-                                className="w-56 p-2 rounded-2xl shadow-lg border-border/40"
+                                className="w-56 p-2 rounded-2xl shadow-lg border-border/40 animate-in fade-in slide-in-from-top-2 duration-200"
                             >
                                 <DropdownMenuItem
                                     asChild
@@ -236,16 +239,17 @@ export function Navbar() {
                             </DropdownMenuContent>
                         </div>
                     </DropdownMenu>
+                    </div>
                 </div>
 
                 <div className="flex items-center gap-2">
                     {/* Auth Status */}
                     {isLoggedIn && user ? (
-                        <div className="hidden md:flex items-center gap-2">
+                        <div className="hidden md:flex items-center gap-2 animate-in fade-in slide-in-from-top-1 duration-300" style={{ animationDelay: "150ms", animationFillMode: "both" }}>
                             <UserProfileDropdown user={user} onLogout={handleLogout} onNavigate={() => {}} />
                         </div>
                     ) : (
-                        <AuthButtons className="hidden md:flex" onNavigate={() => setIsOpen(false)} />
+                        <AuthButtons className="hidden md:flex animate-in fade-in slide-in-from-top-1 duration-300" onNavigate={() => setIsOpen(false)} />
                     )}
 
                     <div className="h-6 w-px bg-border/40 mx-2 hidden md:block" />
@@ -270,7 +274,7 @@ export function Navbar() {
                             </SheetHeader>
 
                             <div className="flex flex-col gap-6 p-6">
-                                <div className="space-y-3">
+                                <div className="space-y-3 animate-in fade-in slide-in-from-right-2 duration-300" style={{ animationDelay: "50ms", animationFillMode: "both" }}>
                                     <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest px-2 opacity-60">Дадлагууд</p>
                                     <div className="grid gap-1">
                                         <Link href="/jobs?levels=intern" className="flex items-center gap-3 p-3 rounded-xl hover:bg-muted transition-colors font-medium text-sm" onClick={() => setIsOpen(false)}>
@@ -280,7 +284,7 @@ export function Navbar() {
                                     </div>
                                 </div>
 
-                                <div className="space-y-3 border-t border-border/40 pt-6">
+                                <div className="space-y-3 border-t border-border/40 pt-6 animate-in fade-in slide-in-from-right-2 duration-300" style={{ animationDelay: "120ms", animationFillMode: "both" }}>
                                     <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest px-2 opacity-60">Оюутнууд</p>
                                     <div className="grid gap-1">
                                         <Link href="/students" className="flex items-center gap-3 p-3 rounded-xl hover:bg-muted transition-colors font-medium text-sm" onClick={() => setIsOpen(false)}>
@@ -293,7 +297,7 @@ export function Navbar() {
                                     </div>
                                 </div>
 
-                                <div className="mt-4 border-t border-border/40 pt-6">
+                                <div className="mt-4 border-t border-border/40 pt-6 animate-in fade-in slide-in-from-right-2 duration-300" style={{ animationDelay: "190ms", animationFillMode: "both" }}>
                                     {isLoggedIn && user ? (
                                         <UserProfileDropdown user={user} mobile onLogout={handleLogout} onNavigate={() => setIsOpen(false)} />
                                     ) : (

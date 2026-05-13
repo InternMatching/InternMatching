@@ -10,63 +10,56 @@ import { SEND_INVITATION } from "@/features/invitations/graphql/invitations.muta
 import { StudentProfile, User, Invitation } from "@/lib/type"
 import { Button } from "@/components/ui/button"
 import Image from "next/image"
+import { cn } from "@/lib/utils"
 import { toast } from "sonner"
 import {
     ArrowLeft,
     UserCircle,
     Zap,
-    Briefcase,
-    Clock,
     GraduationCap,
     Send,
-    CheckCircle,
+    CheckCircle2,
     Loader2,
     Mail,
-    Phone,
+    Clock,
 } from "lucide-react"
-import { Footer } from "@/components/layout/Footer"
+
+const LEVEL_LABEL: Record<string, string> = {
+    intern: "Интерн",
+    junior: "Жуниор",
+    mid: "Дунд түвшин",
+    senior: "Сениор",
+}
 
 export default function StudentDetailPage() {
     const params = useParams()
     const router = useRouter()
+    const [isExiting, setIsExiting] = useState(false)
+    const handleBack = () => { setIsExiting(true); setTimeout(() => router.back(), 280) }
     const studentId = params.id as string
     const [inviteMessage, setInviteMessage] = useState("")
-    const [showMessageInput, setShowMessageInput] = useState(false)
+    const [showMessage, setShowMessage] = useState(false)
 
     const { data: userData } = useQuery<{ me: User }>(ME)
     const isCompany = userData?.me?.role?.toLowerCase() === "company"
 
-    const { data, loading } = useQuery<{ getAllStudentProfiles: StudentProfile[] }>(
-        GET_ALL_STUDENT_PROFILES
-    )
+    const { data, loading } = useQuery<{ getAllStudentProfiles: StudentProfile[] }>(GET_ALL_STUDENT_PROFILES)
+    const { data: invitationsData } = useQuery<{ getInvitations: Invitation[] }>(GET_INVITATIONS, { skip: !isCompany })
 
-    const { data: invitationsData } = useQuery<{ getInvitations: Invitation[] }>(
-        GET_INVITATIONS,
-        { skip: !isCompany }
-    )
-
-    const [sendInvitation, { loading: sendingInvitation }] = useMutation(SEND_INVITATION, {
+    const [sendInvitation, { loading: sending }] = useMutation(SEND_INVITATION, {
         refetchQueries: [{ query: GET_INVITATIONS }],
     })
 
     const student = data?.getAllStudentProfiles?.find((s) => s.id === studentId)
+    const existing = invitationsData?.getInvitations?.find((inv) => inv.studentProfileId === studentId)
+    const alreadyInvited = existing?.status === "pending"
+    const inviteAccepted = existing?.status === "accepted"
 
-    const existingInvitation = invitationsData?.getInvitations?.find(
-        (inv) => inv.studentProfileId === studentId
-    )
-    const alreadyInvited = existingInvitation?.status === "pending"
-    const invitationAccepted = existingInvitation?.status === "accepted"
-
-    const handleSendInvitation = async () => {
+    const handleSend = async () => {
         try {
-            await sendInvitation({
-                variables: {
-                    studentProfileId: studentId,
-                    message: inviteMessage || null,
-                },
-            })
+            await sendInvitation({ variables: { studentProfileId: studentId, message: inviteMessage || null } })
             toast.success("Урилга амжилттай илгээгдлээ!")
-            setShowMessageInput(false)
+            setShowMessage(false)
             setInviteMessage("")
         } catch (err) {
             toast.error(err instanceof Error ? err.message : "Урилга илгээхэд алдаа гарлаа")
@@ -76,15 +69,10 @@ export default function StudentDetailPage() {
     if (loading) {
         return (
             <div className="min-h-screen bg-[#FAFAFA] dark:bg-[#09090B]">
-                <div className="max-w-3xl mx-auto px-4 py-8 space-y-6">
-                    <div className="h-8 w-20 bg-secondary/20 animate-pulse rounded-xl" />
+                <div className="max-w-2xl mx-auto px-4 py-8 space-y-4">
+                    <div className="h-8 w-16 bg-secondary/20 animate-pulse rounded-lg" />
                     <div className="h-32 bg-secondary/10 animate-pulse rounded-2xl" />
-                    <div className="h-10 w-48 bg-secondary/20 animate-pulse rounded-xl mt-16" />
-                    <div className="grid grid-cols-2 gap-4">
-                        <div className="h-24 bg-secondary/10 animate-pulse rounded-2xl" />
-                        <div className="h-24 bg-secondary/10 animate-pulse rounded-2xl" />
-                    </div>
-                    <div className="h-32 bg-secondary/10 animate-pulse rounded-2xl" />
+                    <div className="h-24 bg-secondary/10 animate-pulse rounded-2xl" />
                     <div className="h-20 bg-secondary/10 animate-pulse rounded-2xl" />
                 </div>
             </div>
@@ -94,17 +82,11 @@ export default function StudentDetailPage() {
     if (!student) {
         return (
             <div className="min-h-screen bg-[#FAFAFA] dark:bg-[#09090B] flex items-center justify-center">
-                <div className="text-center space-y-4">
-                    <UserCircle className="w-16 h-16 text-muted-foreground/30 mx-auto" />
-                    <h2 className="text-xl font-bold">Оюутан олдсонгүй</h2>
-                    <p className="text-sm text-muted-foreground">Энэ оюутны мэдээлэл олдсонгүй.</p>
-                    <Button
-                        variant="outline"
-                        className="rounded-xl font-bold"
-                        onClick={() => router.back()}
-                    >
-                        <ArrowLeft className="w-4 h-4 mr-2" />
-                        Буцах
+                <div className="text-center space-y-3">
+                    <UserCircle className="w-12 h-12 text-muted-foreground/20 mx-auto" />
+                    <p className="text-sm font-medium text-muted-foreground">Оюутан олдсонгүй</p>
+                    <Button variant="outline" size="sm" className="rounded-xl" onClick={handleBack}>
+                        <ArrowLeft className="w-4 h-4 mr-2" />Буцах
                     </Button>
                 </div>
             </div>
@@ -112,226 +94,165 @@ export default function StudentDetailPage() {
     }
 
     return (
-        <div className="min-h-screen bg-[#FAFAFA] dark:bg-[#09090B]">
-            {/* Header Background */}
-            <div className="h-48 bg-gradient-to-r from-primary/10 via-primary/5 to-transparent relative">
-                <div className="max-w-3xl mx-auto px-4 pt-6">
-                    <Button
-                        variant="ghost"
-                        size="sm"
-                        className="rounded-xl font-medium"
-                        onClick={() => router.back()}
-                    >
-                        <ArrowLeft className="w-4 h-4 mr-2" />
+        <div className={cn("min-h-screen bg-[#FAFAFA] dark:bg-[#09090B]", isExiting && "animate-out fade-out slide-out-to-bottom-2 duration-[280ms]")}>
+            <div className="max-w-2xl mx-auto px-4 py-8 space-y-4">
+
+                {/* Back */}
+                <div className="animate-in fade-in slide-in-from-left-2 duration-300">
+                    <Button variant="ghost" size="sm" className="h-8 px-2 rounded-lg text-muted-foreground hover:text-foreground -ml-2" onClick={handleBack}>
+                        <ArrowLeft className="w-4 h-4 mr-1.5" />
                         Буцах
                     </Button>
                 </div>
 
-                {/* Profile Picture */}
-                <div className="max-w-3xl mx-auto px-4">
-                    <div className="absolute -bottom-12">
-                        <div className="w-24 h-24 rounded-3xl bg-background border-4 border-background shadow-xl overflow-hidden flex items-center justify-center">
-                            {student.profilePictureUrl ? (
-                                <Image
-                                    src={student.profilePictureUrl}
-                                    alt={student.firstName || ""}
-                                    width={96}
-                                    height={96}
-                                    className="object-cover w-full h-full"
-                                />
-                            ) : (
-                                <UserCircle className="w-12 h-12 text-muted-foreground/30" />
+                {/* Profile card */}
+                <div className="rounded-2xl border border-border/40 bg-background overflow-hidden animate-in fade-in slide-in-from-bottom-3 duration-300" style={{ animationDelay: "60ms", animationFillMode: "both" }}>
+                    {/* Accent bar */}
+                    <div className="h-0.5 bg-gradient-to-r from-primary/70 via-primary/30 to-transparent" />
+
+                    <div className="p-6">
+                        <div className="flex items-start justify-between gap-4">
+                            {/* Avatar + identity */}
+                            <div className="flex items-center gap-4">
+                                <div className="w-14 h-14 rounded-2xl bg-primary/10 border border-primary/10 overflow-hidden flex items-center justify-center shrink-0">
+                                    {student.profilePictureUrl ? (
+                                        <Image src={student.profilePictureUrl} alt={student.firstName || ""} width={56} height={56} className="object-cover w-full h-full" />
+                                    ) : (
+                                        <UserCircle className="w-7 h-7 text-primary/40" />
+                                    )}
+                                </div>
+                                <div>
+                                    <h1 className="text-lg font-bold leading-tight">
+                                        {student.firstName} {student.lastName}
+                                    </h1>
+                                    <div className="flex items-center gap-2 mt-1.5 flex-wrap">
+                                        <span className="text-xs text-muted-foreground font-medium">
+                                            {(student.experienceLevel ? LEVEL_LABEL[student.experienceLevel] : null) || student.experienceLevel}
+                                        </span>
+                                        {student.isActivelyLooking && (
+                                            <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 border border-emerald-200/60">
+                                                <Zap className="w-2.5 h-2.5" />
+                                                Идэвхтэй хайж байна
+                                            </span>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Invite button */}
+                            {isCompany && (
+                                <div className="shrink-0">
+                                    {alreadyInvited ? (
+                                        <span className="inline-flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg bg-amber-50 text-amber-600 border border-amber-200/80">
+                                            <Clock className="w-3.5 h-3.5" />
+                                            Урилга илгээсэн
+                                        </span>
+                                    ) : inviteAccepted ? (
+                                        <span className="inline-flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg bg-emerald-50 text-emerald-600 border border-emerald-200/80">
+                                            <CheckCircle2 className="w-3.5 h-3.5" />
+                                            Зөвшөөрсөн
+                                        </span>
+                                    ) : (
+                                        <Button size="sm" className="h-8 rounded-lg text-xs font-bold gap-1.5" onClick={() => setShowMessage(v => !v)}>
+                                            <Send className="w-3.5 h-3.5" />
+                                            Урих
+                                        </Button>
+                                    )}
+                                </div>
                             )}
+                        </div>
+
+                        {/* Invite message panel */}
+                        <div className={`grid transition-all duration-300 ease-in-out ${showMessage ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'}`}>
+                            <div className="overflow-hidden">
+                                <div className="pt-4 mt-4 border-t border-border/40 space-y-3">
+                                    <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Урилгын мессеж <span className="font-normal normal-case tracking-normal opacity-60">(заавал биш)</span></p>
+                                    <textarea
+                                        placeholder="Танд манай компанид дадлага хийх урилга илгээж байна..."
+                                        className="w-full rounded-xl border border-border/50 bg-secondary/20 resize-none p-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:bg-background transition-all"
+                                        rows={3}
+                                        value={inviteMessage}
+                                        onChange={(e) => setInviteMessage(e.target.value)}
+                                    />
+                                    <div className="flex gap-2 justify-end">
+                                        <Button variant="outline" size="sm" className="h-8 rounded-lg text-xs" onClick={() => { setShowMessage(false); setInviteMessage("") }}>
+                                            Болих
+                                        </Button>
+                                        <Button size="sm" className="h-8 rounded-lg text-xs font-bold gap-1.5" onClick={handleSend} disabled={sending}>
+                                            {sending ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Send className="w-3.5 h-3.5" />}
+                                            Илгээх
+                                        </Button>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
 
-            {/* Content */}
-            <div className="max-w-3xl mx-auto px-4 pt-16 pb-12 space-y-8">
-                {/* Name & Badge */}
-                <div className="flex flex-wrap items-center justify-between gap-4">
-                    <div>
-                        <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-primary/10 text-primary text-[10px] font-black uppercase tracking-widest mb-3">
-                            <Zap className="w-3 h-3" />
-                            Оюутан
-                        </div>
-                        <h1 className="text-3xl font-black tracking-tight leading-none mb-1">
-                            {student.firstName} {student.lastName}
-                        </h1>
-                        <p className="text-sm font-bold text-muted-foreground uppercase tracking-widest opacity-60">
-                            {student.experienceLevel}
+                {/* Content sections */}
+                <div className="rounded-2xl border border-border/40 bg-background divide-y divide-border/40 animate-in fade-in slide-in-from-bottom-2 duration-300" style={{ animationDelay: "140ms", animationFillMode: "both" }}>
+
+                    {/* Bio */}
+                    <div className="p-6">
+                        <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-3">Миний тухай</p>
+                        <p className="text-sm leading-relaxed text-foreground/80 whitespace-pre-wrap">
+                            {student.bio || <span className="text-muted-foreground/50 italic">Танилцуулга оруулаагүй байна.</span>}
                         </p>
                     </div>
-                    {isCompany && (
-                        <div className="flex flex-col items-end gap-2">
-                            {alreadyInvited ? (
-                                <Button disabled className="rounded-xl h-10 px-6 font-bold bg-amber-50 text-amber-600 border border-amber-200 hover:bg-amber-50">
-                                    <Clock className="w-4 h-4 mr-2" />
-                                    Урилга илгээсэн
-                                </Button>
-                            ) : invitationAccepted ? (
-                                <Button disabled className="rounded-xl h-10 px-6 font-bold bg-emerald-50 text-emerald-600 border border-emerald-200 hover:bg-emerald-50">
-                                    <CheckCircle className="w-4 h-4 mr-2" />
-                                    Зөвшөөрсөн
-                                </Button>
-                            ) : (
-                                <Button
-                                    className="rounded-xl h-10 px-6 font-bold shadow-lg shadow-primary/20"
-                                    onClick={() => setShowMessageInput(!showMessageInput)}
-                                >
-                                    <Send className="w-4 h-4 mr-2" />
-                                    Урих
-                                </Button>
-                            )}
+
+                    {/* Skills */}
+                    <div className="p-6">
+                        <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-3">Ур чадварууд</p>
+                        {student.skills.length > 0 ? (
+                            <div className="flex flex-wrap gap-1.5">
+                                {student.skills.map((skill, i) => (
+                                    <span key={i} className="px-2.5 py-1 rounded-lg bg-primary/8 text-primary text-xs font-medium border border-primary/12">
+                                        {skill}
+                                    </span>
+                                ))}
+                            </div>
+                        ) : (
+                            <p className="text-sm text-muted-foreground/50 italic">Ур чадвар оруулаагүй байна.</p>
+                        )}
+                    </div>
+
+                    {/* Education */}
+                    {student.education && student.education.length > 0 && (
+                        <div className="p-6">
+                            <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-4 flex items-center gap-1.5">
+                                <GraduationCap className="w-3.5 h-3.5" />
+                                Боловсрол
+                            </p>
+                            <div className="space-y-4">
+                                {student.education.map((edu, i) => (
+                                    <div key={i} className="flex items-start gap-3">
+                                        <div className="mt-1 w-1.5 h-1.5 rounded-full bg-primary shrink-0" />
+                                        <div>
+                                            <p className="text-sm font-bold leading-tight">{edu.school}</p>
+                                            <p className="text-xs text-muted-foreground mt-0.5">{edu.degree}</p>
+                                            <p className="text-[10px] text-primary/60 font-medium mt-0.5">{edu.year} он</p>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Contact */}
+                    {student.user?.email && (
+                        <div className="p-6">
+                            <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-3">Холбоо барих</p>
+                            <div className="flex items-center gap-2.5">
+                                <div className="w-7 h-7 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+                                    <Mail className="w-3.5 h-3.5 text-primary" />
+                                </div>
+                                <span className="text-sm font-medium">{student.user.email}</span>
+                            </div>
                         </div>
                     )}
                 </div>
 
-                {/* Invite Message Input */}
-                {showMessageInput && isCompany && (
-                    <div className="p-5 rounded-2xl bg-primary/5 border border-primary/10 space-y-3">
-                        <label className="text-xs font-bold text-primary uppercase tracking-widest">
-                            Урилгын мессеж (заавал биш)
-                        </label>
-                        <textarea
-                            placeholder="Танд манай компанид дадлага хийх урилга илгээж байна..."
-                            className="w-full rounded-xl border border-primary/20 bg-background resize-none p-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
-                            rows={3}
-                            value={inviteMessage}
-                            onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setInviteMessage(e.target.value)}
-                        />
-                        <div className="flex gap-2 justify-end">
-                            <Button
-                                variant="ghost"
-                                size="sm"
-                                className="rounded-xl font-bold"
-                                onClick={() => {
-                                    setShowMessageInput(false)
-                                    setInviteMessage("")
-                                }}
-                            >
-                                Болих
-                            </Button>
-                            <Button
-                                size="sm"
-                                className="rounded-xl font-bold"
-                                onClick={handleSendInvitation}
-                                disabled={sendingInvitation}
-                            >
-                                {sendingInvitation ? (
-                                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                                ) : (
-                                    <Send className="w-4 h-4 mr-2" />
-                                )}
-                                Илгээх
-                            </Button>
-                        </div>
-                    </div>
-                )}
-
-                {/* Info Grid */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div className="p-4 rounded-2xl bg-secondary/30 border border-border/40 space-y-1">
-                        <div className="flex items-center gap-2 text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
-                            <Briefcase className="w-3 h-3" />
-                            Төрөл
-                        </div>
-                        <p className="text-lg font-black capitalize">{student.experienceLevel}</p>
-                    </div>
-                    <div className="p-4 rounded-2xl bg-secondary/30 border border-border/40 space-y-1">
-                        <div className="flex items-center gap-2 text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
-                            <Clock className="w-3 h-3" />
-                            Сүүлд шинэчилсэн
-                        </div>
-                        <p className="text-lg font-black">{new Date(student.updatedAt).toLocaleDateString()}</p>
-                    </div>
-                </div>
-
-                {/* Contact Info */}
-                {(student.user?.email || student.user?.phoneNumber) && (
-                    <div className="space-y-3">
-                        <h3 className="text-sm font-black uppercase tracking-widest text-primary flex items-center gap-2">
-                            Холбоо барих
-                            <div className="h-px flex-1 bg-primary/10" />
-                        </h3>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                            {student.user?.email && (
-                                <div className="flex items-center gap-3 p-3 rounded-xl bg-secondary/20 border border-border/30">
-                                    <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
-                                        <Mail className="w-4 h-4 text-primary" />
-                                    </div>
-                                    <div className="min-w-0">
-                                        <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Имэйл</p>
-                                        <p className="text-sm font-bold truncate">{student.user.email}</p>
-                                    </div>
-                                </div>
-                            )}
-                            {student.user?.phoneNumber && (
-                                <div className="flex items-center gap-3 p-3 rounded-xl bg-secondary/20 border border-border/30">
-                                    <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
-                                        <Phone className="w-4 h-4 text-primary" />
-                                    </div>
-                                    <div className="min-w-0">
-                                        <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Утас</p>
-                                        <p className="text-sm font-bold">{student.user.phoneNumber}</p>
-                                    </div>
-                                </div>
-                            )}
-                        </div>
-                    </div>
-                )}
-
-                {/* Bio */}
-                <div className="space-y-3">
-                    <h3 className="text-sm font-black uppercase tracking-widest text-primary flex items-center gap-2">
-                        Миний тухай
-                        <div className="h-px flex-1 bg-primary/10" />
-                    </h3>
-                    <p className="text-sm leading-relaxed text-foreground/80 font-medium whitespace-pre-wrap">
-                        {student.bio || "Танилцуулга оруулаагүй байна."}
-                    </p>
-                </div>
-
-                {/* Skills */}
-                <div className="space-y-3">
-                    <h3 className="text-sm font-black uppercase tracking-widest text-primary flex items-center gap-2">
-                        Ур чадварууд
-                        <div className="h-px flex-1 bg-primary/10" />
-                    </h3>
-                    <div className="flex flex-wrap gap-2 pt-1">
-                        {student.skills.map((skill, idx) => (
-                            <span key={idx} className="px-3 py-1.5 rounded-xl bg-primary/5 text-primary text-xs font-bold border border-primary/10">
-                                {skill}
-                            </span>
-                        ))}
-                        {student.skills.length === 0 && (
-                            <p className="text-sm text-muted-foreground font-medium">Ур чадвар оруулаагүй байна.</p>
-                        )}
-                    </div>
-                </div>
-
-                {/* Education */}
-                {student.education && student.education.length > 0 && (
-                    <div className="space-y-4">
-                        <h3 className="text-sm font-black uppercase tracking-widest text-primary flex items-center gap-2">
-                            <GraduationCap className="w-4 h-4" />
-                            Боловсрол
-                            <div className="h-px flex-1 bg-primary/10" />
-                        </h3>
-                        <div className="space-y-4 pt-1">
-                            {student.education.map((edu, idx) => (
-                                <div key={idx} className="relative pl-6 before:absolute before:left-0 before:top-1.5 before:w-2 before:h-2 before:bg-primary before:rounded-full before:shadow-[0_0_10px_rgba(var(--primary),0.5)]">
-                                    <h4 className="font-bold text-sm leading-none mb-1.5">{edu.school}</h4>
-                                    <p className="text-xs text-muted-foreground font-medium mb-1">{edu.degree}</p>
-                                    <span className="text-[10px] font-black text-primary/60 uppercase tracking-widest">{edu.year} он</span>
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-                )}
             </div>
-            <Footer />
         </div>
     )
 }

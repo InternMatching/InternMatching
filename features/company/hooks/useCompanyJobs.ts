@@ -37,7 +37,12 @@ export function useCompanyJobs(profile: CompanyProfile | null | undefined, refet
                 await updateJob({ variables: { id: editingJob.id, input } })
                 toast.success("Зар амжилттай шинэчлэгдлээ!")
             } else {
-                if (!profile?.isVerified) { toast.error("Таны бүртгэл баталгаажаагүй байна"); return }
+                if (!profile?.isVerified) {
+                    toast.error("Нийтлэх боломжгүй", {
+                        description: "Нийтлэхийн тулд эхлээд админаар баталгаажуулагдах шаардлагатай.",
+                    })
+                    return
+                }
                 await createJob({ variables: { input: jobForm } })
                 toast.success("Ажлын байр амжилттай бүртгэгдлээ!")
             }
@@ -95,16 +100,27 @@ export function useCompanyJobs(profile: CompanyProfile | null | undefined, refet
         setShowJobForm(true)
     }
 
-    const removeJob = async (jobId: string, jobTitle: string) => {
-        if (!confirm(`"${jobTitle}" зарыг устгахдаа итгэлтэй байна уу?`)) return
-        try {
-            await deleteJob({ variables: { id: jobId } })
-            toast.success("Зар амжилттай устгагдлаа!")
-            refetchJobs()
-        } catch (err) {
-            console.error(err)
-            toast.error("Зар устгахад алдаа гарлаа")
-        }
+    const removeJob = (jobId: string, jobTitle: string) => {
+        toast(`"${jobTitle}" зарыг устгах уу?`, {
+            action: {
+                label: "Устгах",
+                onClick: async () => {
+                    try {
+                        await deleteJob({ variables: { id: jobId } })
+                        toast.success("Зар амжилттай устгагдлаа!")
+                        refetchJobs()
+                    } catch (err) {
+                        console.error(err)
+                        toast.error("Зар устгахад алдаа гарлаа")
+                    }
+                },
+            },
+            cancel: {
+                label: "Болих",
+                onClick: () => {},
+            },
+            duration: 8000,
+        })
     }
 
     return {
