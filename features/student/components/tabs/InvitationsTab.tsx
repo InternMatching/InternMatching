@@ -1,9 +1,10 @@
 "use client"
 
 import Image from "next/image"
+import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
-import { Mail, Clock, Building2, CheckCircle, XCircle } from "lucide-react"
+import { Mail, Clock, Building2, CheckCircle, XCircle, ChevronRight } from "lucide-react"
 import { Invitation } from "@/lib/type"
 import { cn } from "@/lib/utils"
 
@@ -33,8 +34,12 @@ export function StudentInvitationsTab({ invitations, loading, responding, onResp
                         <Card key={invitation.id} className="border-border/60 bg-background rounded-2xl shadow-sm overflow-hidden">
                             <CardContent className="p-5 space-y-4">
                                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                                    <div className="flex items-center gap-3">
-                                        <div className="w-11 h-11 bg-secondary/30 rounded-xl flex items-center justify-center border border-border/40 overflow-hidden shrink-0">
+                                    <Link
+                                        href={`/companies/${invitation.company?.id}`}
+                                        className="flex items-center gap-3 group min-w-0"
+                                        onClick={e => !invitation.company?.id && e.preventDefault()}
+                                    >
+                                        <div className="w-11 h-11 bg-secondary/30 rounded-xl flex items-center justify-center border border-border/40 overflow-hidden shrink-0 group-hover:border-primary/40 transition-colors">
                                             {invitation.company?.logoUrl ? (
                                                 <Image src={invitation.company.logoUrl} alt={invitation.company.companyName || ""} width={44} height={44} className="object-cover w-full h-full" />
                                             ) : (
@@ -43,8 +48,11 @@ export function StudentInvitationsTab({ invitations, loading, responding, onResp
                                                 </span>
                                             )}
                                         </div>
-                                        <div>
-                                            <h3 className="font-bold text-base leading-none mb-1">{invitation.company?.companyName}</h3>
+                                        <div className="min-w-0">
+                                            <div className="flex items-center gap-1">
+                                                <h3 className="font-bold text-base leading-none mb-1 group-hover:text-primary transition-colors truncate">{invitation.company?.companyName}</h3>
+                                                <ChevronRight className="w-3.5 h-3.5 text-muted-foreground/40 group-hover:text-primary transition-colors shrink-0 mb-0.5" />
+                                            </div>
                                             <div className="flex items-center gap-2 text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
                                                 {invitation.company?.industry && <span>{invitation.company.industry}</span>}
                                                 {invitation.company?.location && (
@@ -55,7 +63,7 @@ export function StudentInvitationsTab({ invitations, loading, responding, onResp
                                                 )}
                                             </div>
                                         </div>
-                                    </div>
+                                    </Link>
                                     <div className="flex items-center gap-2">
                                         {invitation.status === "pending" ? (
                                             <>
