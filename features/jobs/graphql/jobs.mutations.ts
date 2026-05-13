@@ -5,6 +5,7 @@ export const CREATE_JOB = gql`
     createJob(input: $input) {
       id
       title
+      status
       maxParticipants
       applicationCount
     }

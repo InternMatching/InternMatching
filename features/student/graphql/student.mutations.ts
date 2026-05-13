@@ -40,6 +40,12 @@ export const CREATE_STUDENT_PROFILE = gql`
   }
 `;
 
+export const SUGGEST_SKILLS_FOR_MY_PROFILE = gql`
+  mutation SuggestSkillsForMyProfile {
+    suggestSkillsForMyProfile
+  }
+`;
+
 export const UPLOAD_STUDENT_PROFILE_PICTURE = gql`
   mutation UploadStudentProfilePicture($base64Image: String!) {
     uploadStudentProfilePicture(base64Image: $base64Image) {

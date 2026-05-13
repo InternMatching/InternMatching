@@ -81,7 +81,7 @@ export interface CompanyProfile {
 }
 
 // Job Types
-export type JobStatus = 'open' | 'closed';
+export type JobStatus = 'open' | 'closed' | 'draft';
 
 export interface Job {
   id: string;
@@ -160,9 +160,9 @@ export interface CompanyProfileInput {
 }
 
 export interface JobInput {
-  title: string;
+  title?: string;
   description?: string;
-  type: ExperienceLevel;
+  type?: ExperienceLevel;
   requiredSkills?: string[];
   location?: string;
   salaryRange?: string;

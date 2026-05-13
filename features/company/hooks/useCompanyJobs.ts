@@ -28,10 +28,13 @@ export function useCompanyJobs(profile: CompanyProfile | null | undefined, refet
 
     const submitForm = async (e: React.FormEvent) => {
         e.preventDefault()
-        if (!jobForm.title.trim()) { toast.error("Ажлын нэр оруулна уу"); return }
+        if (!jobForm.title?.trim()) { toast.error("Ажлын нэр оруулна уу"); return }
         try {
             if (editingJob) {
-                await updateJob({ variables: { id: editingJob.id, input: jobForm } })
+                const input = editingJob.status === "draft"
+                    ? { ...jobForm, status: "draft" as const }
+                    : jobForm
+                await updateJob({ variables: { id: editingJob.id, input } })
                 toast.success("Зар амжилттай шинэчлэгдлээ!")
             } else {
                 if (!profile?.isVerified) { toast.error("Таны бүртгэл баталгаажаагүй байна"); return }
@@ -47,6 +50,38 @@ export function useCompanyJobs(profile: CompanyProfile | null | undefined, refet
         }
     }
 
+    const saveDraft = async (e: React.FormEvent) => {
+        e.preventDefault()
+        if (!jobForm.title?.trim()) { toast.error("Ажлын нэр оруулна уу"); return }
+        try {
+            if (editingJob) {
+                await updateJob({ variables: { id: editingJob.id, input: { ...jobForm, status: "draft" as const } } })
+                toast.success("Ноороглогдлоо!")
+            } else {
+                await createJob({ variables: { input: { ...jobForm, status: "draft" as const } } })
+                toast.success("Зар ноороглогдлоо!")
+            }
+            setShowJobForm(false)
+            resetForm()
+            refetchJobs()
+        } catch (err) {
+            console.error(err)
+            toast.error("Ноороглоход алдаа гарлаа")
+        }
+    }
+
+    const publishDraft = async (jobId: string) => {
+        if (!profile?.isVerified) { toast.error("Нийтлэхийн тулд бүртгэлээ баталгаажуулна уу"); return }
+        try {
+            await updateJob({ variables: { id: jobId, input: { status: "open" as const } } })
+            toast.success("Зар амжилттай нийтлэгдлээ!")
+            refetchJobs()
+        } catch (err) {
+            console.error(err)
+            toast.error("Нийтлэхэд алдаа гарлаа")
+        }
+    }
+
     const editJob = (job: Job) => {
         setEditingJob(job)
         setJobForm({
@@ -56,7 +91,7 @@ export function useCompanyJobs(profile: CompanyProfile | null | undefined, refet
             requirements: job.requirements || "", additionalInfo: job.additionalInfo || "",
             deadline: job.deadline ? job.deadline.split("T")[0] : "", maxParticipants: job.maxParticipants,
         })
-        setSkillsInput((job.requiredSkills || []).join(", "))
+        setSkillsInput("")
         setShowJobForm(true)
     }
 
@@ -76,6 +111,6 @@ export function useCompanyJobs(profile: CompanyProfile | null | undefined, refet
         jobForm, setJobForm, showJobForm, editingJob, viewingJob, setViewingJob,
         skillsInput, setSkillsInput,
         submitting: creatingJob || updatingJob, deletingJob,
-        toggleForm, submitForm, editJob, removeJob,
+        toggleForm, submitForm, saveDraft, publishDraft, editJob, removeJob,
     }
 }
