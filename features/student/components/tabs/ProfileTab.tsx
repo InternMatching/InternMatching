@@ -67,9 +67,12 @@ export function StudentProfileTab({
                     setShowCVPreview(true)
                 }
             } catch (err: unknown) {
-                const code = (err as { graphQLErrors?: { extensions?: { code?: string } }[] })
-                    ?.graphQLErrors?.[0]?.extensions?.code
-                if (code === "CV_PARSE_LIMIT_EXCEEDED") {
+                const firstGqlErr = (err as { graphQLErrors?: { message?: string; extensions?: { code?: string } }[] })
+                    ?.graphQLErrors?.[0]
+                const isLimitError =
+                    firstGqlErr?.extensions?.code === "CV_PARSE_LIMIT_EXCEEDED" ||
+                    firstGqlErr?.message?.includes("хязгаарт хүрлээ")
+                if (isLimitError) {
                     toast.error("Өдөрт CV задлах хязгаарт хүрлээ. Маргааш дахин оролдоно уу.", {
                         description: "Өдөрт хамгийн ихдээ 3 удаа CV задлах боломжтой.",
                     })
