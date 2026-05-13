@@ -76,7 +76,7 @@ export default function LandingPage() {
                       <ArrowRight className="ml-2 w-4 h-4 transition-transform group-hover:translate-x-1 " />
                     </Link>
                   </Button>
-                  <Button size="lg" variant="outline" className="h-14 px-8 rounded-2xl hover:bg-primary  text-base font-semibold border-border/60" asChild>
+                  <Button size="lg" variant="outline" className="h-14 px-8 rounded-2xl hover:bg-primary hover:text-white  text-base font-semibold border-border/60" asChild>
                     <Link href="/login">Нэвтрэх</Link>
                   </Button>
                 </div>

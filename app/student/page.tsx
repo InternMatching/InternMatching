@@ -53,18 +53,32 @@ export default function StudentPage() {
     const latestFormData = useRef(formData)
     latestFormData.current = formData
 
-    const doAutoSave = useCallback(async (data: StudentProfileInput) => {
+    const doAutoSave = useCallback(async (data: StudentProfileInput, manual = false) => {
         if (!profileInitialized.current) return
         if (!data.firstName?.trim() || !data.lastName?.trim()) return
+
+        const allEducation = data.education || []
+        const validEducation = allEducation
+            .filter(e => e.school?.trim() && e.degree?.trim())
+            .map(({ school, degree, year, status }) => ({
+                school: school.trim(),
+                degree: degree.trim(),
+                year: year || new Date().getFullYear(),
+                ...(status ? { status } : {}),
+            }))
+
+        if (manual && allEducation.length > validEducation.length) {
+            toast.error("Сургууль болон мэргэжлийг бөглөнө үү")
+            return
+        }
+
         setAutoSaveStatus("saving")
         try {
             const cleanInput = {
                 firstName: data.firstName, lastName: data.lastName, bio: data.bio,
                 skills: data.skills, experienceLevel: data.experienceLevel,
                 isActivelyLooking: data.isActivelyLooking,
-                education: (data.education || []).map(({ school, degree, year, status }) => ({
-                    school, degree, year, ...(status ? { status } : {})
-                })),
+                education: validEducation,
             }
             await updateProfile({ variables: { input: cleanInput } })
             refetchProfile()
@@ -73,6 +87,9 @@ export default function StudentPage() {
         } catch (err) {
             console.error("Auto-save error:", err)
             setAutoSaveStatus("idle")
+            if (manual) {
+                toast.error(err instanceof Error ? err.message : "Хадгалахад алдаа гарлаа")
+            }
         }
     }, [updateProfile, refetchProfile])
 
@@ -99,7 +116,7 @@ export default function StudentPage() {
                 isActivelyLooking: profile.isActivelyLooking ?? true,
                 education: profile.education || [],
             })
-            setSkillsInput(profile.skills?.join(", ") || "")
+            setSkillsInput("")
             setTimeout(() => { profileInitialized.current = true }, 100)
         } else if (!profileLoading && userMe) {
             setTimeout(() => { profileInitialized.current = true }, 100)
@@ -117,7 +134,7 @@ export default function StudentPage() {
 
     const handleManualSave = () => {
         if (autoSaveTimer.current) clearTimeout(autoSaveTimer.current)
-        doAutoSave(formData)
+        doAutoSave(formData, true)
     }
 
     const handleApply = async (jobId: string) => {
