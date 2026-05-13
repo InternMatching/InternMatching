@@ -2,15 +2,18 @@
 
 import React from "react"
 import Image from "next/image"
+import { useMutation } from "@apollo/client/react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Loader2, CheckCircle, User, Camera, X } from "lucide-react"
-import { StudentProfile, StudentProfileInput } from "@/lib/type"
+import { Loader2, CheckCircle, User, Camera, X, FileText, Sparkles, Check } from "lucide-react"
+import { StudentProfile, StudentProfileInput, CVParseResult } from "@/lib/type"
 import { cn } from "@/lib/utils"
 import { EducationEditor } from "@/features/student/components/EducationEditor"
 import { filterTechSkills } from "@/features/student/utils/techSkills"
+import { PARSE_CV } from "@/features/student/graphql/student.mutations"
+import { toast } from "sonner"
 
 type Props = {
     profile?: StudentProfile | null
@@ -42,6 +45,61 @@ export function StudentProfileTab({
     const [skillFocused, setSkillFocused] = React.useState(false)
     const [activeIndex, setActiveIndex] = React.useState(0)
     const skillBoxRef = React.useRef<HTMLDivElement | null>(null)
+    const cvInputRef = React.useRef<HTMLInputElement>(null)
+
+    // CV parsing state
+    const [parsedCV, setParsedCV] = React.useState<CVParseResult | null>(null)
+    const [showCVPreview, setShowCVPreview] = React.useState(false)
+    const [parseCV, { loading: parsingCV }] = useMutation<{ parseCV: CVParseResult }>(PARSE_CV)
+
+    const handleCVFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0]
+        if (!file) return
+        if (file.type !== "application/pdf") { toast.error("Зөвхөн PDF файл оруулна уу"); return }
+        if (file.size > 5 * 1024 * 1024) { toast.error("Файлын хэмжээ 5MB-аас бага байх ёстой"); return }
+
+        const reader = new FileReader()
+        reader.onloadend = async () => {
+            try {
+                const { data } = await parseCV({ variables: { base64PDF: reader.result as string } })
+                if (data?.parseCV) {
+                    setParsedCV(data.parseCV)
+                    setShowCVPreview(true)
+                }
+            } catch (err: unknown) {
+                const code = (err as { graphQLErrors?: { extensions?: { code?: string } }[] })
+                    ?.graphQLErrors?.[0]?.extensions?.code
+                if (code === "CV_PARSE_LIMIT_EXCEEDED") {
+                    toast.error("Өдөрт CV задлах хязгаарт хүрлээ. Маргааш дахин оролдоно уу.", {
+                        description: "Өдөрт хамгийн ихдээ 3 удаа CV задлах боломжтой.",
+                    })
+                } else {
+                    toast.error("CV задлахад алдаа гарлаа. PDF файл зөв форматтай эсэхийг шалгана уу.")
+                }
+            }
+        }
+        reader.readAsDataURL(file)
+        // Reset input so same file can be re-selected
+        e.target.value = ""
+    }
+
+    const applyParsedCV = () => {
+        if (!parsedCV) return
+        setFormData(prev => ({
+            ...prev,
+            ...(parsedCV.firstName && { firstName: parsedCV.firstName }),
+            ...(parsedCV.lastName && { lastName: parsedCV.lastName }),
+            ...(parsedCV.bio && { bio: parsedCV.bio }),
+            ...(parsedCV.skills.length > 0 && {
+                skills: Array.from(new Set([...prev.skills || [], ...parsedCV.skills]))
+            }),
+            ...(parsedCV.education.length > 0 && { education: parsedCV.education }),
+            ...(parsedCV.experienceLevel && { experienceLevel: parsedCV.experienceLevel }),
+        }))
+        toast.success("CV-ийн мэдээлэл профайлд нэмэгдлээ!")
+        setShowCVPreview(false)
+        setParsedCV(null)
+    }
 
     const currentSkills = React.useMemo(() => formData.skills || [], [formData.skills])
     const suggestions = React.useMemo(
@@ -147,6 +205,81 @@ export function StudentProfileTab({
                 </div>
             </CardHeader>
             <CardContent className="p-6 md:p-8">
+                {/* CV Parse Button */}
+                <div className="mb-6">
+                    <input ref={cvInputRef} type="file" accept="application/pdf" className="hidden" onChange={handleCVFileChange} />
+                    <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        className="h-9 rounded-xl gap-2 border-primary/30 text-primary hover:bg-primary/5 hover:border-primary/50 font-bold"
+                        onClick={() => cvInputRef.current?.click()}
+                        disabled={parsingCV}
+                    >
+                        {parsingCV
+                            ? <><Loader2 className="w-3.5 h-3.5 animate-spin" />CV задлаж байна...</>
+                            : <><Sparkles className="w-3.5 h-3.5" />CV-ээс автоматаар бөглөх</>
+                        }
+                    </Button>
+                    <p className="text-[11px] text-muted-foreground mt-1.5 ml-0.5">
+                        PDF форматтай CV оруулснаар профайлын талбарууд автоматаар бөглөгдөнө.{" "}
+                        <span className="text-primary/70 font-medium">Өдөрт хамгийн ихдээ 3 удаа.</span>
+                    </p>
+                </div>
+
+                {/* CV Preview Panel */}
+                <div className={`grid transition-all duration-300 ease-in-out mb-6 ${showCVPreview ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0"}`}>
+                    <div className="overflow-hidden">
+                        <div className="rounded-2xl border border-primary/20 bg-primary/3 p-5 space-y-4">
+                            <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-2">
+                                    <div className="w-7 h-7 rounded-lg bg-primary/10 flex items-center justify-center">
+                                        <FileText className="w-3.5 h-3.5 text-primary" />
+                                    </div>
+                                    <p className="text-sm font-semibold">CV-ийн задлалт</p>
+                                </div>
+                                <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => { setShowCVPreview(false); setParsedCV(null) }}>
+                                    <X className="w-4 h-4" />
+                                </Button>
+                            </div>
+                            {parsedCV && (
+                                <div className="space-y-3 text-sm">
+                                    {(parsedCV.firstName || parsedCV.lastName) && (
+                                        <div className="flex items-start gap-2">
+                                            <Check className="w-3.5 h-3.5 text-emerald-500 mt-0.5 shrink-0" />
+                                            <span className="text-muted-foreground">Нэр: <span className="text-foreground font-medium">{[parsedCV.firstName, parsedCV.lastName].filter(Boolean).join(" ")}</span></span>
+                                        </div>
+                                    )}
+                                    {parsedCV.bio && (
+                                        <div className="flex items-start gap-2">
+                                            <Check className="w-3.5 h-3.5 text-emerald-500 mt-0.5 shrink-0" />
+                                            <span className="text-muted-foreground">Танилцуулга: <span className="text-foreground font-medium line-clamp-2">{parsedCV.bio}</span></span>
+                                        </div>
+                                    )}
+                                    {parsedCV.skills.length > 0 && (
+                                        <div className="flex items-start gap-2">
+                                            <Check className="w-3.5 h-3.5 text-emerald-500 mt-0.5 shrink-0" />
+                                            <span className="text-muted-foreground">Ур чадвар: <span className="text-foreground font-medium">{parsedCV.skills.slice(0, 6).join(", ")}{parsedCV.skills.length > 6 ? ` +${parsedCV.skills.length - 6}` : ""}</span></span>
+                                        </div>
+                                    )}
+                                    {parsedCV.education.length > 0 && (
+                                        <div className="flex items-start gap-2">
+                                            <Check className="w-3.5 h-3.5 text-emerald-500 mt-0.5 shrink-0" />
+                                            <span className="text-muted-foreground">Боловсрол: <span className="text-foreground font-medium">{parsedCV.education.map(e => `${e.degree} — ${e.school}`).join("; ")}</span></span>
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+                            <div className="flex gap-2 pt-1 border-t border-primary/10">
+                                <Button variant="outline" size="sm" className="h-8 rounded-lg text-xs" onClick={() => { setShowCVPreview(false); setParsedCV(null) }}>Цуцлах</Button>
+                                <Button size="sm" className="h-8 rounded-lg text-xs font-bold gap-1.5" onClick={applyParsedCV}>
+                                    <Sparkles className="w-3 h-3" />Профайлд нэмэх
+                                </Button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <form onSubmit={onSubmit} className="space-y-6">
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                         <div className="space-y-2">

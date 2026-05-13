@@ -27,7 +27,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     const logout = useCallback(async () => {
         localStorage.removeItem("token")
-        await client.clearStore()
+        try {
+            await client.resetStore()
+        } catch {
+            // ME query errors without a token — expected
+        }
         toast.success("Амжилттай гарлаа")
         router.push("/login")
     }, [client, router])

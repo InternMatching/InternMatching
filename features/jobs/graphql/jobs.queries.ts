@@ -66,6 +66,18 @@ export const GET_JOB_DETAIL = gql`
   }
 `;
 
+export const GET_AI_MATCH_SCORE = gql`
+  query GetAIMatchScore($jobId: ID!) {
+    getAIMatchScore(jobId: $jobId) {
+      score
+      summary
+      strengths
+      gaps
+      recommendation
+    }
+  }
+`;
+
 export const GET_ALL_JOBS = gql`
   query GetAllJobs($companyProfileId: ID, $status: JobStatus) {
     getAllJobs(companyProfileId: $companyProfileId, status: $status) {

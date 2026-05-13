@@ -46,6 +46,24 @@ export const SUGGEST_SKILLS_FOR_MY_PROFILE = gql`
   }
 `;
 
+export const PARSE_CV = gql`
+  mutation ParseCV($base64PDF: String!) {
+    parseCV(base64PDF: $base64PDF) {
+      firstName
+      lastName
+      bio
+      skills
+      education {
+        school
+        degree
+        year
+        status
+      }
+      experienceLevel
+    }
+  }
+`;
+
 export const UPLOAD_STUDENT_PROFILE_PICTURE = gql`
   mutation UploadStudentProfilePicture($base64Image: String!) {
     uploadStudentProfilePicture(base64Image: $base64Image) {

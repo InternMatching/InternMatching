@@ -17,8 +17,8 @@ export function Footer({ compact }: FooterProps) {
                         <h4 className="font-bold text-primary text-lg">AI туслах</h4>
                         <ul className="space-y-3 text-muted-foreground">
                             <li>
-                                <Link href="#" className="hover:text-primary transition-colors">
-                                    AI - CV Хөрвүүлэгч
+                                <Link href="/cv-review" className="hover:text-primary transition-colors">
+                                    AI - CV Шүүмлэгч
                                 </Link>
                             </li>
                         </ul>

@@ -1,3 +1,26 @@
+// CV Review Types
+export interface CVSectionFeedback {
+  score: number;
+  strengths: string[];
+  improvements: string[];
+}
+
+export interface CVReviewResult {
+  overallScore: number;
+  overallSummary: string;
+  sections: {
+    contact: CVSectionFeedback;
+    summary: CVSectionFeedback;
+    experience: CVSectionFeedback;
+    education: CVSectionFeedback;
+    skills: CVSectionFeedback;
+    format: CVSectionFeedback;
+  };
+  topRecommendations: string[];
+  atsScore: number;
+  verdict: string;
+}
+
 // User Types
 export type UserRole = 'student' | 'company' | 'admin';
 
@@ -172,6 +195,27 @@ export interface JobInput {
   deadline?: string;
   maxParticipants?: number;
   status?: JobStatus;
+}
+
+// CV Parse Result
+export interface CVParseResult {
+  firstName?: string;
+  lastName?: string;
+  bio?: string;
+  skills: string[];
+  education: Education[];
+  experienceLevel?: ExperienceLevel;
+}
+
+// AI Match Result
+export type AIMatchRecommendation = 'hire' | 'maybe' | 'pass';
+
+export interface AIMatchResult {
+  score: number;
+  summary: string;
+  strengths: string[];
+  gaps: string[];
+  recommendation: AIMatchRecommendation;
 }
 
 // Admin Stats Types
