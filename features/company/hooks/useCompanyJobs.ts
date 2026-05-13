@@ -28,7 +28,7 @@ export function useCompanyJobs(profile: CompanyProfile | null | undefined, refet
 
     const submitForm = async (e: React.FormEvent) => {
         e.preventDefault()
-        if (!jobForm.title.trim()) { toast.error("Ажлын нэр оруулна уу"); return }
+        if (!jobForm.title?.trim()) { toast.error("Ажлын нэр оруулна уу"); return }
         try {
             if (editingJob) {
                 const input = editingJob.status === "draft"
@@ -52,7 +52,7 @@ export function useCompanyJobs(profile: CompanyProfile | null | undefined, refet
 
     const saveDraft = async (e: React.FormEvent) => {
         e.preventDefault()
-        if (!jobForm.title.trim()) { toast.error("Ажлын нэр оруулна уу"); return }
+        if (!jobForm.title?.trim()) { toast.error("Ажлын нэр оруулна уу"); return }
         try {
             if (editingJob) {
                 await updateJob({ variables: { id: editingJob.id, input: { ...jobForm, status: "draft" as const } } })
