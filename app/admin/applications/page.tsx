@@ -129,7 +129,7 @@ export default function ApplicationsManagementPage() {
                                 <th className="px-6 py-4 text-xs font-bold text-muted-foreground uppercase tracking-wider text-right">Үйлдэл</th>
                             </tr>
                         </thead>
-                        <tbody className="divide-y">
+                        <tbody key={statusFilter + searchTerm} className="divide-y animate-in fade-in duration-200">
                             {filteredApps.length === 0 ? (
                                 <tr>
                                     <td colSpan={5} className="px-6 py-20 text-center text-muted-foreground">

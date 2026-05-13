@@ -79,7 +79,7 @@ export default function AnalyticsPage() {
             {/* Header */}
             <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-border/40 pb-6">
                 <div className="space-y-1">
-                    <h1 className="text-2xl font-black tracking-tight">Аналитик & Тайлан</h1>
+                    <h1 className="text-2xl font-medium tracking-tight">Аналитик & Тайлан</h1>
                     <p className="text-sm font-bold text-muted-foreground">Системийн өсөлт болон хэрэглэгчийн идэвхийг шинжлэх.</p>
                 </div>
                 <div className="relative">
@@ -108,15 +108,15 @@ export default function AnalyticsPage() {
                                 <ArrowUpRight className="w-4 h-4 text-muted-foreground/30 group-hover:text-primary transition-colors" />
                             </div>
                             <div className="space-y-0.5">
-                                <p className="text-[10px] uppercase font-black tracking-widest text-muted-foreground/60">{stat.title}</p>
-                                <h3 className="text-2xl font-black tracking-tight">{stat.value?.toLocaleString() ?? 0}</h3>
+                                <p className="text-[10px] uppercase font-medium tracking-widest text-muted-foreground/60">{stat.title}</p>
+                                <h3 className="text-2xl font-medium tracking-tight">{stat.value?.toLocaleString() ?? 0}</h3>
                             </div>
                         </CardContent>
                     </Card>
                 ))}
             </div>
 
-            {/* Today highlight */}
+
             {(stats?.newUsersToday ?? 0) > 0 && (
                 <Card className="border-primary/20 bg-primary/5 rounded-2xl">
                     <CardContent className="p-5 flex items-center gap-4">
@@ -124,7 +124,7 @@ export default function AnalyticsPage() {
                             <UserPlus className="w-5 h-5" />
                         </div>
                         <div>
-                            <p className="text-sm font-bold text-foreground">Өнөөдөр <span className="text-primary">{stats?.newUsersToday}</span> шинэ хэрэглэгч бүртгүүлсэн</p>
+                            <p className="text-sm font-medium text-foreground">Өнөөдөр <span className="text-primary">{stats?.newUsersToday}</span> шинэ хэрэглэгч бүртгүүлсэн</p>
                             <p className="text-xs text-muted-foreground">Платформын өсөлт үргэлжилж байна</p>
                         </div>
                     </CardContent>

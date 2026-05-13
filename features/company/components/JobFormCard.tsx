@@ -22,7 +22,7 @@ type Props = {
     onSaveDraft: (e: React.FormEvent) => void
 }
 
-export function JobFormCard({ form, setForm, skillsInput, setSkillsInput, editingJob, submitting, isVerified, onSubmit, onSaveDraft }: Props) {
+export function JobFormCard({ form, setForm, skillsInput, setSkillsInput, editingJob, submitting, onSubmit, onSaveDraft }: Props) {
     const [skillFocused, setSkillFocused] = React.useState(false)
     const [activeIndex, setActiveIndex] = React.useState(0)
     const skillBoxRef = React.useRef<HTMLDivElement | null>(null)
@@ -211,11 +211,9 @@ export function JobFormCard({ form, setForm, skillsInput, setSkillsInput, editin
                         >
                             {submitting ? <Loader2 className="animate-spin h-4 w-4" /> : "Ноороглох"}
                         </Button>
-                        {isVerified && (
-                            <Button type="submit" disabled={submitting} className="flex-1 h-10 rounded-xl font-bold">
-                                {submitting ? (<><Loader2 className="animate-spin mr-2 h-4 w-4" />{editingJob ? "Шинэчилж байна..." : "Нийтлэж байна..."}</>) : editingJob ? "Шинэчлэх" : "Нийтлэх"}
-                            </Button>
-                        )}
+                        <Button type="submit" disabled={submitting} className="flex-1 h-10 rounded-xl font-bold">
+                            {submitting ? (<><Loader2 className="animate-spin mr-2 h-4 w-4" />{editingJob ? "Шинэчилж байна..." : "Нийтлэж байна..."}</>) : editingJob ? "Шинэчлэх" : "Нийтлэх"}
+                        </Button>
                     </div>
                 </form>
             </CardContent>

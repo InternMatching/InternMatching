@@ -48,7 +48,7 @@ export function StudentApplicationsTab({ applications, loading }: Props) {
                                             {app.job?.company?.logoUrl ? (
                                                 <Image src={app.job.company.logoUrl} alt={app.job.company.companyName || ""} width={40} height={40} className="object-cover w-full h-full" />
                                             ) : (
-                                                <span className="text-sm font-black text-primary/50 uppercase">
+                                                <span className="text-sm font-medium text-primary/50 uppercase">
                                                     {app.job?.company?.companyName?.[0] || <Building2 className="w-4 h-4 text-muted-foreground" />}
                                                 </span>
                                             )}
@@ -74,7 +74,7 @@ export function StudentApplicationsTab({ applications, loading }: Props) {
                                 </div>
                                 <div className="flex flex-col sm:items-end gap-2.5">
                                     <span className={cn(
-                                        "text-[9px] font-black px-2.5 py-1 rounded-md flex items-center gap-1.5 uppercase tracking-widest border",
+                                        "text-[9px] font-medium px-2.5 py-1 rounded-md flex items-center gap-1.5 uppercase tracking-widest border",
                                         app.status === 'accepted' ? 'bg-emerald-50 text-emerald-600 border-emerald-200' :
                                             app.status === 'rejected' ? 'bg-red-50 text-red-600 border-red-200' : 'bg-blue-50 text-blue-600 border-blue-200'
                                     )}>

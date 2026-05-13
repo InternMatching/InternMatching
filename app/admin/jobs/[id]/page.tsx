@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useMemo } from "react"
+import React, { useMemo, useState } from "react"
 import Image from "next/image"
 import { useParams, useRouter } from "next/navigation"
 import { useQuery, useMutation } from "@apollo/client/react"
@@ -15,10 +15,11 @@ import {
     Loader2,
     Trash2,
     DollarSign,
-    Globe
+    Globe,
 } from "lucide-react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
+import { cn } from "@/lib/utils"
 import { toast } from "sonner"
 
 const GET_ALL_JOBS = gql`
@@ -41,12 +42,14 @@ const GET_ALL_JOBS = gql`
       postedAt
       company {
         companyName
+        description
         logoUrl
         location
         foundedYear
         employeeCount
         slogan
         website
+        industry
       }
     }
   }
@@ -65,8 +68,8 @@ interface Job {
     type: string
     location: string
     salaryRange?: string
-    responsibilities?: string[]
-    requirements?: string[]
+    responsibilities?: string
+    requirements?: string
     additionalInfo?: string
     deadline?: string
     maxParticipants?: number
@@ -76,18 +79,22 @@ interface Job {
     postedAt: string
     company: {
         companyName: string
+        description?: string
         logoUrl?: string
         location?: string
         foundedYear?: number
         employeeCount?: number
         slogan?: string
         website?: string
+        industry?: string
     }
 }
 
 export default function AdminJobDetailPage() {
     const params = useParams()
     const router = useRouter()
+    const [isExiting, setIsExiting] = useState(false)
+    const handleBack = () => { setIsExiting(true); setTimeout(() => router.push("/admin/jobs"), 280) }
     const jobId = params.id as string
 
     const { data, loading, error } = useQuery<{ getAllJobs: Job[] }>(GET_ALL_JOBS)
@@ -98,15 +105,26 @@ export default function AdminJobDetailPage() {
         return data.getAllJobs.find(j => j.id === jobId) || null
     }, [data, jobId])
 
-    const handleDelete = async () => {
-        if (!confirm("Энэ дадлагын зарыг устгахдаа итгэлтэй байна уу?")) return
-        try {
-            await deleteJob({ variables: { id: jobId } })
-            toast.success("Дадлагын байр амжилттай устлаа")
-            router.push("/admin/jobs")
-        } catch (err) {
-            toast.error(err instanceof Error ? err.message : "Устгахад алдаа гарлаа")
-        }
+    const handleDelete = () => {
+        toast(`"${job?.title}" зарыг устгах уу?`, {
+            action: {
+                label: "Устгах",
+                onClick: async () => {
+                    try {
+                        await deleteJob({ variables: { id: jobId } })
+                        toast.success("Дадлагын байр амжилттай устлаа")
+                        router.push("/admin/jobs")
+                    } catch (err) {
+                        toast.error(err instanceof Error ? err.message : "Устгахад алдаа гарлаа")
+                    }
+                },
+            },
+            cancel: {
+                label: "Болих",
+                onClick: () => { },
+            },
+            duration: 8000,
+        })
     }
 
     if (loading) return (
@@ -121,7 +139,7 @@ export default function AdminJobDetailPage() {
 
     if (!job) return (
         <div className="space-y-4">
-            <Button variant="ghost" size="sm" className="rounded-xl font-medium" onClick={() => router.push("/admin/jobs")}>
+            <Button variant="ghost" size="sm" className="rounded-xl font-medium" onClick={handleBack}>
                 <ArrowLeft className="w-4 h-4 mr-2" />
                 Буцах
             </Button>
@@ -132,10 +150,10 @@ export default function AdminJobDetailPage() {
     )
 
     return (
-        <div className="space-y-6">
-            {/* Header */}
+        <div className={cn("space-y-6", isExiting && "animate-out fade-out slide-out-to-bottom-2 duration-[280ms]")}>
+
             <div className="flex items-center justify-between">
-                <Button variant="ghost" size="sm" onClick={() => router.push("/admin/jobs")}>
+                <Button variant="ghost" size="sm" onClick={handleBack}>
                     <ArrowLeft className="w-4 h-4 mr-2" />
                     Буцах
                 </Button>
@@ -150,10 +168,10 @@ export default function AdminJobDetailPage() {
                 </Button>
             </div>
 
-            {/* Job Info Card */}
+
             <Card>
                 <CardContent className="p-6 space-y-6">
-                    {/* Title & Company */}
+
                     <div className="flex items-start gap-4">
                         <div className="w-14 h-14 rounded-2xl bg-secondary flex items-center justify-center border overflow-hidden shrink-0">
                             {job.company.logoUrl ? (
@@ -232,52 +250,38 @@ export default function AdminJobDetailPage() {
                     )}
 
                     {/* Requirements */}
-                    {job.requirements && Array.isArray(job.requirements) && job.requirements.length > 0 && (
+                    {job.requirements && (
                         <div className="space-y-2">
                             <h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
                                 <div className="h-px flex-1 bg-border/40" />
                                 Шаардлага
                                 <div className="h-px flex-1 bg-border/40" />
                             </h3>
-                            <ul className="space-y-1.5">
-                                {job.requirements.map((req, i) => (
-                                    <li key={i} className="flex items-start gap-2 text-sm text-foreground/80">
-                                        <span className="w-1.5 h-1.5 rounded-full bg-primary mt-1.5 shrink-0" />
-                                        {req}
-                                    </li>
-                                ))}
-                            </ul>
+                            <p className="text-sm leading-relaxed text-foreground/80 p-4">{job.requirements}</p>
                         </div>
                     )}
 
                     {/* Responsibilities */}
-                    {job.responsibilities && Array.isArray(job.responsibilities) && job.responsibilities.length > 0 && (
+                    {job.responsibilities && (
                         <div className="space-y-2">
                             <h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
                                 <div className="h-px flex-1 bg-border/40" />
                                 Үүрэг даалгавар
                                 <div className="h-px flex-1 bg-border/40" />
                             </h3>
-                            <ul className="space-y-1.5">
-                                {job.responsibilities.map((resp, i) => (
-                                    <li key={i} className="flex items-start gap-2 text-sm text-foreground/80">
-                                        <span className="w-1.5 h-1.5 rounded-full bg-primary mt-1.5 shrink-0" />
-                                        {resp}
-                                    </li>
-                                ))}
-                            </ul>
+                            <p className="text-sm leading-relaxed text-foreground/80 p-4">{job.responsibilities}</p>
                         </div>
                     )}
 
                     {/* Required Skills */}
                     {job.requiredSkills && Array.isArray(job.requiredSkills) && job.requiredSkills.length > 0 && (
-                        <div className="space-y-2">
+                        <div className="flex flex-col">
                             <h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
                                 <div className="h-px flex-1 bg-border/40" />
                                 Шаардлагатай ур чадвар
                                 <div className="h-px flex-1 bg-border/40" />
                             </h3>
-                            <div className="flex flex-wrap gap-2">
+                            <div className="flex flex-wrap gap-2 pt-4">
                                 {job.requiredSkills.map((skill, i) => (
                                     <span key={i} className="px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-medium">
                                         {skill}
@@ -287,7 +291,7 @@ export default function AdminJobDetailPage() {
                         </div>
                     )}
 
-                    {/* Additional Info */}
+
                     {job.additionalInfo && (
                         <div className="space-y-2">
                             <h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
@@ -295,18 +299,41 @@ export default function AdminJobDetailPage() {
                                 Нэмэлт мэдээлэл
                                 <div className="h-px flex-1 bg-border/40" />
                             </h3>
-                            <p className="text-sm leading-relaxed text-foreground/80">{job.additionalInfo}</p>
+                            <p className="text-sm leading-relaxed text-foreground/80 p-4">{job.additionalInfo}</p>
                         </div>
                     )}
 
                     {/* Company Info */}
-                    <div className="space-y-2">
+                    <div className="space-y-3">
                         <h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
                             <div className="h-px flex-1 bg-border/40" />
                             Компанийн мэдээлэл
                             <div className="h-px flex-1 bg-border/40" />
                         </h3>
+                        {job.company.description && (
+                            <div className="p-3.5 rounded-xl bg-secondary/20 border border-border/20 text-sm leading-relaxed text-foreground/80 italic">
+                                {job.company.description}
+                            </div>
+                        )}
+                        {job.company.slogan && (
+                            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                                <span className="w-3 h-3 shrink-0 opacity-40">&ldquo;</span>
+                                <span className="italic font-medium">{job.company.slogan}</span>
+                            </div>
+                        )}
                         <div className="grid grid-cols-2 gap-3">
+                            {job.company.location && (
+                                <div className="flex items-center gap-2 p-3 rounded-xl bg-background border border-border/40 text-sm">
+                                    <MapPin className="w-4 h-4 text-muted-foreground" />
+                                    <span className="font-medium">{job.company.location}</span>
+                                </div>
+                            )}
+                            {job.company.industry && (
+                                <div className="flex items-center gap-2 p-3 rounded-xl bg-background border border-border/40 text-sm">
+                                    <Briefcase className="w-4 h-4 text-muted-foreground" />
+                                    <span className="font-medium">{job.company.industry}</span>
+                                </div>
+                            )}
                             {job.company.foundedYear && (
                                 <div className="flex items-center gap-2 p-3 rounded-xl bg-background border border-border/40 text-sm">
                                     <Calendar className="w-4 h-4 text-muted-foreground" />

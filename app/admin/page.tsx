@@ -95,7 +95,7 @@ export default function AdminDashboardPage() {
         <div className="space-y-8 pb-10">
             <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-border/40 pb-6">
                 <div className="space-y-1">
-                    <h1 className="text-2xl font-black tracking-tight">Хянах самбар</h1>
+                    <h1 className="text-2xl font-medium tracking-tight">Хянах самбар</h1>
                     <p className="text-sm font-bold text-muted-foreground">Системийн ерөнхий үзүүлэлтүүд болон идэвхжлийг хянах.</p>
                 </div>
                 <div className="relative">
@@ -129,8 +129,8 @@ export default function AdminDashboardPage() {
                                 <ArrowUpRight className="w-4 h-4 text-muted-foreground/30 group-hover:text-primary transition-colors" />
                             </div>
                             <div className="space-y-0.5">
-                                <p className="text-[10px] uppercase font-black tracking-widest text-muted-foreground/60">{stat.title}</p>
-                                <h3 className="text-2xl font-black tracking-tight">{stat.value?.toLocaleString()}</h3>
+                                <p className="text-[10px] uppercase font-medium tracking-widest text-muted-foreground/60">{stat.title}</p>
+                                <h3 className="text-2xl font-medium tracking-tight">{stat.value?.toLocaleString()}</h3>
                             </div>
                         </CardContent>
                     </Card>

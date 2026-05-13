@@ -80,7 +80,7 @@ export function CompanyApplicantsTab({ applications, invitations, loading, updat
 
                                 <div className="flex items-center gap-3 justify-between md:justify-end border-t md:border-0 pt-4 md:pt-0">
                                     <span className={cn(
-                                        "text-[9px] font-black px-2.5 py-1 rounded-md uppercase tracking-widest border",
+                                        "text-[9px] font-medium px-2.5 py-1 rounded-md uppercase tracking-widest border",
                                         app.status === "accepted" ? "bg-emerald-50 text-emerald-600 border-emerald-100" :
                                             app.status === "rejected" ? "bg-red-50 text-red-600 border-red-100" : "bg-blue-50 text-blue-600 border-blue-100"
                                     )}>
@@ -159,7 +159,7 @@ export function CompanyApplicantsTab({ applications, invitations, loading, updat
                                 </div>
 
                                 <span className={cn(
-                                    "text-[9px] font-black px-2.5 py-1 rounded-md uppercase tracking-widest border shrink-0",
+                                    "text-[9px] font-medium px-2.5 py-1 rounded-md uppercase tracking-widest border shrink-0",
                                     inv.status === "accepted" ? "bg-emerald-50 text-emerald-600 border-emerald-100" :
                                         inv.status === "rejected" ? "bg-red-50 text-red-600 border-red-100" : "bg-amber-50 text-amber-600 border-amber-100"
                                 )}>

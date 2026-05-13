@@ -99,12 +99,14 @@ function SignupContent() {
                 </div>
 
                 <div className="max-w-md space-y-8 relative z-10">
-                    <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary text-sm font-medium border border-primary/20">
-                        <CheckCircle2 className="w-4 h-4" />
-                        <span>Шинэ боломжууд хүлээж байна</span>
+                    <div className="animate-in fade-in slide-in-from-left-4 duration-500" style={{ animationDelay: "100ms", animationFillMode: "both" }}>
+                        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary text-sm font-medium border border-primary/20">
+                            <CheckCircle2 className="w-4 h-4" />
+                            <span>Шинэ боломжууд хүлээж байна</span>
+                        </div>
                     </div>
 
-                    <div className="space-y-4">
+                    <div className="space-y-4 animate-in fade-in slide-in-from-left-4 duration-500" style={{ animationDelay: "200ms", animationFillMode: "both" }}>
                         <h2 className="text-4xl font-bold tracking-tight text-foreground">
                             InternMatch-д нэгдэж, <span className="text-primary italic">амжилтаа</span> эхлүүл.
                         </h2>
@@ -118,7 +120,11 @@ function SignupContent() {
                             { title: "Оюутнуудад", desc: "Дадлага хийх шилдэг газруудыг олж, туршлага хуримтлуулах." },
                             { title: "Байгууллагуудад", desc: "Чадварлаг, эрч хүчтэй залуу боловсон хүчнийг багтаа авах." }
                         ].map((item, i) => (
-                            <div key={i} className="flex gap-4 p-4 rounded-2xl bg-background/50 border border-border/50 backdrop-blur-sm">
+                            <div
+                                key={i}
+                                className="flex gap-4 p-4 rounded-2xl bg-background/50 border border-border/50 backdrop-blur-sm animate-in fade-in slide-in-from-left-3 duration-400"
+                                style={{ animationDelay: `${320 + i * 100}ms`, animationFillMode: "both" }}
+                            >
                                 <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
                                     <div className="w-2 h-2 rounded-full bg-primary" />
                                 </div>
@@ -130,7 +136,7 @@ function SignupContent() {
                         ))}
                     </div>
 
-                    <div className="pt-4 flex items-center gap-4 text-sm text-muted-foreground">
+                    <div className="pt-4 flex items-center gap-4 text-sm text-muted-foreground animate-in fade-in slide-in-from-left-3 duration-400" style={{ animationDelay: "520ms", animationFillMode: "both" }}>
                         <div className="flex -space-x-2">
                             {[1, 2, 3, 4].map(i => (
                                 <div key={i} className="w-8 h-8 rounded-full border-2 border-background bg-muted flex items-center justify-center overflow-hidden">
@@ -146,7 +152,7 @@ function SignupContent() {
             {/* Right Side: Signup Form */}
             <main className="flex items-center justify-center p-6 sm:p-12 lg:p-24 bg-background">
                 <Card className="w-full max-w-md border-none shadow-none bg-transparent">
-                    <CardHeader className="space-y-2 p-0 mb-8 text-left">
+                    <CardHeader className="space-y-2 p-0 mb-8 text-left animate-in fade-in slide-in-from-bottom-3 duration-400" style={{ animationDelay: "50ms", animationFillMode: "both" }}>
                         <CardTitle className="text-3xl font-bold tracking-tight">Бүртгэл үүсгэх</CardTitle>
                         <CardDescription className="text-base">
                             Өөрийн карьерын аяллаа өнөөдөр эхлүүлээрэй.
@@ -160,7 +166,7 @@ function SignupContent() {
                             </div>
                         )}
 
-                        <form onSubmit={handleSubmit} className="space-y-5">
+                        <form onSubmit={handleSubmit} className="space-y-5 animate-in fade-in slide-in-from-bottom-3 duration-400" style={{ animationDelay: "150ms", animationFillMode: "both" }}>
                             {/* Role Selection */}
                             <div className="space-y-3">
                                 <Label className="text-sm font-semibold opacity-70">Таны оролцоо</Label>
@@ -286,7 +292,7 @@ function SignupContent() {
                             </Button>
                         </form>
 
-                        <p className="mt-8 text-[11px] text-muted-foreground text-center leading-relaxed">
+                        <p className="mt-8 text-[11px] text-muted-foreground text-center leading-relaxed animate-in fade-in duration-400" style={{ animationDelay: "300ms", animationFillMode: "both" }}>
                             Бүртгүүлснээр та манай {" "}
                             <Link href="#" className="underline hover:text-primary transition-colors">Үйлчилгээний нөхцөл</Link>
                             {" "} болон {" "}

@@ -18,8 +18,14 @@ export const GET_JOBS_LIST = gql`
       postedAt
       company {
         companyName
+        description
+        industry
         logoUrl
         location
+        foundedYear
+        employeeCount
+        slogan
+        website
       }
     }
   }
@@ -47,6 +53,8 @@ export const GET_JOB_DETAIL = gql`
       postedAt
       company {
         companyName
+        description
+        industry
         logoUrl
         location
         foundedYear
@@ -79,6 +87,8 @@ export const GET_ALL_JOBS = gql`
       postedAt
       company {
         companyName
+        description
+        industry
         logoUrl
         location
         foundedYear

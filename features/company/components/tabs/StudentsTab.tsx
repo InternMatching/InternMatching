@@ -67,7 +67,7 @@ export function CompanyStudentsTab({ students, invitations, loading, search, set
                                         {student.profilePictureUrl ? (
                                             <Image src={student.profilePictureUrl} alt={student.firstName || ""} width={48} height={48} className="object-cover w-full h-full" />
                                         ) : (
-                                            <span className="text-lg font-black text-primary/50 uppercase">
+                                            <span className="text-lg font-medium text-primary/50 uppercase">
                                                 {student.firstName?.[0] || <UserCircle className="w-5 h-5 text-muted-foreground" />}
                                             </span>
                                         )}
@@ -85,12 +85,12 @@ export function CompanyStudentsTab({ students, invitations, loading, search, set
                                     </p>
                                     <div className="flex flex-wrap gap-1.5">
                                         {student.skills.slice(0, 3).map((skill, idx) => (
-                                            <span key={idx} className="px-2 py-0.5 rounded-md bg-primary/5 text-primary text-[9px] font-black uppercase tracking-tight border border-primary/10">
+                                            <span key={idx} className="px-2 py-0.5 rounded-md bg-primary/5 text-primary text-[9px] font-medium uppercase tracking-tight border border-primary/10">
                                                 {skill}
                                             </span>
                                         ))}
                                         {student.skills.length > 3 && (
-                                            <span className="px-2 py-0.5 rounded-md bg-secondary text-muted-foreground text-[9px] font-black uppercase tracking-tight">
+                                            <span className="px-2 py-0.5 rounded-md bg-secondary text-muted-foreground text-[9px] font-medium uppercase tracking-tight">
                                                 +{student.skills.length - 3}
                                             </span>
                                         )}

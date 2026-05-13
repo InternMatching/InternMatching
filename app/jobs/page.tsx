@@ -192,7 +192,7 @@ function JobsContent() {
                                 <Button variant="link" className="text-xs" onClick={clearFilters}>Бүгдийг харах</Button>
                             </div>
                         ) : (
-                            <div className="divide-y divide-border/40">
+                            <div key={searchQuery} className="divide-y divide-border/40 animate-in fade-in duration-200">
                                 {filteredJobs.map((job) => (
                                     <JobListCard
                                         key={job.id}
@@ -207,7 +207,7 @@ function JobsContent() {
 
                     <div className="hidden lg:block flex-1">
                         {selectedJobFull ? (
-                            <div className="p-8 max-w-3xl">
+                            <div key={selectedJobFull.id} className="p-8 max-w-3xl animate-in fade-in slide-in-from-right-2 duration-250">
                                 <JobDetailPanel
                                     job={selectedJobFull}
                                     onApply={handleApplyClick}
@@ -215,7 +215,7 @@ function JobsContent() {
                                 />
                             </div>
                         ) : (
-                            <div className="flex items-center justify-center h-full text-muted-foreground">
+                            <div className="flex items-center justify-center h-full text-muted-foreground animate-in fade-in duration-300">
                                 <div className="text-center space-y-2">
                                     <Briefcase className="w-10 h-10 mx-auto opacity-20" />
                                     <p className="text-sm font-bold">Зар сонгоно уу</p>

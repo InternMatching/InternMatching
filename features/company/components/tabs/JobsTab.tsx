@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useMemo } from "react"
+import React, { useMemo, useState } from "react"
 import Image from "next/image"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
@@ -51,7 +51,7 @@ function JobsGrid({ jobs, company, isVerified, deletingJob, onViewJob, onEditJob
                             {company?.logoUrl ? (
                                 <Image src={company.logoUrl} alt={company.companyName} width={40} height={40} className="object-cover w-full h-full" />
                             ) : (
-                                <span className="text-sm font-black text-primary/50 uppercase">
+                                <span className="text-sm font-medium text-primary/50 uppercase">
                                     {company?.companyName?.[0] || <Building2 className="w-4 h-4 text-muted-foreground" />}
                                 </span>
                             )}
@@ -59,7 +59,7 @@ function JobsGrid({ jobs, company, isVerified, deletingJob, onViewJob, onEditJob
                         <div className="flex-1 min-w-0 pt-2 flex items-center gap-2">
                             <h3 className="font-bold text-sm truncate">{job.title}</h3>
                             {job.status === "draft" && (
-                                <span className="shrink-0 text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full bg-amber-100 text-amber-600 border border-amber-200">
+                                <span className="shrink-0 text-[9px] font-medium uppercase tracking-widest px-2 py-0.5 rounded-full bg-amber-100 text-amber-600 border border-amber-200">
                                     Ноороглосон
                                 </span>
                             )}
@@ -113,7 +113,7 @@ function JobsGrid({ jobs, company, isVerified, deletingJob, onViewJob, onEditJob
             </Card>
         )
         }) || []
-    }, [jobs, now, company, deletingJob, onViewJob, onEditJob, onDeleteJob])
+    }, [jobs, now, company, deletingJob, isVerified, onViewJob, onEditJob, onDeleteJob, onPublishDraft])
     return <div className="grid gap-3">{jobsList}</div>
 }
 
@@ -145,6 +145,13 @@ export function CompanyJobsTab({
     skillsInput, setSkillsInput, editingJob, viewingJob, setViewingJob,
     submittingForm, deletingJob, onSubmitForm, onSaveDraft, onPublishDraft, onEditJob, onDeleteJob,
 }: Props) {
+    const [returnCount, setReturnCount] = useState(0)
+
+    const handleJobBack = () => {
+        setViewingJob(null)
+        setReturnCount(c => c + 1)
+    }
+
     return (
         <div className="space-y-6">
             <div className="flex items-center justify-between border-b border-border/40 pb-5 mb-2">
@@ -157,13 +164,17 @@ export function CompanyJobsTab({
                 </Button>
             </div>
 
-            {showForm && (
-                <JobFormCard
-                    form={form} setForm={setForm} skillsInput={skillsInput} setSkillsInput={setSkillsInput}
-                    editingJob={editingJob} submitting={submittingForm} isVerified={isVerified}
-                    onSubmit={onSubmitForm} onSaveDraft={onSaveDraft}
-                />
-            )}
+            <div className={`grid transition-all duration-300 ease-in-out ${showForm ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'}`}>
+                <div className="overflow-hidden">
+                    <div className="pb-2">
+                        <JobFormCard
+                            form={form} setForm={setForm} skillsInput={skillsInput} setSkillsInput={setSkillsInput}
+                            editingJob={editingJob} submitting={submittingForm} isVerified={isVerified}
+                            onSubmit={onSubmitForm} onSaveDraft={onSaveDraft}
+                        />
+                    </div>
+                </div>
+            </div>
 
             {loading ? (
                 <div className="space-y-2">
@@ -171,13 +182,16 @@ export function CompanyJobsTab({
                 </div>
             ) : viewingJob ? (
                 <JobView
-                    job={viewingJob} company={company} deletingJob={deletingJob}
-                    onBack={() => setViewingJob(null)}
+                    job={viewingJob} company={company} isVerified={isVerified} deletingJob={deletingJob}
+                    onBack={handleJobBack}
                     onEdit={(j) => { onEditJob(j); setViewingJob(null) }}
                     onDelete={(id, title) => { onDeleteJob(id, title); setViewingJob(null) }}
+                    onPublishDraft={(id) => { onPublishDraft(id); setViewingJob(null) }}
                 />
             ) : (
-                <JobsGrid jobs={jobs} company={company} isVerified={isVerified} deletingJob={deletingJob} onViewJob={setViewingJob} onEditJob={onEditJob} onDeleteJob={onDeleteJob} onPublishDraft={onPublishDraft} />
+                <div key={returnCount} className={returnCount > 0 ? "animate-in fade-in slide-in-from-left-3 duration-300" : ""}>
+                    <JobsGrid jobs={jobs} company={company} isVerified={isVerified} deletingJob={deletingJob} onViewJob={setViewingJob} onEditJob={onEditJob} onDeleteJob={onDeleteJob} onPublishDraft={onPublishDraft} />
+                </div>
             )}
         </div>
     )

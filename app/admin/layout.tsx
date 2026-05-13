@@ -54,10 +54,16 @@ const navItems = [
 function SidebarContent({ pathname, setOpen }: { pathname: string; setOpen: (open: boolean) => void }) {
     return (
         <div className="flex flex-col gap-1 py-4">
-            {navItems.map((item) => {
+            {navItems.map((item, i) => {
                 const isActive = pathname === item.href
                 return (
-                    <Link key={item.href} href={item.href} onClick={() => setOpen(false)}>
+                    <Link
+                        key={item.href}
+                        href={item.href}
+                        onClick={() => setOpen(false)}
+                        className="animate-in fade-in slide-in-from-left-2 duration-300"
+                        style={{ animationDelay: `${i * 35}ms`, animationFillMode: "both" }}
+                    >
                         <Button
                             variant={isActive ? "secondary" : "ghost"}
                             className={cn(
@@ -65,8 +71,9 @@ function SidebarContent({ pathname, setOpen }: { pathname: string; setOpen: (ope
                                 isActive ? "bg-primary/10 text-primary hover:bg-primary/20" : "hover:bg-secondary/50 text-muted-foreground hover:text-foreground"
                             )}
                         >
-                            <item.icon className={cn("w-3.5 h-3.5 mr-3", isActive ? "text-primary" : "text-muted-foreground")} />
+                            <item.icon className={cn("w-3.5 h-3.5 mr-3 transition-colors duration-200", isActive ? "text-primary" : "text-muted-foreground")} />
                             <span className="font-bold">{item.name}</span>
+                            <div className={cn("ml-auto w-1 rounded-full bg-primary transition-all duration-200", isActive ? "h-3 opacity-100" : "h-0 opacity-0")} />
                         </Button>
                     </Link>
                 )
@@ -198,7 +205,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                                 <div className="h-32 w-full bg-muted/40 rounded-xl animate-pulse" />
                             </div>
                         ) : (
-                            <div className="animate-in fade-in slide-in-from-bottom-3 duration-500">
+                            <div key={pathname} className="animate-in fade-in slide-in-from-bottom-2 duration-300">
                                 {children}
                             </div>
                         )}
