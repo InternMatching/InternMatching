@@ -40,78 +40,78 @@ function JobsGrid({ jobs, company, isVerified, deletingJob, onViewJob, onEditJob
         return jobs?.map((job) => {
             const isExpired = job.deadline ? new Date(job.deadline).getTime() < now : false
             return (
-            <Card
-                key={job.id}
-                className={cn("transition-all border-border/60 bg-background rounded-xl shadow-none cursor-pointer", isExpired ? "opacity-50" : "hover:border-primary/40")}
-                onClick={() => onViewJob(job)}
-            >
-                <CardContent className="p-4 font-medium">
-                    <div className="flex items-start gap-3">
-                        <div className="w-10 h-10 bg-secondary/30 rounded-xl flex items-center justify-center border border-border/40 overflow-hidden shrink-0">
-                            {company?.logoUrl ? (
-                                <Image src={company.logoUrl} alt={company.companyName} width={40} height={40} className="object-cover w-full h-full" />
-                            ) : (
-                                <span className="text-sm font-medium text-primary/50 uppercase">
-                                    {company?.companyName?.[0] || <Building2 className="w-4 h-4 text-muted-foreground" />}
-                                </span>
-                            )}
-                        </div>
-                        <div className="flex-1 min-w-0 pt-2 flex items-center gap-2">
-                            <h3 className="font-bold text-sm truncate">{job.title}</h3>
-                            {job.status === "draft" && (
-                                <span className="shrink-0 text-[9px] font-medium uppercase tracking-widest px-2 py-0.5 rounded-full bg-amber-100 text-amber-600 border border-amber-200">
-                                    Ноороглосон
-                                </span>
-                            )}
-                        </div>
-                        <div className="hidden md:flex items-center gap-1 shrink-0 ml-auto">
-                            {job.status === "draft" && isVerified && (
-                                <Button variant="ghost" size="sm" className="h-8 w-8 p-0 rounded-lg hover:bg-emerald-50 hover:text-emerald-600" title="Нийтлэх" onClick={(e) => { e.stopPropagation(); onPublishDraft(job.id) }}>
-                                    <Send className="w-3.5 h-3.5" />
+                <Card
+                    key={job.id}
+                    className={cn("transition-all border-border/60 bg-background rounded-xl shadow-none cursor-pointer", isExpired ? "opacity-50" : "hover:border-primary/40")}
+                    onClick={() => onViewJob(job)}
+                >
+                    <CardContent className="p-4 font-medium">
+                        <div className="flex items-start gap-3">
+                            <div className="w-10 h-10 bg-secondary/30 rounded-xl flex items-center justify-center border border-border/40 overflow-hidden shrink-0">
+                                {company?.logoUrl ? (
+                                    <Image src={company.logoUrl} alt={company.companyName} width={40} height={40} className="object-cover w-full h-full" />
+                                ) : (
+                                    <span className="text-sm font-medium text-primary/50 uppercase">
+                                        {company?.companyName?.[0] || <Building2 className="w-4 h-4 text-muted-foreground" />}
+                                    </span>
+                                )}
+                            </div>
+                            <div className="flex-1 min-w-0 pt-2 flex items-center gap-2">
+                                <h3 className="font-bold text-sm truncate">{job.title}</h3>
+                                {job.status === "draft" && (
+                                    <span className="shrink-0 text-[9px] font-medium uppercase tracking-widest px-2 py-0.5 rounded-full bg-amber-100 text-amber-600 border border-amber-200">
+                                        Ноороглосон
+                                    </span>
+                                )}
+                            </div>
+                            <div className="hidden md:flex items-center gap-1 shrink-0 ml-auto">
+                                {job.status === "draft" && isVerified && (
+                                    <Button variant="ghost" size="sm" className="h-8 w-8 p-0 rounded-lg hover:bg-emerald-50 hover:text-emerald-600" title="Нийтлэх" onClick={(e) => { e.stopPropagation(); onPublishDraft(job.id) }}>
+                                        <Send className="w-3.5 h-3.5" />
+                                    </Button>
+                                )}
+                                <Button variant="ghost" size="sm" className="h-8 w-8 p-0 rounded-lg hover:bg-primary/10 hover:text-primary" onClick={(e) => { e.stopPropagation(); onEditJob(job) }}>
+                                    <Pencil className="w-3.5 h-3.5" />
                                 </Button>
-                            )}
-                            <Button variant="ghost" size="sm" className="h-8 w-8 p-0 rounded-lg hover:bg-primary/10 hover:text-primary" onClick={(e) => { e.stopPropagation(); onEditJob(job) }}>
-                                <Pencil className="w-3.5 h-3.5" />
-                            </Button>
-                            <Button variant="ghost" size="sm" className="h-8 w-8 p-0 rounded-lg hover:bg-red-50 hover:text-red-600" onClick={(e) => { e.stopPropagation(); onDeleteJob(job.id, job.title) }} disabled={deletingJob}>
-                                <Trash2 className="w-3.5 h-3.5" />
-                            </Button>
+                                <Button variant="ghost" size="sm" className="h-8 w-8 p-0 rounded-lg hover:bg-red-50 hover:text-red-600" onClick={(e) => { e.stopPropagation(); onDeleteJob(job.id, job.title) }} disabled={deletingJob}>
+                                    <Trash2 className="w-3.5 h-3.5" />
+                                </Button>
+                            </div>
                         </div>
-                    </div>
 
-                    <div className="flex items-center gap-2 sm:gap-3 flex-wrap mt-2 sm:ml-[52px] text-[10px] text-muted-foreground uppercase font-bold tracking-wider">
-                        <span className="flex items-center gap-1"><Search className="w-3 h-3" />{job.location}</span>
-                        <span className="flex items-center gap-1"><Clock className="w-3 h-3" />{job.salaryRange || "Уян хатан"}</span>
-                        <span className="flex items-center gap-1">
-                            <Users2 className="w-3 h-3" />
-                            {job.applicationCount}{job.maxParticipants ? `/${job.maxParticipants}` : ""}
-                        </span>
-                        {job.deadline && (
-                            <span className={cn(
-                                "flex items-center gap-1",
-                                new Date(job.deadline).getTime() - now < 86400000 ? "text-red-500" : "text-amber-500"
-                            )}>
-                                <AlertCircle className="w-3 h-3" />
-                                {getTimeRemaining(job.deadline, now)}
+                        <div className="flex items-center gap-2 sm:gap-3 flex-wrap mt-2 sm:ml-13 text-[10px] text-muted-foreground uppercase font-bold tracking-wider">
+                            <span className="flex items-center gap-1"><Search className="w-3 h-3" />{job.location}</span>
+                            <span className="flex items-center gap-1"><Clock className="w-3 h-3" />{job.salaryRange || "Уян хатан"}</span>
+                            <span className="flex items-center gap-1">
+                                <Users2 className="w-3 h-3" />
+                                {job.applicationCount}{job.maxParticipants ? `/${job.maxParticipants}` : ""}
                             </span>
-                        )}
-                        <div className="flex md:hidden items-center gap-1 shrink-0 ml-auto">
-                            {job.status === "draft" && isVerified && (
-                                <Button variant="ghost" size="sm" className="h-7 w-7 p-0 rounded-lg hover:bg-emerald-50 hover:text-emerald-600" onClick={(e) => { e.stopPropagation(); onPublishDraft(job.id) }}>
-                                    <Send className="w-3 h-3" />
-                                </Button>
+                            {job.deadline && (
+                                <span className={cn(
+                                    "flex items-center gap-1",
+                                    new Date(job.deadline).getTime() - now < 86400000 ? "text-red-500" : "text-amber-500"
+                                )}>
+                                    <AlertCircle className="w-3 h-3" />
+                                    {getTimeRemaining(job.deadline, now)}
+                                </span>
                             )}
-                            <Button variant="ghost" size="sm" className="h-7 w-7 p-0 rounded-lg hover:bg-primary/10 hover:text-primary" onClick={(e) => { e.stopPropagation(); onEditJob(job) }}>
-                                <Pencil className="w-3 h-3" />
-                            </Button>
-                            <Button variant="ghost" size="sm" className="h-7 w-7 p-0 rounded-lg hover:bg-red-50 hover:text-red-600" onClick={(e) => { e.stopPropagation(); onDeleteJob(job.id, job.title) }} disabled={deletingJob}>
-                                <Trash2 className="w-3 h-3" />
-                            </Button>
+                            <div className="flex md:hidden items-center gap-1 shrink-0 ml-auto">
+                                {job.status === "draft" && isVerified && (
+                                    <Button variant="ghost" size="sm" className="h-7 w-7 p-0 rounded-lg hover:bg-emerald-50 hover:text-emerald-600" onClick={(e) => { e.stopPropagation(); onPublishDraft(job.id) }}>
+                                        <Send className="w-3 h-3" />
+                                    </Button>
+                                )}
+                                <Button variant="ghost" size="sm" className="h-7 w-7 p-0 rounded-lg hover:bg-primary/10 hover:text-primary" onClick={(e) => { e.stopPropagation(); onEditJob(job) }}>
+                                    <Pencil className="w-3 h-3" />
+                                </Button>
+                                <Button variant="ghost" size="sm" className="h-7 w-7 p-0 rounded-lg hover:bg-red-50 hover:text-red-600" onClick={(e) => { e.stopPropagation(); onDeleteJob(job.id, job.title) }} disabled={deletingJob}>
+                                    <Trash2 className="w-3 h-3" />
+                                </Button>
+                            </div>
                         </div>
-                    </div>
-                </CardContent>
-            </Card>
-        )
+                    </CardContent>
+                </Card>
+            )
         }) || []
     }, [jobs, now, company, deletingJob, isVerified, onViewJob, onEditJob, onDeleteJob, onPublishDraft])
     return <div className="grid gap-3">{jobsList}</div>
