@@ -8,6 +8,8 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Camera, CheckCircle, CheckCircle2, Globe, Loader2 } from "lucide-react"
 import { CompanyProfile, CompanyProfileInput } from "@/lib/type"
+import { cn } from "@/lib/utils"
+import { filterIndustries } from "@/features/company/utils/industries"
 
 type Props = {
     profile?: CompanyProfile | null
@@ -25,6 +27,48 @@ export function CompanyProfileTab({
     profile, form, setForm, autoSaveStatus, profileInitialized,
     logoUploading, onLogoUpload, onSubmit, onManualSave,
 }: Props) {
+    const [industryFocused, setIndustryFocused] = React.useState(false)
+    const [industryActiveIndex, setIndustryActiveIndex] = React.useState(0)
+    const industryBoxRef = React.useRef<HTMLDivElement | null>(null)
+
+    const industrySuggestions = React.useMemo(
+        () => filterIndustries(form.industry || ""),
+        [form.industry],
+    )
+
+    React.useEffect(() => { setIndustryActiveIndex(0) }, [form.industry])
+
+    React.useEffect(() => {
+        if (!industryFocused) return
+        const onClick = (e: MouseEvent) => {
+            if (industryBoxRef.current && !industryBoxRef.current.contains(e.target as Node)) {
+                setIndustryFocused(false)
+            }
+        }
+        document.addEventListener("mousedown", onClick)
+        return () => document.removeEventListener("mousedown", onClick)
+    }, [industryFocused])
+
+    const selectIndustry = (value: string) => {
+        setForm({ ...form, industry: value })
+        setIndustryFocused(false)
+    }
+
+    const handleIndustryKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+        if (e.key === "ArrowDown" && industrySuggestions.length > 0) {
+            e.preventDefault()
+            setIndustryActiveIndex(i => (i + 1) % industrySuggestions.length)
+        } else if (e.key === "ArrowUp" && industrySuggestions.length > 0) {
+            e.preventDefault()
+            setIndustryActiveIndex(i => (i - 1 + industrySuggestions.length) % industrySuggestions.length)
+        } else if (e.key === "Enter" && industrySuggestions.length > 0 && industryFocused) {
+            e.preventDefault()
+            selectIndustry(industrySuggestions[industryActiveIndex])
+        } else if (e.key === "Escape") {
+            setIndustryFocused(false)
+        }
+    }
+
     return (
         <Card className="border-border/60 shadow-none rounded-2xl bg-background overflow-hidden font-medium">
             <CardHeader className="p-6 md:p-8 border-b border-border/40 bg-background/50">
@@ -73,9 +117,37 @@ export function CompanyProfileTab({
                         <Input value={form.description || ""} onChange={(e) => setForm({ ...form, description: e.target.value })} placeholder="Зорилго, үйл ажиллагааны чиглэл..." className="h-10 rounded-xl bg-secondary/10 border-border/40 focus:bg-background transition-all" />
                     </div>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                        <div className="space-y-2">
+                        <div className="space-y-2" ref={industryBoxRef}>
                             <Label className="text-xs font-bold text-muted-foreground ml-0.5">Салбар</Label>
-                            <Input value={form.industry || ""} onChange={(e) => setForm({ ...form, industry: e.target.value })} placeholder="IT, Design, Marketing..." className="h-10 rounded-xl bg-secondary/10 border-border/40 focus:bg-background transition-all" />
+                            <div className="relative">
+                                <Input
+                                    value={form.industry || ""}
+                                    onChange={(e) => setForm({ ...form, industry: e.target.value })}
+                                    onFocus={() => setIndustryFocused(true)}
+                                    onKeyDown={handleIndustryKeyDown}
+                                    placeholder="IT, Design, Marketing..."
+                                    className="h-10 rounded-xl bg-secondary/10 border-border/40 focus:bg-background transition-all"
+                                    autoComplete="off"
+                                />
+                                {industryFocused && industrySuggestions.length > 0 && (
+                                    <div className="absolute z-20 mt-1 w-full rounded-xl border border-border/60 bg-popover shadow-lg overflow-hidden">
+                                        {industrySuggestions.map((industry, i) => (
+                                            <button
+                                                key={industry}
+                                                type="button"
+                                                onMouseDown={(e) => { e.preventDefault(); selectIndustry(industry) }}
+                                                onMouseEnter={() => setIndustryActiveIndex(i)}
+                                                className={cn(
+                                                    "w-full text-left px-3 py-2 text-sm font-medium transition-colors",
+                                                    i === industryActiveIndex ? "bg-secondary/80 text-foreground" : "text-foreground/80 hover:bg-secondary/50",
+                                                )}
+                                            >
+                                                {industry}
+                                            </button>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
                         </div>
                         <div className="space-y-2">
                             <Label className="text-xs font-bold text-muted-foreground ml-0.5">Байршил</Label>

@@ -30,7 +30,7 @@ export function EducationEditor({ education, onChange }: Props) {
                         type="button"
                         variant="ghost"
                         size="sm"
-                        className="h-7 px-2 text-[10px] font-black uppercase tracking-tighter"
+                        className="h-7 px-2 text-[10px]  uppercase "
                         onClick={() => onChange([{ school: "", degree: "", year: new Date().getFullYear(), status: "studying" }])}
                     >
                         <Plus className="w-3 h-3 mr-1" /> Нэмэх

@@ -221,6 +221,7 @@ export default function CompanyPage() {
                             {activeTab === "jobs" && (
                                 <CompanyJobsTab
                                     jobs={myJobsData?.getAllJobs} loading={jobsLoading} company={profile}
+                                    isVerified={!!profile?.isVerified}
                                     showForm={jobs.showJobForm} onToggleForm={jobs.toggleForm}
                                     form={jobs.jobForm} setForm={jobs.setJobForm}
                                     skillsInput={jobs.skillsInput} setSkillsInput={jobs.setSkillsInput}
@@ -228,6 +229,8 @@ export default function CompanyPage() {
                                     viewingJob={jobs.viewingJob} setViewingJob={jobs.setViewingJob}
                                     submittingForm={jobs.submitting} deletingJob={jobs.deletingJob}
                                     onSubmitForm={jobs.submitForm}
+                                    onSaveDraft={jobs.saveDraft}
+                                    onPublishDraft={jobs.publishDraft}
                                     onEditJob={jobs.editJob} onDeleteJob={jobs.removeJob}
                                 />
                             )}

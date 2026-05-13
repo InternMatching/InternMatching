@@ -5,7 +5,7 @@ import Image from "next/image"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import {
-    PlusCircle, Pencil, Trash2, Search, Clock, Users2, AlertCircle, Building2,
+    PlusCircle, Pencil, Trash2, Search, Clock, Users2, AlertCircle, Building2, Send,
 } from "lucide-react"
 import { Job, JobInput, CompanyProfile } from "@/lib/type"
 import { cn } from "@/lib/utils"
@@ -25,13 +25,15 @@ const getTimeRemaining = (deadline?: string, now = Date.now()) => {
 type JobsGridProps = {
     jobs?: Job[]
     company?: CompanyProfile | null
+    isVerified: boolean
     deletingJob: boolean
     onViewJob: (job: Job) => void
     onEditJob: (job: Job) => void
     onDeleteJob: (id: string, title: string) => void
+    onPublishDraft: (id: string) => void
 }
 
-function JobsGrid({ jobs, company, deletingJob, onViewJob, onEditJob, onDeleteJob }: JobsGridProps) {
+function JobsGrid({ jobs, company, isVerified, deletingJob, onViewJob, onEditJob, onDeleteJob, onPublishDraft }: JobsGridProps) {
     // eslint-disable-next-line react-hooks/purity
     const now = Date.now()
     const jobsList = useMemo(() => {
@@ -54,8 +56,20 @@ function JobsGrid({ jobs, company, deletingJob, onViewJob, onEditJob, onDeleteJo
                                 </span>
                             )}
                         </div>
-                        <h3 className="font-bold text-sm truncate flex-1 min-w-0 pt-2">{job.title}</h3>
+                        <div className="flex-1 min-w-0 pt-2 flex items-center gap-2">
+                            <h3 className="font-bold text-sm truncate">{job.title}</h3>
+                            {job.status === "draft" && (
+                                <span className="shrink-0 text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full bg-amber-100 text-amber-600 border border-amber-200">
+                                    Ноороглосон
+                                </span>
+                            )}
+                        </div>
                         <div className="hidden md:flex items-center gap-1 shrink-0 ml-auto">
+                            {job.status === "draft" && isVerified && (
+                                <Button variant="ghost" size="sm" className="h-8 w-8 p-0 rounded-lg hover:bg-emerald-50 hover:text-emerald-600" title="Нийтлэх" onClick={(e) => { e.stopPropagation(); onPublishDraft(job.id) }}>
+                                    <Send className="w-3.5 h-3.5" />
+                                </Button>
+                            )}
                             <Button variant="ghost" size="sm" className="h-8 w-8 p-0 rounded-lg hover:bg-primary/10 hover:text-primary" onClick={(e) => { e.stopPropagation(); onEditJob(job) }}>
                                 <Pencil className="w-3.5 h-3.5" />
                             </Button>
@@ -82,6 +96,11 @@ function JobsGrid({ jobs, company, deletingJob, onViewJob, onEditJob, onDeleteJo
                             </span>
                         )}
                         <div className="flex md:hidden items-center gap-1 shrink-0 ml-auto">
+                            {job.status === "draft" && isVerified && (
+                                <Button variant="ghost" size="sm" className="h-7 w-7 p-0 rounded-lg hover:bg-emerald-50 hover:text-emerald-600" onClick={(e) => { e.stopPropagation(); onPublishDraft(job.id) }}>
+                                    <Send className="w-3 h-3" />
+                                </Button>
+                            )}
                             <Button variant="ghost" size="sm" className="h-7 w-7 p-0 rounded-lg hover:bg-primary/10 hover:text-primary" onClick={(e) => { e.stopPropagation(); onEditJob(job) }}>
                                 <Pencil className="w-3 h-3" />
                             </Button>
@@ -102,6 +121,7 @@ type Props = {
     jobs?: Job[]
     loading: boolean
     company?: CompanyProfile | null
+    isVerified: boolean
     showForm: boolean
     onToggleForm: () => void
     form: JobInput
@@ -114,14 +134,16 @@ type Props = {
     submittingForm: boolean
     deletingJob: boolean
     onSubmitForm: (e: React.FormEvent) => void
+    onSaveDraft: (e: React.FormEvent) => void
+    onPublishDraft: (id: string) => void
     onEditJob: (job: Job) => void
     onDeleteJob: (id: string, title: string) => void
 }
 
 export function CompanyJobsTab({
-    jobs, loading, company, showForm, onToggleForm, form, setForm,
+    jobs, loading, company, isVerified, showForm, onToggleForm, form, setForm,
     skillsInput, setSkillsInput, editingJob, viewingJob, setViewingJob,
-    submittingForm, deletingJob, onSubmitForm, onEditJob, onDeleteJob,
+    submittingForm, deletingJob, onSubmitForm, onSaveDraft, onPublishDraft, onEditJob, onDeleteJob,
 }: Props) {
     return (
         <div className="space-y-6">
@@ -138,7 +160,8 @@ export function CompanyJobsTab({
             {showForm && (
                 <JobFormCard
                     form={form} setForm={setForm} skillsInput={skillsInput} setSkillsInput={setSkillsInput}
-                    editingJob={editingJob} submitting={submittingForm} onSubmit={onSubmitForm}
+                    editingJob={editingJob} submitting={submittingForm} isVerified={isVerified}
+                    onSubmit={onSubmitForm} onSaveDraft={onSaveDraft}
                 />
             )}
 
@@ -154,7 +177,7 @@ export function CompanyJobsTab({
                     onDelete={(id, title) => { onDeleteJob(id, title); setViewingJob(null) }}
                 />
             ) : (
-                <JobsGrid jobs={jobs} company={company} deletingJob={deletingJob} onViewJob={setViewingJob} onEditJob={onEditJob} onDeleteJob={onDeleteJob} />
+                <JobsGrid jobs={jobs} company={company} isVerified={isVerified} deletingJob={deletingJob} onViewJob={setViewingJob} onEditJob={onEditJob} onDeleteJob={onDeleteJob} onPublishDraft={onPublishDraft} />
             )}
         </div>
     )
