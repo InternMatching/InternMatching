@@ -90,44 +90,45 @@ function AIResultPanel({ aiResult, open }: { aiResult: AIMatchResult | null; ope
             <div className="overflow-hidden">
                 {aiResult && (
                     <div className="rounded-xl border border-border/50 bg-secondary/10 dark:bg-secondary/5 p-4 space-y-4">
-                        {/* Score row */}
-                        <div className="flex flex-wrap items-center gap-4">
-                            <div className="flex items-center gap-3">
-                                <div className="relative w-14 h-14 shrink-0">
-                                    <svg className="w-14 h-14 -rotate-90" viewBox="0 0 36 36">
-                                        <circle cx="18" cy="18" r="15.9" fill="none" stroke="currentColor" strokeWidth="2.5" className="text-border/30" />
-                                        <circle cx="18" cy="18" r="15.9" fill="none" stroke="currentColor" strokeWidth="2.5"
-                                            strokeDasharray={`${aiResult.score} 100`} strokeLinecap="round" className={scoreColor} />
-                                    </svg>
-                                    <span className={cn("absolute inset-0 flex items-center justify-center text-sm font-black", scoreColor)}>
-                                        {aiResult.score}%
-                                    </span>
-                                </div>
-                                <div className="space-y-1">
-                                    <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">AI Таарамжийн дүн</p>
-                                    <span className={cn("inline-flex items-center gap-1.5 text-xs font-bold px-2.5 py-1 rounded-full border", recBg, recColor)}>
-                                        <RecIcon className="w-3.5 h-3.5" />{recLabel}
-                                    </span>
-                                </div>
+
+                        {/* Score row: horizontal on all sizes */}
+                        <div className="flex items-center gap-3">
+                            <div className="relative w-12 h-12 shrink-0">
+                                <svg className="w-12 h-12 -rotate-90" viewBox="0 0 36 36">
+                                    <circle cx="18" cy="18" r="15.9" fill="none" stroke="currentColor" strokeWidth="2.5" className="text-border/30" />
+                                    <circle cx="18" cy="18" r="15.9" fill="none" stroke="currentColor" strokeWidth="2.5"
+                                        strokeDasharray={`${aiResult.score} 100`} strokeLinecap="round" className={scoreColor} />
+                                </svg>
+                                <span className={cn("absolute inset-0 flex items-center justify-center text-xs font-black", scoreColor)}>
+                                    {aiResult.score}%
+                                </span>
                             </div>
-                            {/* Summary — beside score on wide screens, below on narrow */}
-                            <p className="flex-1 min-w-0 text-sm text-foreground/80 leading-relaxed">
-                                {aiResult.summary}
-                            </p>
+                            <div className="min-w-0 space-y-1">
+                                <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">AI Таарамжийн дүн</p>
+                                <span className={cn("inline-flex items-center gap-1 text-[11px] font-bold px-2 py-0.5 rounded-full border", recBg, recColor)}>
+                                    <RecIcon className="w-3 h-3 shrink-0" />
+                                    <span className="truncate">{recLabel}</span>
+                                </span>
+                            </div>
                         </div>
 
-                        {/* Strengths + Gaps grid */}
+                        {/* Summary: always full width below the score row */}
+                        <p className="text-sm text-foreground/80 leading-relaxed">
+                            {aiResult.summary}
+                        </p>
+
+                        {/* Strengths + Gaps: single column on mobile, two columns on md+ */}
                         {(aiResult.strengths.length > 0 || aiResult.gaps.length > 0) && (
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1 border-t border-border/30">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-3 border-t border-border/30">
                                 {aiResult.strengths.length > 0 && (
-                                    <div className="space-y-1.5">
+                                    <div className="space-y-2">
                                         <p className="text-[11px] font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider flex items-center gap-1">
-                                            <TrendingUp className="w-3 h-3" />Давуу тал
+                                            <TrendingUp className="w-3 h-3 shrink-0" />Давуу тал
                                         </p>
-                                        <ul className="space-y-1.5">
+                                        <ul className="space-y-2">
                                             {aiResult.strengths.map((s, i) => (
                                                 <li key={i} className="text-xs text-foreground/75 flex items-start gap-2 leading-relaxed">
-                                                    <span className="text-emerald-500 font-bold mt-0.5 shrink-0">+</span>
+                                                    <span className="text-emerald-500 font-bold shrink-0 mt-0.5">+</span>
                                                     <span>{s}</span>
                                                 </li>
                                             ))}
@@ -135,14 +136,14 @@ function AIResultPanel({ aiResult, open }: { aiResult: AIMatchResult | null; ope
                                     </div>
                                 )}
                                 {aiResult.gaps.length > 0 && (
-                                    <div className="space-y-1.5">
+                                    <div className="space-y-2">
                                         <p className="text-[11px] font-bold text-amber-600 dark:text-amber-400 uppercase tracking-wider flex items-center gap-1">
-                                            <TrendingDown className="w-3 h-3" />Дутагдал
+                                            <TrendingDown className="w-3 h-3 shrink-0" />Дутагдал
                                         </p>
-                                        <ul className="space-y-1.5">
+                                        <ul className="space-y-2">
                                             {aiResult.gaps.map((g, i) => (
                                                 <li key={i} className="text-xs text-foreground/75 flex items-start gap-2 leading-relaxed">
-                                                    <span className="text-amber-500 font-bold mt-0.5 shrink-0">−</span>
+                                                    <span className="text-amber-500 font-bold shrink-0 mt-0.5">−</span>
                                                     <span>{g}</span>
                                                 </li>
                                             ))}
@@ -207,8 +208,8 @@ function JobCard({ job, isApplied, isExpired, applyingJobId, now, onApply }: {
                         </div>
                     </div>
 
-                    {/* Right: match bar + apply + AI button */}
-                    <div className="flex flex-row md:flex-col items-center md:items-end gap-2 shrink-0 flex-wrap">
+                    {/* Desktop-only right column */}
+                    <div className="hidden md:flex flex-col items-end gap-2 shrink-0">
                         {job.matchScore != null && (
                             <div className="flex items-center gap-1.5">
                                 <div className="w-20 h-1.5 rounded-full bg-secondary overflow-hidden">
@@ -237,13 +238,45 @@ function JobCard({ job, isApplied, isExpired, applyingJobId, now, onApply }: {
                                 <><Loader2 className="animate-spin mr-2 h-3.5 w-3.5" />Илгээж байна...</>
                             ) : "Илгээх"}
                         </Button>
-                        <AITriggerButton
-                            loading={ai.loading}
-                            hasResult={!!ai.aiResult}
-                            open={ai.open}
-                            onClick={ai.trigger}
-                        />
+                        <AITriggerButton loading={ai.loading} hasResult={!!ai.aiResult} open={ai.open} onClick={ai.trigger} />
                     </div>
+                </div>
+
+                {/* Mobile-only action bar */}
+                <div className="flex md:hidden flex-col gap-2 mt-3 pt-3 border-t border-border/30">
+                    {/* Row 1: score % left — Илгээх right */}
+                    <div className="flex items-center justify-between gap-2">
+                        {job.matchScore != null ? (
+                            <div className="flex items-center gap-1.5">
+                                <div className="w-16 h-1.5 rounded-full bg-secondary overflow-hidden">
+                                    <div
+                                        className={cn("h-full rounded-full transition-all", job.matchScore >= 70 ? "bg-emerald-500" : job.matchScore >= 40 ? "bg-amber-500" : "bg-red-400")}
+                                        style={{ width: `${job.matchScore}%` }}
+                                    />
+                                </div>
+                                <span className={cn("text-[11px] font-black", job.matchScore >= 70 ? "text-emerald-600" : job.matchScore >= 40 ? "text-amber-600" : "text-red-500")}>
+                                    {Math.round(job.matchScore)}%
+                                </span>
+                            </div>
+                        ) : <span />}
+                        <Button
+                            size="sm"
+                            onClick={() => onApply(job.id)}
+                            disabled={applyingJobId !== null || isApplied}
+                            variant={isApplied ? "outline" : "default"}
+                            className={cn("h-8 rounded-xl px-5 font-bold text-xs",
+                                isApplied && "bg-emerald-50 text-emerald-600 border-emerald-200 hover:bg-emerald-100 opacity-100"
+                            )}
+                        >
+                            {isApplied ? (
+                                <><CheckCircle className="mr-1.5 h-3 w-3" />Илгээсэн</>
+                            ) : applyingJobId === job.id ? (
+                                <><Loader2 className="animate-spin mr-1.5 h-3 w-3" />Илгээж байна...</>
+                            ) : "Илгээх"}
+                        </Button>
+                    </div>
+                    {/* Row 2: AI шинжилгээ full-width */}
+                    <AITriggerButton loading={ai.loading} hasResult={!!ai.aiResult} open={ai.open} onClick={ai.trigger} />
                 </div>
 
                 {/* AI result panel — full width below the flex row */}

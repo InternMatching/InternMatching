@@ -6,6 +6,7 @@ import { useMutation } from "@apollo/client/react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
+import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
 import { Loader2, CheckCircle, User, Camera, X, FileText, Sparkles, Check } from "lucide-react"
 import { StudentProfile, StudentProfileInput, CVParseResult } from "@/lib/type"
@@ -305,13 +306,20 @@ export function StudentProfileTab({
                             />
                         </div>
                     </div>
-                    <div className="flex flex-col gap-4">
-                        <Label className="text-xs font-bold text-muted-foreground ml-0.5">Товч танилцуулга (Bio)</Label>
-                        <Input
-                            value={formData.bio}
+                    <div className="space-y-2">
+                        <div className="flex items-center justify-between ml-0.5">
+                            <Label className="text-xs font-bold text-muted-foreground">Товч танилцуулга (Bio)</Label>
+                            <span className="text-[11px] text-muted-foreground/60 font-medium">
+                                {(formData.bio || "").length} / 300
+                            </span>
+                        </div>
+                        <Textarea
+                            value={formData.bio || ""}
                             onChange={(e) => setFormData({ ...formData, bio: e.target.value })}
-                            placeholder="Өөрийнхөө тухай товчхон..."
-                            className="h-10 rounded-xl bg-secondary/20 border-border/50 focus:bg-background transition-all"
+                            placeholder="Өөрийнхөө тухай товчхон бичнэ үү — сурч буй чиглэл, зорилго, сонирхол..."
+                            maxLength={300}
+                            rows={4}
+                            className="rounded-xl bg-secondary/20 border-border/50 focus:bg-background transition-all resize-none text-sm leading-relaxed min-h-[100px]"
                         />
                     </div>
                     <div className="flex flex-col gap-4" ref={skillBoxRef}>
