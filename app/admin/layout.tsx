@@ -38,6 +38,7 @@ import {
 } from "@/components/ui/sheet"
 import { cn } from "@/lib/utils"
 import { Footer } from "@/components/layout/Footer"
+import { NotificationBell } from "@/components/layout/NotificationBell"
 
 const navItems = [
     { name: 'Хянах самбар', href: '/admin', icon: LayoutDashboard },
@@ -142,6 +143,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                     </div>
 
                     <div className="flex items-center gap-1.5 sm:gap-3">
+                        <NotificationBell />
                         <ThemeToggle />
                         <span className="h-6 w-px bg-border/40 hidden sm:block" />
                         <DropdownMenu>

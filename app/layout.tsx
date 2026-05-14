@@ -15,6 +15,7 @@ import { Footer } from "@/components/layout/Footer"
 import { usePathname } from "next/navigation"
 import { GoogleOAuthProvider } from '@react-oauth/google'
 import { AuthProvider } from "@/lib/auth-context"
+import { NotificationProvider } from "@/lib/notification-context"
 
 export default function RootLayout({
   children,
@@ -32,6 +33,7 @@ export default function RootLayout({
       <body className={`font-sans antialiased`} suppressHydrationWarning>
         <ApolloProvider client={client}>
           <AuthProvider>
+            <NotificationProvider>
             <GoogleOAuthProvider clientId={process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || ""}>
               <ThemeProvider
                 attribute="class"
@@ -46,6 +48,7 @@ export default function RootLayout({
                 <Toaster />
               </ThemeProvider>
             </GoogleOAuthProvider>
+            </NotificationProvider>
           </AuthProvider>
         </ApolloProvider>
       </body>

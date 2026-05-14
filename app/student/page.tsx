@@ -1,7 +1,7 @@
 "use client"
 
-import React, { useState, useEffect, useRef, useCallback } from "react"
-import { useRouter } from "next/navigation"
+import React, { useState, useEffect, useRef, useCallback, Suspense } from "react"
+import { useRouter, useSearchParams } from "next/navigation"
 import { useQuery, useMutation } from "@apollo/client/react"
 import { useAuth } from "@/lib/auth-context"
 import { Clock } from "lucide-react"
@@ -22,9 +22,21 @@ import { StudentJobsTab } from "@/features/student/components/tabs/JobsTab"
 import { StudentApplicationsTab } from "@/features/student/components/tabs/ApplicationsTab"
 import { StudentInvitationsTab } from "@/features/student/components/tabs/InvitationsTab"
 
-export default function StudentPage() {
+const VALID_STUDENT_TABS: StudentTabId[] = ["profile", "jobs", "applications", "invitations"]
+
+const PageSpinner = () => (
+    <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin" />
+    </div>
+)
+
+function StudentPageInner() {
     const router = useRouter()
-    const [activeTab, setActiveTab] = useState<StudentTabId>("profile")
+    const searchParams = useSearchParams()
+    const initialTab = searchParams.get("tab") as StudentTabId | null
+    const [activeTab, setActiveTab] = useState<StudentTabId>(
+        initialTab && VALID_STUDENT_TABS.includes(initialTab) ? initialTab : "profile"
+    )
     const [isMenuOpen, setIsMenuOpen] = useState(false)
 
     const { user: userMe, loading: userLoading, error: userError, logout } = useAuth()
@@ -253,5 +265,13 @@ export default function StudentPage() {
             </main>
             <Footer compact />
         </div>
+    )
+}
+
+export default function StudentPage() {
+    return (
+        <Suspense fallback={<PageSpinner />}>
+            <StudentPageInner />
+        </Suspense>
     )
 }
