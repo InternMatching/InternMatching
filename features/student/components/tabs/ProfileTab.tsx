@@ -67,17 +67,16 @@ export function StudentProfileTab({
                     setShowCVPreview(true)
                 }
             } catch (err: unknown) {
-                const firstGqlErr = (err as { graphQLErrors?: { message?: string; extensions?: { code?: string } }[] })
+                console.error("[parseCV]", err)
+                const gqlErr = (err as { graphQLErrors?: { message?: string; extensions?: { code?: string } }[] })
                     ?.graphQLErrors?.[0]
-                const isLimitError =
-                    firstGqlErr?.extensions?.code === "CV_PARSE_LIMIT_EXCEEDED" ||
-                    firstGqlErr?.message?.includes("хязгаарт хүрлээ")
-                if (isLimitError) {
+                const code = gqlErr?.extensions?.code
+                if (code === "CV_PARSE_LIMIT_EXCEEDED") {
                     toast.error("Өдөрт CV задлах хязгаарт хүрлээ. Маргааш дахин оролдоно уу.", {
                         description: "Өдөрт хамгийн ихдээ 3 удаа CV задлах боломжтой.",
                     })
                 } else {
-                    toast.error("CV задлахад алдаа гарлаа. PDF файл зөв форматтай эсэхийг шалгана уу.")
+                    toast.error(gqlErr?.message ?? "CV задлахад алдаа гарлаа. PDF файл зөв форматтай эсэхийг шалгана уу.")
                 }
             }
         }
