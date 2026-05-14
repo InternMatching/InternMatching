@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation"
 import { Briefcase, Menu, UserCircle, LogOut } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { ThemeToggle } from "@/components/theme-toggle"
+import { NotificationBell } from "@/components/layout/NotificationBell"
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -70,6 +71,7 @@ export function StudentHeader({ profile, email, isMenuOpen, setIsMenuOpen, sideb
                 </div>
 
                 <div className="flex items-center gap-1.5 sm:gap-3">
+                    <NotificationBell />
                     <ThemeToggle />
                     <span className="h-6 w-px bg-border/40 hidden sm:block" />
                     <DropdownMenu>

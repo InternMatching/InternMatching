@@ -15,7 +15,7 @@ import {
     LayoutDashboard,
     LogIn,
     GraduationCap,
-    Building2
+    Building2,
 } from "lucide-react"
 import { ThemeToggle } from "@/components/theme-toggle"
 import {
@@ -35,6 +35,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { cn } from "@/lib/utils"
 import { useAuth } from "@/lib/auth-context"
+import { NotificationBell } from "@/components/layout/NotificationBell"
 import { User } from "@/lib/type"
 
 function AuthButtons({ className, mobile = false, onNavigate }: { className?: string; mobile?: boolean; onNavigate: () => void }) {
@@ -243,6 +244,13 @@ export function Navbar() {
                 </div>
 
                 <div className="flex items-center gap-2">
+                    {/* Notification bell — logged-in users only */}
+                    {isLoggedIn && (
+                        <div className="hidden md:flex animate-in fade-in slide-in-from-top-1 duration-300" style={{ animationDelay: "150ms", animationFillMode: "both" }}>
+                            <NotificationBell />
+                        </div>
+                    )}
+
                     {/* Auth Status */}
                     {isLoggedIn && user ? (
                         <div className="hidden md:flex items-center gap-2 animate-in fade-in slide-in-from-top-1 duration-300" style={{ animationDelay: "150ms", animationFillMode: "both" }}>
@@ -299,7 +307,12 @@ export function Navbar() {
 
                                 <div className="mt-4 border-t border-border/40 pt-6 animate-in fade-in slide-in-from-right-2 duration-300" style={{ animationDelay: "190ms", animationFillMode: "both" }}>
                                     {isLoggedIn && user ? (
-                                        <UserProfileDropdown user={user} mobile onLogout={handleLogout} onNavigate={() => setIsOpen(false)} />
+                                        <>
+                                            <div className="mb-3">
+                                                <NotificationBell />
+                                            </div>
+                                            <UserProfileDropdown user={user} mobile onLogout={handleLogout} onNavigate={() => setIsOpen(false)} />
+                                        </>
                                     ) : (
                                         <RoleButtons onNavigate={() => setIsOpen(false)} />
                                     )}

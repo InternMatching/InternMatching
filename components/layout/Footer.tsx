@@ -18,7 +18,7 @@ export function Footer({ compact }: FooterProps) {
                         <ul className="space-y-3 text-muted-foreground">
                             <li>
                                 <Link href="/cv-review" className="hover:text-primary transition-colors">
-                                    AI - CV Шүүмлэгч
+                                    AI - CV Шүүмжлэгч
                                 </Link>
                             </li>
                         </ul>
