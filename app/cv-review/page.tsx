@@ -114,8 +114,15 @@ export default function CVReviewPage() {
                 }
             } catch (err: unknown) {
                 console.error("[reviewCV]", err)
-                const gqlMsg = (err as { graphQLErrors?: { message?: string }[] })
-                    ?.graphQLErrors?.[0]?.message
+                const gqlError = (err as { graphQLErrors?: { message?: string; extensions?: { code?: string } }[] })
+                    ?.graphQLErrors?.[0]
+                if (gqlError?.extensions?.code === "CV_REVIEW_LIMIT_EXCEEDED") {
+                    toast.error("Өнөөдрийн хязгаарт хүрлээ", {
+                        description: "CV шүүмжлэлийг өдөрт 1 удаа ашиглах боломжтой. Маргааш дахин оролдоно уу.",
+                    })
+                    return
+                }
+                const gqlMsg = gqlError?.message
                 const netMsg = (err as { networkError?: { message?: string } })
                     ?.networkError?.message
                 toast.error(
@@ -229,6 +236,12 @@ export default function CVReviewPage() {
                             </>
                         )}
                     </Button>
+
+                    {!loading && (
+                        <p className="text-center text-xs text-muted-foreground/70">
+                            Өдөрт 1 удаа хязгаартай
+                        </p>
+                    )}
 
                     {loading && (
                         <p className="text-center text-sm text-muted-foreground animate-pulse">

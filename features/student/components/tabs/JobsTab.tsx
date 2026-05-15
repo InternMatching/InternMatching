@@ -48,8 +48,15 @@ function useAIMatch(jobId: string) {
             const { data } = await getScore({ variables: { jobId } })
             if (data?.getAIMatchScore) { setAiResult(data.getAIMatchScore); setOpen(true) }
         } catch (err: unknown) {
-            const e = err as { graphQLErrors?: { message: string }[]; message?: string }
-            const msg = e?.graphQLErrors?.[0]?.message ?? e?.message ?? "Алдаа гарлаа"
+            const e = err as { graphQLErrors?: { message: string; extensions?: { code?: string } }[]; message?: string }
+            const gqlError = e?.graphQLErrors?.[0]
+            if (gqlError?.extensions?.code === "AI_MATCH_LIMIT_EXCEEDED") {
+                toast.error("Өнөөдрийн хязгаарт хүрлээ", {
+                    description: "AI шинжилгээг өдөрт 1 удаа ашиглах боломжтой. Маргааш дахин оролдоно уу.",
+                })
+                return
+            }
+            const msg = gqlError?.message ?? e?.message ?? "Алдаа гарлаа"
             toast.error(msg)
         }
     }
@@ -61,19 +68,24 @@ function AITriggerButton({ loading, hasResult, open, onClick }: {
     loading: boolean; hasResult: boolean; open: boolean; onClick: () => void
 }) {
     return (
-        <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            className="h-7 rounded-lg text-[11px] font-bold gap-1.5 border-primary/20 text-primary hover:bg-primary/5"
-            onClick={onClick}
-            disabled={loading}
-        >
-            {loading
-                ? <><Loader2 className="w-3 h-3 animate-spin" />Шинжилж байна...</>
-                : <><Sparkles className="w-3 h-3" />AI шинжилгээ{hasResult && <ChevronDown className={cn("w-3 h-3 transition-transform", open && "rotate-180")} />}</>
-            }
-        </Button>
+        <div className="flex items-center gap-1.5">
+            <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="h-7 rounded-lg text-[11px] font-bold gap-1.5 border-primary/20 text-primary hover:bg-primary/5"
+                onClick={onClick}
+                disabled={loading}
+            >
+                {loading
+                    ? <><Loader2 className="w-3 h-3 animate-spin" />Шинжилж байна...</>
+                    : <><Sparkles className="w-3 h-3" />AI шинжилгээ{hasResult && <ChevronDown className={cn("w-3 h-3 transition-transform", open && "rotate-180")} />}</>
+                }
+            </Button>
+            {!hasResult && !loading && (
+                <span className="text-[10px] text-muted-foreground/60">өдөрт 1 удаа</span>
+            )}
+        </div>
     )
 }
 
