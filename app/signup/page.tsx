@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, Suspense } from "react"
 import Link from "next/link"
+import Image from "next/image"
 import { useRouter, useSearchParams } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -11,7 +12,6 @@ import {
     Loader2,
     GraduationCap,
     Building2,
-    CheckCircle2,
     Eye,
     EyeOff,
     Info
@@ -101,7 +101,7 @@ function SignupContent() {
                 <div className="max-w-md space-y-8 relative z-10">
                     <div className="animate-in fade-in slide-in-from-left-4 duration-500" style={{ animationDelay: "100ms", animationFillMode: "both" }}>
                         <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary text-sm font-medium border border-primary/20">
-                            <CheckCircle2 className="w-4 h-4" />
+                            <Image src="/favicon-32x32.png" alt="InternMatch" width={16} height={16} className="rounded-sm" />
                             <span>Шинэ боломжууд хүлээж байна</span>
                         </div>
                     </div>
