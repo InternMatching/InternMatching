@@ -2,6 +2,7 @@
 
 import React, { useState } from "react"
 import Link from "next/link"
+import Image from "next/image"
 import { Button } from "@/components/ui/button"
 import {
     Briefcase,
@@ -165,9 +166,13 @@ export function Navbar() {
             <nav className="container mx-auto px-4 h-16 flex items-center justify-between">
                 {/* Logo */}
                 <Link href="/" className="flex items-center gap-2 group">
-                    <div className="w-9 h-9 bg-primary rounded-xl flex items-center justify-center shadow-md shadow-primary/20 group-hover:scale-105 transition-all">
-                        <Briefcase className="w-5 h-5 text-primary-foreground" />
-                    </div>
+                    <Image
+                        src="/android-chrome-192x192.png"
+                        alt="InternMatch"
+                        width={36}
+                        height={36}
+                        className="rounded-xl shadow-md shadow-primary/20 group-hover:scale-105 transition-all"
+                    />
                     <span className="font-bold text-xl tracking-tight text-foreground">
                         Intern<span className="text-primary">Match</span>
                     </span>
@@ -274,10 +279,16 @@ export function Navbar() {
                         <SheetContent side="right" className="w-[300px] p-0 border-l border-border/40">
                             <SheetHeader className="p-6 border-b border-border/40 text-left bg-secondary/5">
                                 <div className="flex items-center gap-2">
-                                    <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
-                                        <Briefcase className="w-5 h-5 text-primary-foreground" />
-                                    </div>
-                                    <SheetTitle className="text-xl font-bold">Menu</SheetTitle>
+                                    <Image
+                                        src="/android-chrome-192x192.png"
+                                        alt="InternMatch"
+                                        width={32}
+                                        height={32}
+                                        className="rounded-lg"
+                                    />
+                                    <SheetTitle className="text-xl font-bold">
+                                        Intern<span className="text-primary">Match</span>
+                                    </SheetTitle>
                                 </div>
                             </SheetHeader>
 

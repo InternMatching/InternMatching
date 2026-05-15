@@ -1,6 +1,7 @@
 "use client"
 
 import Link from "next/link"
+import Image from "next/image"
 import { Phone, Mail, MapPin, Facebook, Instagram, Linkedin } from "lucide-react"
 
 interface FooterProps {
@@ -11,7 +12,26 @@ export function Footer({ compact }: FooterProps) {
     return (
         <footer className={`border-t border-border bg-background ${compact ? "py-8" : "py-16"}`}>
             <div className="container mx-auto px-6 lg:px-24">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-10 mb-10">
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-10 mb-10">
+                    {/* Brand */}
+                    <div className="space-y-4 md:col-span-1">
+                        <Link href="/" className="flex items-center gap-2 group w-fit">
+                            <Image
+                                src="/android-chrome-192x192.png"
+                                alt="InternMatch"
+                                width={36}
+                                height={36}
+                                className="rounded-xl group-hover:scale-105 transition-all"
+                            />
+                            <span className="font-bold text-xl tracking-tight text-foreground">
+                                Intern<span className="text-primary">Match</span>
+                            </span>
+                        </Link>
+                        <p className="text-sm text-muted-foreground leading-relaxed">
+                            Монголын хамгийн том дадлагын платформ. Оюутнууд болон шилдэг байгууллагуудыг холбоно.
+                        </p>
+                    </div>
+
                     {/* AI туслах */}
                     <div className="space-y-4">
                         <h4 className="font-bold text-primary text-lg">AI туслах</h4>
