@@ -13,7 +13,6 @@ export const GET_JOBS_LIST = gql`
       maxParticipants
       applicationCount
       requiredSkills
-      matchScore
       status
       postedAt
       company {
@@ -94,7 +93,6 @@ export const GET_ALL_JOBS = gql`
       maxParticipants
       applicationCount
       requiredSkills
-      matchScore
       status
       postedAt
       company {
