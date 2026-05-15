@@ -222,16 +222,16 @@ function JobCard({ job, isApplied, isExpired, applyingJobId, now, onApply }: {
 
                     {/* Desktop-only right column */}
                     <div className="hidden md:flex flex-col items-end gap-2 shrink-0">
-                        {job.matchScore != null && (
+                        {ai.aiResult && (
                             <div className="flex items-center gap-1.5">
                                 <div className="w-20 h-1.5 rounded-full bg-secondary overflow-hidden">
                                     <div
-                                        className={cn("h-full rounded-full transition-all", job.matchScore >= 70 ? "bg-emerald-500" : job.matchScore >= 40 ? "bg-amber-500" : "bg-red-400")}
-                                        style={{ width: `${job.matchScore}%` }}
+                                        className={cn("h-full rounded-full transition-all", ai.aiResult.score >= 70 ? "bg-emerald-500" : ai.aiResult.score >= 40 ? "bg-amber-500" : "bg-red-400")}
+                                        style={{ width: `${ai.aiResult.score}%` }}
                                     />
                                 </div>
-                                <span className={cn("text-[11px] font-black", job.matchScore >= 70 ? "text-emerald-600" : job.matchScore >= 40 ? "text-amber-600" : "text-red-500")}>
-                                    {Math.round(job.matchScore)}%
+                                <span className={cn("text-[11px] font-black", ai.aiResult.score >= 70 ? "text-emerald-600" : ai.aiResult.score >= 40 ? "text-amber-600" : "text-red-500")}>
+                                    {ai.aiResult.score}%
                                 </span>
                             </div>
                         )}
@@ -258,16 +258,16 @@ function JobCard({ job, isApplied, isExpired, applyingJobId, now, onApply }: {
                 <div className="flex md:hidden flex-col gap-2 mt-3 pt-3 border-t border-border/30">
                     {/* Row 1: score % left — Илгээх right */}
                     <div className="flex items-center justify-between gap-2">
-                        {job.matchScore != null ? (
+                        {ai.aiResult ? (
                             <div className="flex items-center gap-1.5">
                                 <div className="w-16 h-1.5 rounded-full bg-secondary overflow-hidden">
                                     <div
-                                        className={cn("h-full rounded-full transition-all", job.matchScore >= 70 ? "bg-emerald-500" : job.matchScore >= 40 ? "bg-amber-500" : "bg-red-400")}
-                                        style={{ width: `${job.matchScore}%` }}
+                                        className={cn("h-full rounded-full transition-all", ai.aiResult.score >= 70 ? "bg-emerald-500" : ai.aiResult.score >= 40 ? "bg-amber-500" : "bg-red-400")}
+                                        style={{ width: `${ai.aiResult.score}%` }}
                                     />
                                 </div>
-                                <span className={cn("text-[11px] font-black", job.matchScore >= 70 ? "text-emerald-600" : job.matchScore >= 40 ? "text-amber-600" : "text-red-500")}>
-                                    {Math.round(job.matchScore)}%
+                                <span className={cn("text-[11px] font-black", ai.aiResult.score >= 70 ? "text-emerald-600" : ai.aiResult.score >= 40 ? "text-amber-600" : "text-red-500")}>
+                                    {ai.aiResult.score}%
                                 </span>
                             </div>
                         ) : <span />}
