@@ -61,7 +61,7 @@ function AuthButtons({ className, mobile = false, onNavigate }: { className?: st
 function RoleButtons({ className, onNavigate }: { className?: string; onNavigate: () => void }) {
     return (
         <div className={cn("flex flex-col gap-3 w-full", className)}>
-            <Button size="lg" className="w-full h-12 rounded-xl font-bold text-sm bg-foreground text-background hover:bg-foreground/90" asChild onClick={onNavigate}>
+            <Button size="lg" className="w-full h-12 rounded-xl font-bold text-sm bg-primary text-primary-foreground hover:bg-primary/90 shadow-md shadow-primary/20" asChild onClick={onNavigate}>
                 <Link href="/signup?role=student">
                     <GraduationCap className="w-5 h-5 mr-2" />
                     Оюутан

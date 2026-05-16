@@ -49,17 +49,17 @@ export function Footer({ compact }: FooterProps) {
                         <h4 className="font-bold text-primary text-lg">Intern match гэж юу вэ?</h4>
                         <ul className="space-y-3 text-muted-foreground">
                             <li>
-                                <Link href="#" className="hover:text-primary transition-colors">
+                                <Link href="/vision" className="hover:text-primary transition-colors">
                                     Бидний алсын хараа
                                 </Link>
                             </li>
                             <li>
-                                <Link href="#" className="hover:text-primary transition-colors">
+                                <Link href="/pricing" className="hover:text-primary transition-colors">
                                     Үнийн санал
                                 </Link>
                             </li>
                             <li>
-                                <Link href="#" className="hover:text-primary transition-colors">
+                                <Link href="/contact" className="hover:text-primary transition-colors">
                                     Холбоо барих
                                 </Link>
                             </li>
@@ -72,11 +72,11 @@ export function Footer({ compact }: FooterProps) {
                         <ul className="space-y-3 text-muted-foreground">
                             <li className="flex items-center gap-2">
                                 <Phone className="w-4 h-4 text-muted-foreground" />
-                                +976 99119911
+                                +976 99111111
                             </li>
                             <li className="flex items-center gap-2">
                                 <Mail className="w-4 h-4 text-muted-foreground" />
-                                Internmatch@gmail.com
+                                internmatch@gmail.com
                             </li>
                             <li className="flex items-start gap-2">
                                 <MapPin className="w-4 h-4 text-muted-foreground mt-0.5" />
